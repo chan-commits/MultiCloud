@@ -1,11 +1,12 @@
 use crate::{
-    Capability, CredentialMaterial, InventoryItem, ProviderAdapter, ProviderError,
-    ProviderErrorCategory, ProviderKind, ProviderOperationRequest, ProviderOperationResult,
-    ValidationResult,
+    Capability, CredentialMaterial, CredentialType, InventoryItem, InventoryPage, InventoryRequest,
+    ProviderAdapter, ProviderError, ProviderErrorCategory, ProviderKind, ProviderOperationRequest,
+    ProviderOperationResult, ValidationResult,
 };
 use async_trait::async_trait;
-use reqwest::{Client, StatusCode, header::RETRY_AFTER};
+use reqwest::{Client, Method, StatusCode, header::RETRY_AFTER};
 use serde::Deserialize;
+use serde_json::{Value, json};
 
 #[derive(Clone)]
 pub struct CloudflareAdapter {
@@ -17,6 +18,14 @@ pub struct CloudflareAdapter {
 struct CloudflareEnvelope<T> {
     success: bool,
     result: T,
+    #[serde(default)]
+    result_info: Option<ResultInfo>,
+}
+
+#[derive(Deserialize)]
+struct ResultInfo {
+    page: Option<u32>,
+    total_pages: Option<u32>,
 }
 
 #[derive(Deserialize)]
@@ -45,13 +54,38 @@ impl CloudflareAdapter {
         credential: &CredentialMaterial,
         path: &str,
     ) -> Result<CloudflareEnvelope<T>, ProviderError> {
-        let response = self
+        self.request(Method::GET, credential, path, None).await
+    }
+
+    async fn request<T: for<'de> Deserialize<'de>>(
+        &self,
+        method: Method,
+        credential: &CredentialMaterial,
+        path: &str,
+        body: Option<&Value>,
+    ) -> Result<CloudflareEnvelope<T>, ProviderError> {
+        let request = self
             .client
-            .get(format!("{}{}", self.base_url, path))
-            .bearer_auth(&credential.secret)
-            .send()
-            .await
-            .map_err(|_| unavailable_error())?;
+            .request(method, format!("{}{}", self.base_url, path));
+        let request = match credential.credential_type {
+            CredentialType::ApiToken | CredentialType::Opaque => {
+                request.bearer_auth(&credential.secret)
+            }
+            CredentialType::GlobalApiKey => request
+                .header(
+                    "X-Auth-Email",
+                    credential.identity.as_deref().ok_or_else(|| {
+                        ProviderError::configuration("global_api_key_email_required", false)
+                    })?,
+                )
+                .header("X-Auth-Key", &credential.secret),
+        };
+        let request = if let Some(body) = body {
+            request.json(body)
+        } else {
+            request
+        };
+        let response = request.send().await.map_err(|_| unavailable_error())?;
         if !response.status().is_success() {
             return Err(normalize_http_error(&response));
         }
@@ -75,9 +109,27 @@ impl ProviderAdapter for CloudflareAdapter {
         &self,
         credential: &CredentialMaterial,
     ) -> Result<ValidationResult, ProviderError> {
-        let response: CloudflareEnvelope<TokenVerification> =
-            self.get(credential, "/user/tokens/verify").await?;
-        let valid = response.success && response.result.status == "active";
+        let (valid, identity) = match credential.credential_type {
+            CredentialType::GlobalApiKey => {
+                let response: CloudflareEnvelope<Value> = self.get(credential, "/user").await?;
+                (
+                    response.success,
+                    response
+                        .result
+                        .get("id")
+                        .and_then(Value::as_str)
+                        .map(str::to_owned),
+                )
+            }
+            CredentialType::ApiToken | CredentialType::Opaque => {
+                let response: CloudflareEnvelope<TokenVerification> =
+                    self.get(credential, "/user/tokens/verify").await?;
+                (
+                    response.success && response.result.status == "active",
+                    response.result.id,
+                )
+            }
+        };
         if !valid {
             return Err(ProviderError {
                 category: ProviderErrorCategory::Authentication,
@@ -89,7 +141,8 @@ impl ProviderAdapter for CloudflareAdapter {
         }
         Ok(ValidationResult {
             valid,
-            identity: response.result.id,
+            identity,
+            scopes: Vec::new(),
         })
     }
 
@@ -109,25 +162,195 @@ impl ProviderAdapter for CloudflareAdapter {
 
     async fn inventory(
         &self,
-        _credential: &CredentialMaterial,
-        _resource_type: &str,
-    ) -> Result<Vec<InventoryItem>, ProviderError> {
-        Err(ProviderError::configuration(
-            "inventory_available_in_phase_5",
-            false,
-        ))
+        credential: &CredentialMaterial,
+        request: &InventoryRequest,
+    ) -> Result<InventoryPage, ProviderError> {
+        let page = request.cursor.as_deref().unwrap_or("1");
+        if !page.chars().all(|character| character.is_ascii_digit()) {
+            return Err(ProviderError::configuration(
+                "invalid_inventory_cursor",
+                false,
+            ));
+        }
+        let (path, external_type) = match request.resource_type.as_str() {
+            "dns_zone" => (format!("/zones?per_page=50&page={page}"), "dns_zone"),
+            "dns_record" => {
+                let zone_id = request
+                    .parent_external_id
+                    .as_deref()
+                    .ok_or_else(|| ProviderError::configuration("dns_zone_id_required", false))?;
+                validate_external_id(zone_id)?;
+                (
+                    format!("/zones/{zone_id}/dns_records?per_page=100&page={page}"),
+                    "dns_record",
+                )
+            }
+            _ => {
+                return Err(ProviderError::configuration(
+                    "unsupported_inventory_resource_type",
+                    false,
+                ));
+            }
+        };
+        let response: CloudflareEnvelope<Vec<Value>> = self.get(credential, &path).await?;
+        let items = response
+            .result
+            .into_iter()
+            .filter(|resource| {
+                external_type != "dns_record"
+                    || resource
+                        .get("type")
+                        .and_then(Value::as_str)
+                        .is_some_and(is_supported_record_type)
+            })
+            .map(|resource| normalize_inventory_item(external_type, resource))
+            .collect::<Result<_, _>>()?;
+        let next_cursor = response.result_info.and_then(|info| {
+            let page = info.page?;
+            (page < info.total_pages?).then(|| page.saturating_add(1).to_string())
+        });
+        Ok(InventoryPage { items, next_cursor })
     }
 
     async fn execute(
         &self,
-        _credential: &CredentialMaterial,
-        _request: &ProviderOperationRequest,
+        credential: &CredentialMaterial,
+        request: &ProviderOperationRequest,
     ) -> Result<ProviderOperationResult, ProviderError> {
+        if request.resource_type != "dns_record" {
+            return Err(ProviderError::configuration(
+                "unsupported_operation_resource_type",
+                false,
+            ));
+        }
+        let zone_id = request
+            .parameters
+            .get("zone_id")
+            .and_then(Value::as_str)
+            .ok_or_else(|| ProviderError::configuration("dns_zone_id_required", false))?;
+        validate_external_id(zone_id)?;
+        let (method, path, body) =
+            match request.action.as_str() {
+                "create" => {
+                    validate_dns_record_parameters(&request.parameters)?;
+                    (
+                        Method::POST,
+                        format!("/zones/{zone_id}/dns_records"),
+                        Some(&request.parameters),
+                    )
+                }
+                "update" => {
+                    validate_dns_record_parameters(&request.parameters)?;
+                    let record_id = request.external_id.as_deref().ok_or_else(|| {
+                        ProviderError::configuration("dns_record_id_required", false)
+                    })?;
+                    validate_external_id(record_id)?;
+                    (
+                        Method::PUT,
+                        format!("/zones/{zone_id}/dns_records/{record_id}"),
+                        Some(&request.parameters),
+                    )
+                }
+                "delete" => {
+                    let record_id = request.external_id.as_deref().ok_or_else(|| {
+                        ProviderError::configuration("dns_record_id_required", false)
+                    })?;
+                    validate_external_id(record_id)?;
+                    (
+                        Method::DELETE,
+                        format!("/zones/{zone_id}/dns_records/{record_id}"),
+                        None,
+                    )
+                }
+                _ => {
+                    return Err(ProviderError::configuration(
+                        "unsupported_dns_action",
+                        false,
+                    ));
+                }
+            };
+        let response: CloudflareEnvelope<Value> =
+            self.request(method, credential, &path, body).await?;
+        let external_id = response
+            .result
+            .get("id")
+            .and_then(Value::as_str)
+            .map(str::to_owned)
+            .or_else(|| request.external_id.clone());
+        Ok(ProviderOperationResult {
+            external_id,
+            state: response.result,
+        })
+    }
+}
+
+fn validate_external_id(value: &str) -> Result<(), ProviderError> {
+    let valid = !value.is_empty()
+        && value.len() <= 128
+        && value
+            .chars()
+            .all(|character| character.is_ascii_alphanumeric() || matches!(character, '-' | '_'));
+    if valid {
+        Ok(())
+    } else {
+        Err(ProviderError::configuration("invalid_external_id", false))
+    }
+}
+
+fn is_supported_record_type(value: &str) -> bool {
+    matches!(value, "A" | "AAAA" | "CNAME" | "TXT" | "MX")
+}
+
+fn validate_dns_record_parameters(parameters: &Value) -> Result<(), ProviderError> {
+    let record_type = parameters.get("type").and_then(Value::as_str);
+    if record_type.is_some_and(is_supported_record_type)
+        && parameters.get("name").and_then(Value::as_str).is_some()
+        && parameters.get("content").and_then(Value::as_str).is_some()
+    {
+        Ok(())
+    } else {
         Err(ProviderError::configuration(
-            "operations_available_in_phase_5",
+            "invalid_dns_record_parameters",
             false,
         ))
     }
+}
+
+fn normalize_inventory_item(
+    external_type: &str,
+    resource: Value,
+) -> Result<InventoryItem, ProviderError> {
+    let external_id = resource
+        .get("id")
+        .and_then(Value::as_str)
+        .ok_or_else(|| ProviderError::configuration("provider_resource_id_missing", false))?;
+    let name = resource
+        .get("name")
+        .and_then(Value::as_str)
+        .ok_or_else(|| ProviderError::configuration("provider_resource_name_missing", false))?;
+    let state = if external_type == "dns_zone" {
+        json!({
+            "name": name,
+            "status": resource.get("status").cloned().unwrap_or(Value::Null),
+            "name_servers": resource.get("name_servers").cloned().unwrap_or_else(|| json!([])),
+        })
+    } else {
+        json!({
+            "type": resource.get("type").cloned().unwrap_or(Value::Null),
+            "name": name,
+            "content": resource.get("content").cloned().unwrap_or(Value::Null),
+            "ttl": resource.get("ttl").cloned().unwrap_or(Value::Null),
+            "priority": resource.get("priority").cloned().unwrap_or(Value::Null),
+            "proxied": resource.get("proxied").cloned().unwrap_or(Value::Null),
+        })
+    };
+    Ok(InventoryItem {
+        external_type: external_type.to_owned(),
+        external_id: external_id.to_owned(),
+        name: name.to_owned(),
+        state,
+        metadata: resource,
+    })
 }
 
 fn unavailable_error() -> ProviderError {
@@ -183,7 +406,11 @@ fn normalize_http_error(response: &reqwest::Response) -> ProviderError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use axum::{Json, Router, http::StatusCode, routing::get};
+    use axum::{
+        Json, Router,
+        http::StatusCode,
+        routing::{get, put},
+    };
     use serde_json::json;
     use tokio::net::TcpListener;
 
@@ -200,7 +427,51 @@ mod tests {
             )
             .route(
                 "/zones",
-                get(|| async { Json(json!({ "success": true, "result": [] })) }),
+                get(|| async {
+                    Json(json!({
+                        "success": true,
+                        "result": [{
+                            "id": "zone123", "name": "example.com", "status": "active",
+                            "name_servers": ["ns1.example.com"]
+                        }],
+                        "result_info": { "page": 1, "total_pages": 1 }
+                    }))
+                }),
+            )
+            .route(
+                "/user",
+                get(|| async { Json(json!({ "success": true, "result": { "id": "user-id" } })) }),
+            )
+            .route(
+                "/zones/{zone_id}/dns_records",
+                get(|| async {
+                    Json(json!({
+                        "success": true,
+                        "result": [{
+                            "id": "record123", "type": "A", "name": "www.example.com",
+                            "content": "1.1.1.1", "ttl": 120, "proxied": false
+                        }],
+                        "result_info": { "page": 1, "total_pages": 1 }
+                    }))
+                })
+                .post(|| async {
+                    Json(json!({
+                        "success": true,
+                        "result": { "id": "record-created", "type": "A", "name": "www.example.com", "content": "1.1.1.1" }
+                    }))
+                }),
+            )
+            .route(
+                "/zones/{zone_id}/dns_records/{record_id}",
+                put(|| async {
+                    Json(json!({
+                        "success": true,
+                        "result": { "id": "record123", "type": "A", "name": "www.example.com", "content": "2.2.2.2" }
+                    }))
+                })
+                .delete(|| async {
+                    Json(json!({ "success": true, "result": { "id": "record123" } }))
+                }),
             )
             .route("/limited", get(|| async { StatusCode::TOO_MANY_REQUESTS }));
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -214,6 +485,8 @@ mod tests {
         let base_url = mock_server().await;
         let adapter = CloudflareAdapter::new(&base_url);
         let credential = CredentialMaterial {
+            credential_type: CredentialType::ApiToken,
+            identity: None,
             secret: "test-token".to_owned(),
         };
         let validation = adapter.validate_credential(&credential).await.unwrap();
@@ -231,5 +504,54 @@ mod tests {
         };
         assert_eq!(error.category, ProviderErrorCategory::RateLimited);
         assert!(error.retryable);
+
+        let zones = adapter
+            .inventory(
+                &credential,
+                &InventoryRequest {
+                    resource_type: "dns_zone".to_owned(),
+                    parent_external_id: None,
+                    cursor: None,
+                },
+            )
+            .await
+            .unwrap();
+        assert_eq!(zones.items[0].external_id, "zone123");
+        let records = adapter
+            .inventory(
+                &credential,
+                &InventoryRequest {
+                    resource_type: "dns_record".to_owned(),
+                    parent_external_id: Some("zone123".to_owned()),
+                    cursor: None,
+                },
+            )
+            .await
+            .unwrap();
+        assert_eq!(records.items[0].external_id, "record123");
+        let created = adapter
+            .execute(
+                &credential,
+                &ProviderOperationRequest {
+                    action: "create".to_owned(),
+                    resource_type: "dns_record".to_owned(),
+                    external_id: None,
+                    parameters: json!({
+                        "zone_id": "zone123", "type": "A", "name": "www.example.com",
+                        "content": "1.1.1.1", "ttl": 120
+                    }),
+                    idempotency_key: "dns-create-1".to_owned(),
+                },
+            )
+            .await
+            .unwrap();
+        assert_eq!(created.external_id.as_deref(), Some("record-created"));
+
+        let global = CredentialMaterial {
+            credential_type: CredentialType::GlobalApiKey,
+            identity: Some("owner@example.com".to_owned()),
+            secret: "global-key".to_owned(),
+        };
+        assert!(adapter.validate_credential(&global).await.unwrap().valid);
     }
 }

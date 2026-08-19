@@ -56,15 +56,61 @@ pub enum Capability {
     Certificate,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize, Zeroize)]
+#[serde(rename_all = "snake_case")]
+pub enum CredentialType {
+    ApiToken,
+    GlobalApiKey,
+    Opaque,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CredentialRiskLevel {
+    Restricted,
+    High,
+}
+
 #[derive(Clone, Serialize, Deserialize, Zeroize, ZeroizeOnDrop)]
 pub struct CredentialMaterial {
+    #[zeroize(skip)]
+    pub credential_type: CredentialType,
+    pub identity: Option<String>,
     pub secret: String,
+}
+
+#[derive(Deserialize)]
+struct StoredCredentialEnvelope {
+    credential_type: CredentialType,
+    identity: Option<String>,
+    secret: String,
+}
+
+#[must_use]
+pub fn decode_credential_envelope(plaintext: &str, legacy_type: &str) -> CredentialMaterial {
+    if let Ok(stored) = serde_json::from_str::<StoredCredentialEnvelope>(plaintext) {
+        return CredentialMaterial {
+            credential_type: stored.credential_type,
+            identity: stored.identity,
+            secret: stored.secret,
+        };
+    }
+    CredentialMaterial {
+        credential_type: match legacy_type {
+            "api_token" => CredentialType::ApiToken,
+            "global_api_key" => CredentialType::GlobalApiKey,
+            _ => CredentialType::Opaque,
+        },
+        identity: None,
+        secret: plaintext.to_owned(),
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ValidationResult {
     pub valid: bool,
     pub identity: Option<String>,
+    pub scopes: Vec<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -73,6 +119,20 @@ pub struct InventoryItem {
     pub external_id: String,
     pub name: String,
     pub state: Value,
+    pub metadata: Value,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct InventoryRequest {
+    pub resource_type: String,
+    pub parent_external_id: Option<String>,
+    pub cursor: Option<String>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct InventoryPage {
+    pub items: Vec<InventoryItem>,
+    pub next_cursor: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -142,8 +202,8 @@ pub trait ProviderAdapter: Send + Sync {
     async fn inventory(
         &self,
         credential: &CredentialMaterial,
-        resource_type: &str,
-    ) -> Result<Vec<InventoryItem>, ProviderError>;
+        request: &InventoryRequest,
+    ) -> Result<InventoryPage, ProviderError>;
     async fn execute(
         &self,
         credential: &CredentialMaterial,
@@ -192,11 +252,11 @@ impl ProviderRuntime {
         &self,
         kind: &ProviderKind,
         credential: &CredentialMaterial,
-        resource_type: &str,
-    ) -> Result<Vec<InventoryItem>, ProviderError> {
+        request: &InventoryRequest,
+    ) -> Result<InventoryPage, ProviderError> {
         self.registry
             .get(kind)?
-            .inventory(credential, resource_type)
+            .inventory(credential, request)
             .await
     }
 
@@ -248,9 +308,9 @@ pub trait SyncFramework: Send + Sync {
         &self,
         adapter: &dyn ProviderAdapter,
         credential: &CredentialMaterial,
-        resource_type: &str,
-    ) -> Result<Vec<InventoryItem>, ProviderError> {
-        adapter.inventory(credential, resource_type).await
+        request: &InventoryRequest,
+    ) -> Result<InventoryPage, ProviderError> {
+        adapter.inventory(credential, request).await
     }
 }
 

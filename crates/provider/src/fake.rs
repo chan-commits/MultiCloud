@@ -1,7 +1,7 @@
 use crate::{
-    Capability, CredentialMaterial, InventoryItem, ProviderAdapter, ProviderError,
-    ProviderErrorCategory, ProviderKind, ProviderOperationRequest, ProviderOperationResult,
-    ValidationResult,
+    Capability, CredentialMaterial, InventoryItem, InventoryPage, InventoryRequest,
+    ProviderAdapter, ProviderError, ProviderErrorCategory, ProviderKind, ProviderOperationRequest,
+    ProviderOperationResult, ValidationResult,
 };
 use async_trait::async_trait;
 use serde_json::json;
@@ -23,6 +23,7 @@ impl ProviderAdapter for FakeProviderAdapter {
             Ok(ValidationResult {
                 valid: true,
                 identity: Some("fake-account".to_owned()),
+                scopes: vec!["fake:*".to_owned()],
             })
         } else {
             Err(ProviderError {
@@ -51,15 +52,19 @@ impl ProviderAdapter for FakeProviderAdapter {
     async fn inventory(
         &self,
         credential: &CredentialMaterial,
-        resource_type: &str,
-    ) -> Result<Vec<InventoryItem>, ProviderError> {
+        request: &InventoryRequest,
+    ) -> Result<InventoryPage, ProviderError> {
         self.validate_credential(credential).await?;
-        Ok(vec![InventoryItem {
-            external_type: resource_type.to_owned(),
-            external_id: "fake-resource-1".to_owned(),
-            name: "Fake Resource".to_owned(),
-            state: json!({ "status": "active" }),
-        }])
+        Ok(InventoryPage {
+            items: vec![InventoryItem {
+                external_type: request.resource_type.clone(),
+                external_id: "fake-resource-1".to_owned(),
+                name: "Fake Resource".to_owned(),
+                state: json!({ "status": "active" }),
+                metadata: json!({ "provider": "fake" }),
+            }],
+            next_cursor: None,
+        })
     }
 
     async fn execute(
@@ -91,6 +96,8 @@ mod tests {
         ]));
         let kind = ProviderKind::parse("fake").unwrap();
         let credential = CredentialMaterial {
+            credential_type: crate::CredentialType::ApiToken,
+            identity: None,
             secret: "valid-fake-token".to_owned(),
         };
         assert!(
@@ -103,9 +110,18 @@ mod tests {
         );
         assert_eq!(
             runtime
-                .sync_inventory(&kind, &credential, "compute")
+                .sync_inventory(
+                    &kind,
+                    &credential,
+                    &InventoryRequest {
+                        resource_type: "compute".to_owned(),
+                        parent_external_id: None,
+                        cursor: None,
+                    },
+                )
                 .await
                 .unwrap()
+                .items
                 .len(),
             1
         );

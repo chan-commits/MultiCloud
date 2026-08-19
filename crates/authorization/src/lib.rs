@@ -18,6 +18,10 @@ pub mod permissions {
     pub const PROVIDER_ACCOUNT_READ: &str = "provider.account.read";
     pub const PROVIDER_ACCOUNT_MANAGE: &str = "provider.account.manage";
     pub const PROVIDER_CONNECTION_TEST: &str = "provider.connection.test";
+    pub const RESOURCE_READ: &str = "resource.resource.read";
+    pub const RESOURCE_MANAGE: &str = "resource.resource.manage";
+    pub const RESOURCE_SYNC: &str = "resource.sync.execute";
+    pub const RECONCILIATION_MANAGE: &str = "resource.reconciliation.manage";
 
     pub const ALL: &[(&str, &str)] = &[
         (ORGANIZATION_READ, "Read organization details"),
@@ -38,6 +42,16 @@ pub mod permissions {
         (
             PROVIDER_CONNECTION_TEST,
             "Validate provider credentials and discover capabilities",
+        ),
+        (RESOURCE_READ, "Read canonical resources and state"),
+        (
+            RESOURCE_MANAGE,
+            "Manage resource desired state and lifecycle",
+        ),
+        (RESOURCE_SYNC, "Execute provider inventory synchronization"),
+        (
+            RECONCILIATION_MANAGE,
+            "Approve and manage reconciliation tasks",
         ),
     ];
 }

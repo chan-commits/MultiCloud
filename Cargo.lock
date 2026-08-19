@@ -1982,6 +1982,7 @@ dependencies = [
  "multicloud-organization",
  "multicloud-persistence",
  "multicloud-provider",
+ "multicloud-resource",
  "multicloud-shared-kernel",
  "rand 0.9.5",
  "sea-orm",
@@ -2078,9 +2079,11 @@ version = "0.1.0"
 dependencies = [
  "multicloud-operation",
  "multicloud-provider",
+ "multicloud-resource",
  "multicloud-shared-kernel",
  "sea-orm",
  "serde_json",
+ "sha2 0.10.9",
  "thiserror",
  "time",
  "uuid",
@@ -2104,6 +2107,18 @@ dependencies = [
  "tokio",
  "uuid",
  "zeroize",
+]
+
+[[package]]
+name = "multicloud-resource"
+version = "0.1.0"
+dependencies = [
+ "multicloud-shared-kernel",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "thiserror",
+ "time",
 ]
 
 [[package]]
@@ -2136,6 +2151,7 @@ dependencies = [
  "multicloud-observability",
  "multicloud-operation",
  "multicloud-persistence",
+ "multicloud-provider",
  "redis",
  "sea-orm",
  "serde_json",

@@ -121,6 +121,10 @@ fn system_role_specs() -> [SystemRoleSpec; 4] {
                 permission_keys::PROVIDER_ACCOUNT_READ,
                 permission_keys::PROVIDER_ACCOUNT_MANAGE,
                 permission_keys::PROVIDER_CONNECTION_TEST,
+                permission_keys::RESOURCE_READ,
+                permission_keys::RESOURCE_MANAGE,
+                permission_keys::RESOURCE_SYNC,
+                permission_keys::RECONCILIATION_MANAGE,
             ],
         ),
         (
@@ -141,6 +145,10 @@ fn system_role_specs() -> [SystemRoleSpec; 4] {
                 permission_keys::PROVIDER_ACCOUNT_READ,
                 permission_keys::PROVIDER_ACCOUNT_MANAGE,
                 permission_keys::PROVIDER_CONNECTION_TEST,
+                permission_keys::RESOURCE_READ,
+                permission_keys::RESOURCE_MANAGE,
+                permission_keys::RESOURCE_SYNC,
+                permission_keys::RECONCILIATION_MANAGE,
             ],
         ),
         (
@@ -152,6 +160,7 @@ fn system_role_specs() -> [SystemRoleSpec; 4] {
                 permission_keys::MEMBER_READ,
                 permission_keys::OPERATION_READ,
                 permission_keys::PROVIDER_ACCOUNT_READ,
+                permission_keys::RESOURCE_READ,
             ],
         ),
         (
@@ -161,6 +170,7 @@ fn system_role_specs() -> [SystemRoleSpec; 4] {
             &[
                 permission_keys::ORGANIZATION_READ,
                 permission_keys::PROVIDER_ACCOUNT_READ,
+                permission_keys::RESOURCE_READ,
             ],
         ),
     ]

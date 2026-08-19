@@ -12,6 +12,7 @@ multicloud-messaging = { path = "../../crates/messaging" }
 multicloud-observability = { path = "../../crates/observability" }
 multicloud-operation = { path = "../../crates/operation" }
 multicloud-persistence = { path = "../../crates/persistence" }
+multicloud-provider = { path = "../../crates/provider" }
 redis.workspace = true
 sea-orm.workspace = true
 serde_json.workspace = true

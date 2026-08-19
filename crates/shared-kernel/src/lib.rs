@@ -80,3 +80,7 @@ typed_id!(OperationId);
 typed_id!(EventId);
 typed_id!(ProviderAccountId);
 typed_id!(ProviderCredentialId);
+typed_id!(ResourceId);
+typed_id!(AssetId);
+typed_id!(DriftId);
+typed_id!(ReconciliationTaskId);

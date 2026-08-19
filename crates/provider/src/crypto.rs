@@ -4,6 +4,7 @@ use aes_gcm::{
 };
 use base64::{Engine, engine::general_purpose::STANDARD};
 use thiserror::Error;
+use zeroize::Zeroizing;
 
 const NONCE_LENGTH: usize = 12;
 
@@ -72,7 +73,10 @@ impl EnvelopeCipher {
     ///
     /// Returns [`CryptoError`] for a key-version mismatch, invalid nonce, failed authentication,
     /// or non-UTF-8 plaintext.
-    pub fn decrypt(&self, encrypted: &EncryptedCredential) -> Result<String, CryptoError> {
+    pub fn decrypt(
+        &self,
+        encrypted: &EncryptedCredential,
+    ) -> Result<Zeroizing<String>, CryptoError> {
         if encrypted.key_version != self.key_version || encrypted.nonce.len() != NONCE_LENGTH {
             return Err(CryptoError::Decryption);
         }
@@ -85,7 +89,9 @@ impl EnvelopeCipher {
         let plaintext = cipher
             .decrypt(&Nonce::from(nonce), encrypted.ciphertext.as_ref())
             .map_err(|_| CryptoError::Decryption)?;
-        String::from_utf8(plaintext).map_err(|_| CryptoError::InvalidPlaintext)
+        String::from_utf8(plaintext)
+            .map(Zeroizing::new)
+            .map_err(|_| CryptoError::InvalidPlaintext)
     }
 }
 
@@ -101,7 +107,10 @@ mod tests {
         let second = cipher.encrypt("secret-token").expect("encrypted");
         assert_ne!(first.nonce, second.nonce);
         assert_ne!(first.ciphertext, second.ciphertext);
-        assert_eq!(cipher.decrypt(&first).expect("decrypted"), "secret-token");
+        assert_eq!(
+            cipher.decrypt(&first).expect("decrypted").as_str(),
+            "secret-token"
+        );
     }
 
     #[test]

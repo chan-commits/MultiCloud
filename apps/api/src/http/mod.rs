@@ -5,6 +5,7 @@ mod invitations;
 mod operations;
 mod organizations;
 mod providers;
+mod resources;
 mod tenant;
 
 use axum::Router;
@@ -25,6 +26,7 @@ pub fn router() -> Router<AppState> {
         .nest("/invitations", invitations::router())
         .nest("/operations", operations::router())
         .nest("/providers", providers::router())
+        .nest("/resources", resources::router())
         .nest("/organizations", organizations::router())
         .nest("/tenant", tenant::router())
 }

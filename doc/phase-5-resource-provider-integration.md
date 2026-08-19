@@ -2,6 +2,16 @@
 
 Phase 5 使用 Phase 4 已建立的 Credential、Capability、Adapter、Registry 與 normalized error contracts，接入 Cloudflare、Vultr 與 OVH VPS。此階段不重做 Provider Foundation。
 
+## 實作進度
+
+- 已完成 canonical Resource、External Mapping、Desired/Observed State、metadata、Drift 與 Reconciliation schema/domain。
+- 已完成 Provider Operation request、attempt、lease、retry/idempotency Worker execution。
+- 已完成 Cloudflare API Token/Global API Key typed credential 與 risk metadata。
+- 已完成 Cloudflare Zone/Record 分頁 inventory 與 DNS Record CRUD adapter contract。
+- 已完成 Resource/Desired State/Drift/Reconciliation REST API。
+- 已完成 Fake inventory 重送 E2E：兩次 Operation/attempt 只建立一個 Resource mapping，Observed State 版本正常遞增。
+- 待完成 Vultr、OVH VPS adapter、完整 UI 與真實 Provider opt-in 驗證。
+
 ## Canonical Resource Model
 
 - `Resource`：平台對 Provider 資源的統一表示，例如 VPS、Zone、DNS Record。

@@ -57,6 +57,7 @@ pub async fn create_operation_with_event(
         completed_at: Set(None),
         created_at: Set(now),
         updated_at: Set(now),
+        next_attempt_at: Set(now),
     })
     .on_conflict_do_nothing_on([
         operations::Column::OrganizationId,

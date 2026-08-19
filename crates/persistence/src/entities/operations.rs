@@ -19,6 +19,7 @@ pub struct Model {
     pub completed_at: Option<TimeDateTimeWithTimeZone>,
     pub created_at: TimeDateTimeWithTimeZone,
     pub updated_at: TimeDateTimeWithTimeZone,
+    pub next_attempt_at: TimeDateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
