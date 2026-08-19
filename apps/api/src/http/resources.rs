@@ -8,8 +8,8 @@ use multicloud_authorization::permissions;
 use multicloud_operation::EventEnvelope;
 use multicloud_persistence::{
     entities::{
-        reconciliation_tasks, resource_desired_states, resource_drifts, resource_observed_states,
-        resources,
+        external_resource_mappings, provider_accounts, reconciliation_tasks,
+        resource_desired_states, resource_drifts, resource_observed_states, resources,
     },
     reliable_events::enqueue_event,
 };
@@ -46,6 +46,9 @@ struct ResourceResponse {
     attributes: Value,
     desired_state: Option<StateResponse>,
     observed_state: Option<StateResponse>,
+    provider_account_id: Option<Uuid>,
+    provider_kind: Option<String>,
+    external_id: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -310,6 +313,20 @@ async fn resource_response(
         .one(transaction)
         .await
         .map_err(super::error::internal)?;
+    let mapping = external_resource_mappings::Entity::find()
+        .filter(external_resource_mappings::Column::ResourceId.eq(resource.id))
+        .one(transaction)
+        .await
+        .map_err(super::error::internal)?;
+    let provider_kind = if let Some(mapping) = &mapping {
+        provider_accounts::Entity::find_by_id(mapping.provider_account_id)
+            .one(transaction)
+            .await
+            .map_err(super::error::internal)?
+            .map(|account| account.provider_kind)
+    } else {
+        None
+    };
     Ok(ResourceResponse {
         id: resource.id,
         resource_type: resource.resource_type,
@@ -325,6 +342,9 @@ async fn resource_response(
             version: state.version,
             state: state.state,
         }),
+        provider_account_id: mapping.as_ref().map(|mapping| mapping.provider_account_id),
+        provider_kind,
+        external_id: mapping.map(|mapping| mapping.external_id),
     })
 }
 

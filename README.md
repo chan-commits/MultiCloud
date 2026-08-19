@@ -62,7 +62,7 @@ just check
 - Phase 2：Organization-scoped RBAC 已完成
 - Phase 3：Operation、transactional outbox、inbox idempotency 与 Worker retry 已完成
 - Phase 4：Provider abstraction、加密 credential、Fake 与 Cloudflare adapter 已完成
-- Phase 5：Resource Management 与 Real Provider Integration 进行中（canonical Resource、Cloudflare DNS、Vultr 与 OVH VPS backend 已完成）
+- Phase 5：Resource Management 与 Real Provider Integration 进行中（Provider backend 与 Command Center UI 已完成，待最终 E2E 验收）
 - 后续阶段：Audit、Ticket/Chat、Agent、Billing
 
 详细规划见 [开发顺序](doc/development-roadmap.md)，系统设计入口见 [设计文件索引](doc/README.md)。

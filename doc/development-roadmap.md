@@ -7,7 +7,7 @@
 - Phase 2：已完成（2026-08-19）
 - Phase 3：已完成（2026-08-19）
 - Phase 4：已完成（2026-08-19）
-- Phase 5：進行中（2026-08-19，Resource/Cloudflare/Vultr/OVH backend vertical slice 已完成）
+- Phase 5：進行中（2026-08-19，backend vertical slice 與首版 Command Center UI 已完成；待最終 E2E 驗收）
 
 ## Phase 0：工程基礎
 

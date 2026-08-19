@@ -114,7 +114,15 @@ Phase 5 只產生 audit-ready、已遮罩的 Domain Event；Phase 6 再投影至
 
 ## 最小 UI
 
-- Provider Account、connection status、capabilities。
-- API Token Recommended 與 Global API Key High Risk 選擇/警告。
-- Resource inventory、Operation/attempt 狀態。
-- Drift 狀態與 reconciliation approval。
+- 已建立 responsive、科技感 Command Center，並保留 Svelte 5 runes 與零新增前端依賴。
+- 已接入 Bearer login、Organization workspace 切換；access token 只保存在 browser session，不做長期持久化。
+- Dashboard 顯示 Provider、canonical Resource、Operation 與 desired/observed variance；Billing 與 time-series telemetry 明確標記為後續 Phase placeholder，不偽造資料。
+- Provider Fabric 支援建立 Cloudflare、Vultr、OVH account、connection test 與 inventory sync。
+- Cloudflare API Token 顯示 Recommended；Global API Key 放在 Legacy 選項、顯示 High Risk 警告。
+- Resource Matrix 顯示 provider mapping、normalized lifecycle、Observed State、Drift 與 reconciliation approval。
+- Compute Resource 可由 drawer 建立 start、stop、reboot Operation；所有操作仍通過既有 Operation Framework。
+- Operation Stream 顯示 queue/progress/error，並允許取消尚未執行的 Operation。
+
+UI 不直接保存 Provider secret，提交成功後立即清除 credential form。Resource REST DTO 額外返回 `provider_account_id`、`provider_kind` 與 `external_id`，讓 UI 使用明確 mapping 發出操作，不依名稱或 metadata 猜測 Provider。
+
+後續 UI 增量：DNS Record editor、Provider credential rotation/disable、Desired State editor，以及正式 Observability/Billing 圖表。
