@@ -1745,6 +1745,7 @@ dependencies = [
  "argon2",
  "axum",
  "base64",
+ "multicloud-authorization",
  "multicloud-configuration",
  "multicloud-identity",
  "multicloud-observability",
@@ -1760,6 +1761,16 @@ dependencies = [
  "time",
  "tokio",
  "tracing",
+ "uuid",
+]
+
+[[package]]
+name = "multicloud-authorization"
+version = "0.1.0"
+dependencies = [
+ "multicloud-shared-kernel",
+ "serde",
+ "thiserror",
  "uuid",
 ]
 

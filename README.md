@@ -59,7 +59,8 @@ just check
 
 - Phase 0：工程基线已完成
 - Phase 1：Identity、Organization、TenantContext 与 RLS 已完成
-- 下一阶段：RBAC
+- Phase 2：Organization-scoped RBAC 已完成
+- 下一阶段：Operation 与可靠事件
 - 后续阶段：Provider/Asset、Audit、Ticket/Chat、Agent、Billing
 
 详细规划见 [开发顺序](doc/development-roadmap.md)，系统设计入口见 [设计文件索引](doc/README.md)。

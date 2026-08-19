@@ -125,13 +125,19 @@ struct TenantContextResponse {
     session_id: Uuid,
     organization_id: Uuid,
     membership_id: Uuid,
+    permissions: Vec<String>,
 }
 
-async fn context(context: TenantContext) -> Json<TenantContextResponse> {
-    Json(TenantContextResponse {
+async fn context(
+    context: TenantContext,
+    axum::extract::State(state): axum::extract::State<AppState>,
+) -> Result<Json<TenantContextResponse>, ApiError> {
+    let permissions = super::authorization::permission_keys_for(&state, &context).await?;
+    Ok(Json(TenantContextResponse {
         user_id: context.user_id,
         session_id: context.session_id,
         organization_id: context.organization_id,
         membership_id: context.membership_id,
-    })
+        permissions,
+    }))
 }

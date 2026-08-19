@@ -81,6 +81,12 @@ async fn create(
     .insert(&transaction)
     .await
     .map_err(super::error::internal)?;
+    super::authorization::bootstrap_organization_roles(
+        &transaction,
+        organization_id,
+        identity.user_id,
+    )
+    .await?;
     transaction.commit().await.map_err(super::error::internal)?;
 
     Ok((

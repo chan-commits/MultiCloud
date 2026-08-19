@@ -1,5 +1,9 @@
 pub mod organization_invitations;
 pub mod organization_memberships;
 pub mod organizations;
+pub mod permissions;
+pub mod role_bindings;
+pub mod role_permissions;
+pub mod roles;
 pub mod sessions;
 pub mod users;

@@ -5,6 +5,7 @@ members = [
     "apps/api",
     "apps/scheduler",
     "apps/worker",
+    "crates/authorization",
     "crates/configuration",
     "crates/identity",
     "crates/messaging",

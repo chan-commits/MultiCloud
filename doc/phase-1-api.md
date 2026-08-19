@@ -28,7 +28,7 @@
 
 ### `POST /api/v1/invitations`
 
-需要 Bearer token 与 `X-Organization-Id`。建立七天有效的 invitation；token 仅在建立时返回，数据库只保存 hash。
+需要 Bearer token、`X-Organization-Id` 与 `organization.invitation.manage` 权限。建立七天有效的 invitation；token 仅在建立时返回，数据库只保存 hash。
 
 ### `POST /api/v1/invitations/accept`
 
@@ -43,6 +43,6 @@
 - `Authorization: Bearer <token>`
 - `X-Organization-Id: <uuid>`
 
-服务器先验证 session，再于 tenant-scoped transaction 设置 PostgreSQL `app.user_id` 与 `app.organization_id`，最后验证 active membership。不存在或不属于使用者的 Organization 返回 `403 Forbidden`。
+服务器先验证 session，再于 tenant-scoped transaction 设置 PostgreSQL `app.user_id` 与 `app.organization_id`，最后验证 active membership 并返回有效 permission keys。不存在或不属于使用者的 Organization 返回 `403 Forbidden`。
 
 后续所有 tenant-scoped use case 都必须沿用相同 transaction context，不得直接信任客户端提供的 Organization ID。

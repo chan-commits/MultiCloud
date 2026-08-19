@@ -6,7 +6,9 @@ use super::{
 use axum::{Json, Router, extract::State, routing::post};
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use multicloud_identity::Email;
-use multicloud_persistence::entities::{organization_invitations, organization_memberships, users};
+use multicloud_persistence::entities::{
+    organization_invitations, organization_memberships, role_bindings, roles, users,
+};
 use rand::RngCore;
 use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set, TransactionTrait};
 use serde::{Deserialize, Serialize};
@@ -43,12 +45,12 @@ async fn create(
     let token = URL_SAFE_NO_PAD.encode(token_bytes);
     let expires_at = OffsetDateTime::now_utc() + Duration::days(7);
     let id = Uuid::now_v7();
-    let transaction = state
-        .database
-        .begin()
-        .await
-        .map_err(super::error::internal)?;
-    set_tenant_context(&transaction, context.user_id, Some(context.organization_id)).await?;
+    let transaction = super::authorization::authorize_transaction(
+        &state,
+        &context,
+        multicloud_authorization::permissions::INVITATION_MANAGE,
+    )
+    .await?;
     organization_invitations::ActiveModel {
         id: Set(id),
         organization_id: Set(context.organization_id),
@@ -132,6 +134,27 @@ async fn accept(
             joined_at: Set(now),
             created_at: Set(now),
             updated_at: Set(now),
+        }
+        .insert(&transaction)
+        .await
+        .map_err(super::error::internal)?;
+        let member_role = roles::Entity::find()
+            .filter(roles::Column::OrganizationId.eq(request.organization_id))
+            .filter(roles::Column::Key.eq("member"))
+            .one(&transaction)
+            .await
+            .map_err(super::error::internal)?
+            .ok_or(ApiError::Internal)?;
+        role_bindings::ActiveModel {
+            id: Set(Uuid::now_v7()),
+            organization_id: Set(request.organization_id),
+            role_id: Set(member_role.id),
+            subject_type: Set("user".to_owned()),
+            subject_id: Set(identity.user_id),
+            scope_type: Set("organization".to_owned()),
+            scope_id: Set(request.organization_id),
+            created_by: Set(invitation.invited_by),
+            created_at: Set(now),
         }
         .insert(&transaction)
         .await

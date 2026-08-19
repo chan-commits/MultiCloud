@@ -11,6 +11,7 @@
 - [核心流程](workflows.md)：登入、租戶切換、Provider、資產、Ticket、Chat、Billing 與 Agent 流程。
 - [開發順序](development-roadmap.md)：分階段交付順序與完成條件。
 - [Phase 1 API](phase-1-api.md)：Identity、Organization 與 TenantContext API 使用方式。
+- [Phase 2 RBAC](phase-2-rbac.md)：Permission、Role、Binding 與授權矩陣。
 
 ## 文件狀態
 
