@@ -13,7 +13,8 @@ Phase 5 使用 Phase 4 已建立的 Credential、Capability、Adapter、Registry
 - 已完成 OVH application credential（三段式簽名）、VPS list/get inventory 與 start/stop/reboot 非同步 Task 操作。
 - 已完成 Resource/Desired State/Drift/Reconciliation REST API。
 - 已完成 Fake inventory 重送 E2E：兩次 Operation/attempt 只建立一個 Resource mapping，Observed State 版本正常遞增。
-- 待完成完整 UI 與真實 Provider opt-in 驗證。
+- 已完成首版 Command Center UI、REST mapping integration 與全 workspace verification。
+- 真實 Provider smoke test 採 opt-in 執行，需要使用者提供測試帳號憑證，不納入 repository 或一般 CI；Adapter contract 由本地 mock server 自動驗證。
 
 ## Canonical Resource Model
 
