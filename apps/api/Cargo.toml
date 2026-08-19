@@ -17,6 +17,7 @@ multicloud-observability = { path = "../../crates/observability" }
 multicloud-operation = { path = "../../crates/operation" }
 multicloud-organization = { path = "../../crates/organization" }
 multicloud-persistence = { path = "../../crates/persistence" }
+multicloud-provider = { path = "../../crates/provider" }
 multicloud-shared-kernel = { path = "../../crates/shared-kernel" }
 rand.workspace = true
 sea-orm.workspace = true

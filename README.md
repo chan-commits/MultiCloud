@@ -61,8 +61,9 @@ just check
 - Phase 1：Identity、Organization、TenantContext 与 RLS 已完成
 - Phase 2：Organization-scoped RBAC 已完成
 - Phase 3：Operation、transactional outbox、inbox idempotency 与 Worker retry 已完成
-- 下一阶段：Provider Foundation 与 Credential Integration
-- 后续阶段：Resource/Provider Integration、Audit、Ticket/Chat、Agent、Billing
+- Phase 4：Provider abstraction、加密 credential、Fake 与 Cloudflare adapter 已完成
+- 下一阶段：Resource Management 与 Real Provider Integration
+- 后续阶段：Audit、Ticket/Chat、Agent、Billing
 
 详细规划见 [开发顺序](doc/development-roadmap.md)，系统设计入口见 [设计文件索引](doc/README.md)。
 

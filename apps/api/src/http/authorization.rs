@@ -118,6 +118,9 @@ fn system_role_specs() -> [SystemRoleSpec; 4] {
                 permission_keys::BINDING_MANAGE,
                 permission_keys::OPERATION_READ,
                 permission_keys::OPERATION_CANCEL,
+                permission_keys::PROVIDER_ACCOUNT_READ,
+                permission_keys::PROVIDER_ACCOUNT_MANAGE,
+                permission_keys::PROVIDER_CONNECTION_TEST,
             ],
         ),
         (
@@ -135,6 +138,9 @@ fn system_role_specs() -> [SystemRoleSpec; 4] {
                 permission_keys::BINDING_MANAGE,
                 permission_keys::OPERATION_READ,
                 permission_keys::OPERATION_CANCEL,
+                permission_keys::PROVIDER_ACCOUNT_READ,
+                permission_keys::PROVIDER_ACCOUNT_MANAGE,
+                permission_keys::PROVIDER_CONNECTION_TEST,
             ],
         ),
         (
@@ -145,13 +151,17 @@ fn system_role_specs() -> [SystemRoleSpec; 4] {
                 permission_keys::ORGANIZATION_READ,
                 permission_keys::MEMBER_READ,
                 permission_keys::OPERATION_READ,
+                permission_keys::PROVIDER_ACCOUNT_READ,
             ],
         ),
         (
             "viewer",
             "Viewer",
             "Read-only organization access",
-            &[permission_keys::ORGANIZATION_READ],
+            &[
+                permission_keys::ORGANIZATION_READ,
+                permission_keys::PROVIDER_ACCOUNT_READ,
+            ],
         ),
     ]
 }

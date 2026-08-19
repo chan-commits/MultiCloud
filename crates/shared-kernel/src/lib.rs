@@ -78,3 +78,5 @@ typed_id!(MembershipId);
 typed_id!(InvitationId);
 typed_id!(OperationId);
 typed_id!(EventId);
+typed_id!(ProviderAccountId);
+typed_id!(ProviderCredentialId);

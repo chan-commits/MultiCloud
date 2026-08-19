@@ -10,3 +10,8 @@ max_connections = 20
 
 [redis]
 url = "redis://localhost:56379"
+
+[provider]
+credential_master_key = ""
+credential_key_version = 1
+cloudflare_base_url = "https://api.cloudflare.com/client/v4"

@@ -9,6 +9,8 @@ pub struct Settings {
     pub http: HttpSettings,
     pub database: DatabaseSettings,
     pub redis: RedisSettings,
+    #[serde(default)]
+    pub provider: ProviderSettings,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -26,6 +28,24 @@ pub struct DatabaseSettings {
 #[derive(Clone, Debug, Deserialize)]
 pub struct RedisSettings {
     pub url: String,
+}
+
+#[derive(Clone, Debug, Default, Deserialize)]
+pub struct ProviderSettings {
+    #[serde(default)]
+    pub credential_master_key: String,
+    #[serde(default = "default_key_version")]
+    pub credential_key_version: i32,
+    #[serde(default = "default_cloudflare_base_url")]
+    pub cloudflare_base_url: String,
+}
+
+const fn default_key_version() -> i32 {
+    1
+}
+
+fn default_cloudflare_base_url() -> String {
+    "https://api.cloudflare.com/client/v4".to_owned()
 }
 
 #[derive(Debug, Error)]

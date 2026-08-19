@@ -4,6 +4,7 @@ mod http;
 use axum::{Router, routing::get};
 use multicloud_configuration::Settings;
 use serde::Serialize;
+use std::sync::Arc;
 use std::{net::SocketAddr, path::PathBuf};
 use tokio::net::TcpListener;
 
@@ -32,7 +33,22 @@ async fn main() -> anyhow::Result<()> {
         multicloud_persistence::connect(&settings.database.url, settings.database.max_connections)
             .await
             .context("could not connect to database")?;
-    let state = http::AppState { database };
+    let cipher = multicloud_provider::EnvelopeCipher::from_base64(
+        &settings.provider.credential_master_key,
+        settings.provider.credential_key_version,
+    )
+    .context("MULTICLOUD__PROVIDER__CREDENTIAL_MASTER_KEY must contain a base64 32-byte key")?;
+    let mut adapters: Vec<Arc<dyn multicloud_provider::ProviderAdapter>> = vec![Arc::new(
+        multicloud_provider::CloudflareAdapter::new(settings.provider.cloudflare_base_url),
+    )];
+    if settings.environment == "development" {
+        adapters.push(Arc::new(multicloud_provider::FakeProviderAdapter));
+    }
+    let state = http::AppState {
+        database,
+        provider_registry: multicloud_provider::ProviderRegistry::new(adapters),
+        credential_cipher: Arc::new(cipher),
+    };
 
     let app = Router::new()
         .route("/health", get(health))

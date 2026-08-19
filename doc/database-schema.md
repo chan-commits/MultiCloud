@@ -26,7 +26,8 @@
 
 ## Provider 與 Asset
 
-- `provider_accounts`：organization、kind、name、status、encrypted credential、key version、configuration、capabilities。
+- `provider_accounts`：organization、kind、name、status、configuration、capabilities、validation state；不保存 credential。
+- `provider_credentials`：organization、provider account、credential type、AES-GCM ciphertext/nonce、key/version、status、activation/revocation；每帳號只允許一笔 active credential。
 - `provider_resource_refs`：provider account、external type/id、internal asset type/id、region；外部識別唯一。
 - `provider_operations`：operation、request ID、type、idempotency、masked snapshots、status、retry、error。
 - `provider_sync_cursors`：account、resource type、cursor、last sync、status/error。

@@ -15,6 +15,9 @@ pub mod permissions {
     pub const BINDING_MANAGE: &str = "authorization.binding.manage";
     pub const OPERATION_READ: &str = "operation.operation.read";
     pub const OPERATION_CANCEL: &str = "operation.operation.cancel";
+    pub const PROVIDER_ACCOUNT_READ: &str = "provider.account.read";
+    pub const PROVIDER_ACCOUNT_MANAGE: &str = "provider.account.manage";
+    pub const PROVIDER_CONNECTION_TEST: &str = "provider.connection.test";
 
     pub const ALL: &[(&str, &str)] = &[
         (ORGANIZATION_READ, "Read organization details"),
@@ -27,6 +30,15 @@ pub mod permissions {
         (BINDING_MANAGE, "Assign and remove role bindings"),
         (OPERATION_READ, "Read operation status"),
         (OPERATION_CANCEL, "Cancel queued operations"),
+        (PROVIDER_ACCOUNT_READ, "Read provider accounts"),
+        (
+            PROVIDER_ACCOUNT_MANAGE,
+            "Manage provider accounts and credentials",
+        ),
+        (
+            PROVIDER_CONNECTION_TEST,
+            "Validate provider credentials and discover capabilities",
+        ),
     ];
 }
 
