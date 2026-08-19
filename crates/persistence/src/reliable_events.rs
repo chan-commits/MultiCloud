@@ -29,7 +29,7 @@ pub async fn create_operation_with_event(
     transaction: &DatabaseTransaction,
     operation: NewOperation<'_>,
     event_type: &str,
-    payload: Value,
+    mut payload: Value,
     trace_id: Option<&str>,
 ) -> Result<operations::Model, DbErr> {
     if let Some(existing) = operations::Entity::find()
@@ -76,6 +76,12 @@ pub async fn create_operation_with_event(
                 .ok_or_else(|| DbErr::RecordNotFound("idempotent operation disappeared".into()));
         }
     };
+    if let Some(payload) = payload.as_object_mut() {
+        payload.insert(
+            "requested_by".to_owned(),
+            serde_json::json!(operation.requested_by),
+        );
+    }
     enqueue_event(
         transaction,
         EventEnvelope {

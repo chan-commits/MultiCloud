@@ -32,6 +32,11 @@ export type Operation = {
 };
 export type Drift = { id: string; fingerprint: string; status: string; differences: Record<string, unknown>; detected_at: string };
 export type Reconciliation = { id: string; drift_id: string; policy: string; status: string; desired_version: number; operation_id: string | null };
+export type AuditLog = {
+  id: string; source_event_id: string; actor_type: string; actor_id: string | null;
+  action: string; target_type: string; target_id: string; outcome: string; severity: string;
+  trace_id: string | null; changes: Record<string, unknown>; metadata: Record<string, unknown>; occurred_at: string;
+};
 
 const API_ROOT = '/api/v1';
 
@@ -65,6 +70,17 @@ export class ApiClient {
   providers() { return this.request<ProviderAccount[]>('/providers/'); }
   resources() { return this.request<Resource[]>('/resources/'); }
   operations() { return this.request<Operation[]>('/operations/'); }
+  auditLogs() { return this.request<AuditLog[]>('/audit-logs/?limit=200'); }
+  async downloadAudit() {
+    const headers = new Headers({ Authorization: `Bearer ${this.token}` });
+    headers.set('x-organization-id', this.organizationId);
+    const response = await fetch(`${API_ROOT}/audit-logs/export`, { headers });
+    if (!response.ok) throw new ApiError(`Audit export failed (${response.status})`, response.status);
+    const url = URL.createObjectURL(await response.blob());
+    const anchor = document.createElement('a');
+    anchor.href = url; anchor.download = 'multicloud-audit.csv'; anchor.click();
+    URL.revokeObjectURL(url);
+  }
   createProvider(payload: Record<string, unknown>) {
     return this.request<ProviderAccount>('/providers/', { method: 'POST', body: JSON.stringify(payload) });
   }

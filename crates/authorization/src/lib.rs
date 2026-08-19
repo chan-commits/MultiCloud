@@ -22,6 +22,8 @@ pub mod permissions {
     pub const RESOURCE_MANAGE: &str = "resource.resource.manage";
     pub const RESOURCE_SYNC: &str = "resource.sync.execute";
     pub const RECONCILIATION_MANAGE: &str = "resource.reconciliation.manage";
+    pub const AUDIT_READ: &str = "audit.log.read";
+    pub const AUDIT_EXPORT: &str = "audit.log.export";
 
     pub const ALL: &[(&str, &str)] = &[
         (ORGANIZATION_READ, "Read organization details"),
@@ -53,6 +55,8 @@ pub mod permissions {
             RECONCILIATION_MANAGE,
             "Approve and manage reconciliation tasks",
         ),
+        (AUDIT_READ, "Read tenant audit logs"),
+        (AUDIT_EXPORT, "Export tenant audit logs"),
     ];
 }
 

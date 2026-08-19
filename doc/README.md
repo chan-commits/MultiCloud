@@ -15,10 +15,11 @@
 - [Phase 3 Operation 與可靠事件](phase-3-operation-events.md)：Operation、Outbox、Inbox、Worker retry 與 Redis fan-out。
 - [Phase 4 Provider Foundation](phase-4-provider-foundation.md)：Provider abstraction、加密 credential、Cloudflare 與 Fake adapter。
 - [Phase 5 Resource 與 Real Provider](phase-5-resource-provider-integration.md)：canonical Resource、Cloudflare DNS、Vultr/OVH VPS、Operation executor 與 Drift。
+- [Phase 6 Audit Log](phase-6-audit-log.md)：append-only audit projection、遮罩、query/export、partition 與 retention。
 
 ## 文件狀態
 
-- 階段：Phase 4 已完成
-- 程式碼：工程基線、Identity/Organization、RBAC、Operation、可靠事件與 Provider Foundation 已實作
+- 階段：Phase 6 已完成
+- 程式碼：Phase 0–6 的 Identity、Organization、RBAC、Operation、Provider、Resource、UI 與 Audit 已實作
 - 架構方式：Modular Monolith，保留日後拆分服務的邊界
 - 最後更新：2026-08-19

@@ -379,7 +379,10 @@ fn resource_event(
         aggregate_id: resource_id.to_string(),
         event_type: event_type.to_owned(),
         event_version: 1,
-        payload: serde_json::json!({ "resource_id": resource_id }),
+        payload: serde_json::json!({
+            "resource_id": resource_id,
+            "requested_by": context.user_id,
+        }),
         trace_id: None,
         occurred_at,
     }

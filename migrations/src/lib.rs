@@ -5,6 +5,7 @@ mod m20260819_000002_rbac;
 mod m20260819_000003_operations_events;
 mod m20260819_000004_provider_foundation;
 mod m20260819_000005_resources_operations;
+mod m20260819_000006_audit_logs;
 
 pub struct Migrator;
 
@@ -17,6 +18,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260819_000003_operations_events::Migration),
             Box::new(m20260819_000004_provider_foundation::Migration),
             Box::new(m20260819_000005_resources_operations::Migration),
+            Box::new(m20260819_000006_audit_logs::Migration),
         ]
     }
 }

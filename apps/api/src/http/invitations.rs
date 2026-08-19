@@ -78,6 +78,7 @@ async fn create(
             event_version: 1,
             payload: serde_json::json!({
                 "invitation_id": id,
+                "requested_by": context.user_id,
                 "expires_at": expires_at
                     .format(&time::format_description::well_known::Rfc3339)
                     .map_err(super::error::internal)?,

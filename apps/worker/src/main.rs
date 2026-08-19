@@ -87,9 +87,43 @@ async fn run_iteration(
     redis_client: &redis::Client,
     redis: &mut redis::aio::MultiplexedConnection,
 ) -> anyhow::Result<bool> {
+    let audit_work = project_one_audit_event(database).await?;
     let provider_work = execute_provider_operation(database, executor).await?;
     let outbox_work = dispatch_one(database, redis_client, redis).await?;
-    Ok(provider_work || outbox_work)
+    Ok(audit_work || provider_work || outbox_work)
+}
+
+async fn project_one_audit_event(database: &DatabaseConnection) -> anyhow::Result<bool> {
+    let transaction = database.begin().await?;
+    let row = transaction
+        .query_one_raw(Statement::from_string(
+            DbBackend::Postgres,
+            r"
+            SELECT event.id
+            FROM outbox_events AS event
+            WHERE NOT EXISTS (
+                SELECT 1 FROM audit_logs AS audit
+                WHERE audit.source_event_id = event.id
+                  AND audit.occurred_at = event.occurred_at
+            )
+            ORDER BY event.occurred_at
+            LIMIT 1
+            FOR UPDATE SKIP LOCKED
+            ",
+        ))
+        .await?;
+    let Some(row) = row else {
+        transaction.commit().await?;
+        return Ok(false);
+    };
+    let event_id: Uuid = row.try_get("", "id")?;
+    let event = outbox_events::Entity::find_by_id(event_id)
+        .one(&transaction)
+        .await?
+        .context("audit source event disappeared")?;
+    multicloud_persistence::audit::project_event(&transaction, &event).await?;
+    transaction.commit().await?;
+    Ok(true)
 }
 
 #[allow(clippy::too_many_lines)]
@@ -281,6 +315,7 @@ async fn dispatch_one(
         .one(&transaction)
         .await?
         .context("claimed outbox event disappeared")?;
+    multicloud_persistence::audit::project_event(&transaction, &event).await?;
     let channel = format!("multicloud:events:{}", event.organization_id);
     let envelope = serde_json::json!({
         "id": event.id,

@@ -859,9 +859,15 @@ fn provider_event(
     context: &TenantContext,
     account_id: Uuid,
     event_type: &str,
-    payload: Value,
+    mut payload: Value,
     occurred_at: OffsetDateTime,
 ) -> EventEnvelope {
+    if let Some(payload) = payload.as_object_mut() {
+        payload.insert(
+            "requested_by".to_owned(),
+            serde_json::json!(context.user_id),
+        );
+    }
     EventEnvelope {
         id: multicloud_shared_kernel::EventId::new(),
         organization_id: multicloud_shared_kernel::OrganizationId::from_uuid(

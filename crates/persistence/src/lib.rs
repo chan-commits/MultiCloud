@@ -2,6 +2,7 @@ use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use std::time::Duration;
 use thiserror::Error;
 
+pub mod audit;
 pub mod entities;
 pub mod provider_operations;
 pub mod reliable_events;

@@ -9,9 +9,11 @@ use axum::{
     routing::{delete, get, post},
 };
 use multicloud_authorization::{PermissionKey, permissions as permission_keys};
+use multicloud_operation::EventEnvelope;
 use multicloud_persistence::entities::{
     organization_memberships, permissions, role_bindings, role_permissions, roles,
 };
+use multicloud_persistence::reliable_events::enqueue_event;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseTransaction, DbBackend, EntityTrait,
     QueryFilter, QueryOrder, QuerySelect, QueryTrait, Set, SqlErr, Statement, TransactionTrait,
@@ -58,6 +60,19 @@ pub async fn authorize_transaction(
     set_tenant_context(&transaction, context.user_id, Some(context.organization_id)).await?;
     let permissions = load_permission_keys(&transaction, context).await?;
     if !permissions.iter().any(|key| key == required.as_str()) {
+        enqueue_authorization_event(
+            &transaction,
+            context,
+            "authorization.access.denied",
+            "permission",
+            context.membership_id,
+            serde_json::json!({
+                "requested_by": context.user_id,
+                "required_permission": required.as_str(),
+            }),
+        )
+        .await?;
+        transaction.commit().await.map_err(super::error::internal)?;
         return Err(ApiError::Forbidden);
     }
     Ok(transaction)
@@ -382,6 +397,19 @@ async fn create_role(
         .await
         .map_err(super::error::internal)?;
     }
+    enqueue_authorization_event(
+        &transaction,
+        &context,
+        "authorization.role.created",
+        "role",
+        role_id,
+        serde_json::json!({
+            "requested_by": context.user_id,
+            "key": key,
+            "permissions": request.permissions,
+        }),
+    )
+    .await?;
     transaction.commit().await.map_err(super::error::internal)?;
     Ok((
         axum::http::StatusCode::CREATED,
@@ -455,6 +483,19 @@ async fn create_binding(
             super::error::internal(error)
         }
     })?;
+    enqueue_authorization_event(
+        &transaction,
+        &context,
+        "authorization.binding.created",
+        "role_binding",
+        id,
+        serde_json::json!({
+            "requested_by": context.user_id,
+            "role_id": request.role_id,
+            "subject_id": request.user_id,
+        }),
+    )
+    .await?;
     transaction.commit().await.map_err(super::error::internal)?;
     Ok((
         axum::http::StatusCode::CREATED,
@@ -486,6 +527,19 @@ async fn delete_binding(
         .exec(&transaction)
         .await
         .map_err(super::error::internal)?;
+    enqueue_authorization_event(
+        &transaction,
+        &context,
+        "authorization.binding.deleted",
+        "role_binding",
+        binding_id,
+        serde_json::json!({
+            "requested_by": context.user_id,
+            "role_id": binding.role_id,
+            "subject_id": binding.subject_id,
+        }),
+    )
+    .await?;
     transaction.commit().await.map_err(super::error::internal)?;
     Ok(axum::http::StatusCode::NO_CONTENT)
 }
@@ -498,6 +552,35 @@ fn valid_role_key(value: &str) -> bool {
         && bytes
             .iter()
             .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || *byte == b'-')
+}
+
+async fn enqueue_authorization_event(
+    transaction: &DatabaseTransaction,
+    context: &TenantContext,
+    event_type: &str,
+    aggregate_type: &str,
+    aggregate_id: Uuid,
+    payload: serde_json::Value,
+) -> Result<(), ApiError> {
+    enqueue_event(
+        transaction,
+        EventEnvelope {
+            id: multicloud_shared_kernel::EventId::new(),
+            organization_id: multicloud_shared_kernel::OrganizationId::from_uuid(
+                context.organization_id,
+            ),
+            aggregate_type: aggregate_type.to_owned(),
+            aggregate_id: aggregate_id.to_string(),
+            event_type: event_type.to_owned(),
+            event_version: 1,
+            payload,
+            trace_id: None,
+            occurred_at: OffsetDateTime::now_utc(),
+        },
+    )
+    .await
+    .map_err(super::error::internal)?;
+    Ok(())
 }
 
 #[cfg(test)]

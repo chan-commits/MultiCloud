@@ -1,5 +1,7 @@
 pub mod asset_resources;
 pub mod assets;
+pub mod audit_logs;
+pub mod audit_retention_policies;
 pub mod external_resource_mappings;
 pub mod inbox_messages;
 pub mod operations;

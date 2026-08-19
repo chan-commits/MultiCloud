@@ -8,6 +8,7 @@
 - Phase 3：已完成（2026-08-19）
 - Phase 4：已完成（2026-08-19）
 - Phase 5：已完成（2026-08-19，Resource、Cloudflare/Vultr/OVH、Operation/Drift 與 Command Center UI）
+- Phase 6：已完成（2026-08-19，append-only Audit、redaction、query/export、partition/retention 與 UI）
 
 ## Phase 0：工程基礎
 

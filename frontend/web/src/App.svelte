@@ -1,19 +1,20 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { ApiClient, ApiError, login, type Drift, type Operation, type Organization, type ProviderAccount, type Reconciliation, type Resource } from './lib/api';
+  import { ApiClient, ApiError, login, type AuditLog, type Drift, type Operation, type Organization, type ProviderAccount, type Reconciliation, type Resource } from './lib/api';
 
-  type View = 'overview' | 'providers' | 'resources' | 'operations';
+  type View = 'overview' | 'providers' | 'resources' | 'operations' | 'audit';
   type ProviderKind = 'cloudflare' | 'vultr' | 'ovh';
   const navigation: { id: View; label: string; caption: string; icon: string }[] = [
     { id: 'overview', label: 'Command Center', caption: 'Global posture', icon: '◫' },
     { id: 'providers', label: 'Provider Fabric', caption: 'Connections', icon: '⌁' },
     { id: 'resources', label: 'Resource Matrix', caption: 'Live inventory', icon: '◇' },
-    { id: 'operations', label: 'Operation Stream', caption: 'Execution trace', icon: '↯' }
+    { id: 'operations', label: 'Operation Stream', caption: 'Execution trace', icon: '↯' },
+    { id: 'audit', label: 'Audit Stream', caption: 'Immutable trail', icon: '≋' }
   ];
 
   let token = $state(''), email = $state(''), password = $state(''), loginError = $state(''), error = $state(''), notice = $state('');
   let loading = $state(false), authenticating = $state(false), mobileNav = $state(false), providerDialog = $state(false), savingProvider = $state(false);
-  let organizations = $state<Organization[]>([]), organizationId = $state(''), providers = $state<ProviderAccount[]>([]), resources = $state<Resource[]>([]), operations = $state<Operation[]>([]);
+  let organizations = $state<Organization[]>([]), organizationId = $state(''), providers = $state<ProviderAccount[]>([]), resources = $state<Resource[]>([]), operations = $state<Operation[]>([]), auditLogs = $state<AuditLog[]>([]);
   let view = $state<View>('overview');
   let providerKind = $state<ProviderKind>('cloudflare'), providerName = $state(''), apiToken = $state(''), emailIdentity = $state(''), globalApiKey = $state('');
   let applicationKey = $state(''), applicationSecret = $state(''), consumerKey = $state(''), useGlobalKey = $state(false), actionBusy = $state('');
@@ -66,13 +67,13 @@
   async function refreshAll() {
     if (!client || !organizationId) return;
     loading = true; error = '';
-    try { [providers, resources, operations] = await Promise.all([client.providers(), client.resources(), client.operations()]); }
+    try { [providers, resources, operations, auditLogs] = await Promise.all([client.providers(), client.resources(), client.operations(), client.auditLogs()]); }
     catch (cause) { error = messageOf(cause); }
     finally { loading = false; }
   }
   function logout() {
     sessionStorage.removeItem('multicloud.session'); localStorage.removeItem('multicloud.organization');
-    token = ''; client = null; organizations = []; providers = []; resources = []; operations = [];
+    token = ''; client = null; organizations = []; providers = []; resources = []; operations = []; auditLogs = [];
   }
 
   async function createProvider() {
@@ -126,6 +127,11 @@
     try { await client.cancelOperation(operation.id); notice = 'Queued operation cancelled.'; await refreshAll(); }
     catch (cause) { error = messageOf(cause); } finally { actionBusy = ''; }
   }
+  async function exportAudit() {
+    if (!client) return; actionBusy = 'audit-export';
+    try { await client.downloadAudit(); notice = 'Sanitized audit export generated.'; }
+    catch (cause) { error = messageOf(cause); } finally { actionBusy = ''; }
+  }
   function messageOf(cause: unknown) { return cause instanceof Error ? cause.message : 'An unexpected error occurred'; }
   function relativeDate(value: string | null) {
     if (!value) return 'Never'; const seconds = Math.floor((Date.now() - new Date(value).getTime()) / 1000);
@@ -158,8 +164,12 @@
           <section class="page-intro"><div><p class="eyebrow">ADAPTER REGISTRY</p><h2>Provider Fabric</h2><p>Encrypted credentials, capability discovery, and controlled synchronization.</p></div><button class="primary" onclick={() => providerDialog = true}>＋ Connect provider</button></section><section class="provider-grid">{#each providers as provider}<article class="provider-card"><div class="provider-card-top"><span class="provider-logo large {provider.provider_kind}">{provider.provider_kind.slice(0, 2).toUpperCase()}</span><div><p>{provider.provider_kind.toUpperCase()}</p><h3>{provider.name}</h3></div><span class="status {provider.status}">{provider.status}</span></div><div class="provider-data"><div><small>CAPABILITIES</small><p>{provider.capabilities.length ? provider.capabilities.join(' · ') : 'Awaiting discovery'}</p></div><div><small>LAST VERIFIED</small><p>{relativeDate(provider.last_validated_at)}</p></div><div><small>CREDENTIAL</small><p>{provider.credential_masked_identifier ?? 'Encrypted'}</p></div><div><small>RISK</small><p class:high-risk={provider.credential_risk_level === 'high'}>{provider.credential_risk_level ?? 'restricted'}</p></div></div>{#if provider.last_error_code}<p class="inline-warning">⚠ {provider.last_error_code}</p>{/if}<div class="card-actions"><button onclick={() => testConnection(provider)} disabled={actionBusy === provider.id}>Test connection</button><button class="accent" onclick={() => syncProvider(provider)} disabled={provider.status !== 'active' || actionBusy === provider.id}>{actionBusy === provider.id ? 'Working…' : 'Sync inventory'}</button></div></article>{:else}<section class="empty-state panel-wide"><div class="empty-orbit">⌁</div><h2>No providers connected</h2><p>Connect Cloudflare, Vultr, or OVH to discover your first resources.</p><button class="primary" onclick={() => providerDialog = true}>Connect provider</button></section>{/each}</section>
         {:else if view === 'resources'}
           <section class="page-intro"><div><p class="eyebrow">CANONICAL INVENTORY</p><h2>Resource Matrix</h2><p>Provider-neutral assets with normalized state and drift visibility.</p></div><div class="segmented"><button class="active">All {resources.length}</button><button>Compute {resources.filter((item) => item.resource_type === 'compute_instance').length}</button><button>DNS {resources.filter((item) => item.resource_type.startsWith('dns_')).length}</button></div></section><section class="panel resource-panel"><div class="table-wrap"><table><thead><tr><th>Resource</th><th>Type</th><th>Region</th><th>Lifecycle</th><th>Observed</th><th></th></tr></thead><tbody>{#each resources as resource}<tr><td><div class="resource-name"><span>{resource.resource_type === 'compute_instance' ? '▣' : '◎'}</span><div><strong>{resource.name}</strong><small>{shortId(resource.id)}</small></div></div></td><td>{resource.resource_type.replaceAll('_', ' ')}</td><td>{resource.region ?? 'global'}</td><td><span class="status {resource.lifecycle}">{resource.lifecycle}</span></td><td>v{resource.observed_state?.version ?? 0}</td><td><button class="row-action" onclick={() => openResource(resource)}>Inspect →</button></td></tr>{:else}<tr><td colspan="6"><div class="empty-row"><span>◇</span><strong>No resources discovered</strong><small>Run inventory sync from Provider Fabric.</small></div></td></tr>{/each}</tbody></table></div></section>
-        {:else}
+        {:else if view === 'operations'}
           <section class="page-intro"><div><p class="eyebrow">RELIABLE EXECUTION</p><h2>Operation Stream</h2><p>Idempotent commands, retry state, and immutable execution history.</p></div><div class="live-pill"><i></i> LIVE QUEUE</div></section><section class="panel operation-panel"><div class="table-wrap"><table><thead><tr><th>ID / Type</th><th>Target</th><th>Status</th><th>Progress</th><th>Created</th><th></th></tr></thead><tbody>{#each operations as operation}<tr><td><strong>{operation.operation_type}</strong><small>{shortId(operation.id)}</small></td><td><strong>{operation.target_type}</strong><small>{operation.target_id ? shortId(operation.target_id) : '—'}</small></td><td><span class="status {operation.status}">{operation.status}</span>{#if operation.error_code}<small class="error-code">{operation.error_code}</small>{/if}</td><td><div class="progress labeled"><i style={`width:${operation.progress}%`}></i><span>{operation.progress}%</span></div></td><td>{relativeDate(operation.created_at)}</td><td>{#if operation.status === 'queued'}<button class="row-action danger" onclick={() => cancel(operation)} disabled={actionBusy === operation.id}>Cancel</button>{/if}</td></tr>{:else}<tr><td colspan="6" class="table-empty">Operation history is empty.</td></tr>{/each}</tbody></table></div></section>
+        {:else}
+          <section class="page-intro"><div><p class="eyebrow">APPEND-ONLY SECURITY LEDGER</p><h2>Audit Stream</h2><p>Sanitized tenant events with actor, outcome, target, and immutable source identity.</p></div><button class="primary" onclick={exportAudit} disabled={actionBusy === 'audit-export'}>{actionBusy === 'audit-export' ? 'Generating…' : '↓ Export CSV'}</button></section>
+          <section class="audit-summary"><article><small>RECORDED EVENTS</small><strong>{auditLogs.length}</strong></article><article><small>SECURITY WARNINGS</small><strong>{auditLogs.filter((item) => item.severity !== 'info').length}</strong></article><article><small>FAILED OUTCOMES</small><strong>{auditLogs.filter((item) => item.outcome === 'failed' || item.outcome === 'denied').length}</strong></article></section>
+          <section class="panel operation-panel"><div class="table-wrap"><table><thead><tr><th>Time / Event</th><th>Actor</th><th>Target</th><th>Outcome</th><th>Severity</th><th>Trace</th></tr></thead><tbody>{#each auditLogs as audit}<tr><td><strong>{audit.action}</strong><small>{relativeDate(audit.occurred_at)} · {shortId(audit.source_event_id)}</small></td><td><strong>{audit.actor_type}</strong><small>{audit.actor_id ? shortId(audit.actor_id) : 'control plane'}</small></td><td><strong>{audit.target_type}</strong><small>{shortId(audit.target_id)}</small></td><td><span class="status {audit.outcome}">{audit.outcome}</span></td><td><span class="severity {audit.severity}">{audit.severity}</span></td><td>{audit.trace_id ? shortId(audit.trace_id) : '—'}</td></tr>{:else}<tr><td colspan="6"><div class="empty-row"><span>≋</span><strong>No projected audit events</strong><small>New domain events appear after the Worker projection runs.</small></div></td></tr>{/each}</tbody></table></div></section>
         {/if}
       </div>
     </main>
