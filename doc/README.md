@@ -10,6 +10,7 @@
 - [Database Schema](database-schema.md)：SeaORM/PostgreSQL 的資料模型基線。
 - [核心流程](workflows.md)：登入、租戶切換、Provider、資產、Ticket、Chat、Billing 與 Agent 流程。
 - [開發順序](development-roadmap.md)：分階段交付順序與完成條件。
+- [Phase 1 API](phase-1-api.md)：Identity、Organization 與 TenantContext API 使用方式。
 
 ## 文件狀態
 
@@ -17,4 +18,3 @@
 - 程式碼：尚未開始
 - 架構方式：Modular Monolith，保留日後拆分服務的邊界
 - 最後更新：2026-08-19
-

@@ -1,5 +1,11 @@
 # 開發順序
 
+## 當前進度
+
+- Phase 0：已完成（2026-08-19）
+- Phase 1：已完成（2026-08-19）
+- Phase 2：待開始
+
 ## Phase 0：工程基礎
 
 建立 Cargo workspace、Svelte app、`justfile`、configuration、logging/tracing、PostgreSQL/Redis、本地環境、migration 與 CI 基線。
@@ -69,4 +75,3 @@
 ## Phase 11：Production Hardening
 
 完成 contract tests、隔離測試、backup/restore、secret rotation、rate limiting、WebSocket backpressure、partition/retention、監控告警、供應鏈安全及故障演練。
-

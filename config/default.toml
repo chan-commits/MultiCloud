@@ -1,0 +1,12 @@
+environment = "development"
+
+[http]
+host = "0.0.0.0"
+port = 8080
+
+[database]
+url = "postgres://multicloud:multicloud@localhost:55432/multicloud"
+max_connections = 20
+
+[redis]
+url = "redis://localhost:56379"
