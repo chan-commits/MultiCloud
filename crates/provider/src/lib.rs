@@ -1,10 +1,12 @@
 mod cloudflare;
 mod crypto;
 mod fake;
+mod vultr;
 
 pub use cloudflare::CloudflareAdapter;
 pub use crypto::{EncryptedCredential, EnvelopeCipher};
 pub use fake::FakeProviderAdapter;
+pub use vultr::VultrAdapter;
 
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};

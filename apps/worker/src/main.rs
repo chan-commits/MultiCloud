@@ -4,7 +4,7 @@ use multicloud_operation::RetryPolicy;
 use multicloud_persistence::entities::{outbox_events, provider_accounts, provider_credentials};
 use multicloud_provider::{
     CloudflareAdapter, EncryptedCredential, EnvelopeCipher, FakeProviderAdapter, InventoryRequest,
-    ProviderAdapter, ProviderRegistry, decode_credential_envelope,
+    ProviderAdapter, ProviderRegistry, VultrAdapter, decode_credential_envelope,
 };
 use redis::AsyncCommands;
 use sea_orm::{
@@ -35,9 +35,12 @@ async fn main() -> anyhow::Result<()> {
         settings.provider.credential_key_version,
     )
     .context("MULTICLOUD__PROVIDER__CREDENTIAL_MASTER_KEY must contain a base64 32-byte key")?;
-    let mut adapters: Vec<Arc<dyn ProviderAdapter>> = vec![Arc::new(CloudflareAdapter::new(
-        settings.provider.cloudflare_base_url,
-    ))];
+    let mut adapters: Vec<Arc<dyn ProviderAdapter>> = vec![
+        Arc::new(CloudflareAdapter::new(
+            settings.provider.cloudflare_base_url,
+        )),
+        Arc::new(VultrAdapter::new(settings.provider.vultr_base_url)),
+    ];
     if settings.environment == "development" {
         adapters.push(Arc::new(FakeProviderAdapter));
     }
@@ -154,6 +157,31 @@ async fn execute_provider_operation(
     let transaction = database.begin().await?;
     match result {
         Ok(ProviderExecution::Operation(result)) => {
+            if claimed.request.action != "delete"
+                && let (Some(external_id), Some(name)) = (
+                    result.external_id.clone(),
+                    result.state.get("name").and_then(serde_json::Value::as_str),
+                )
+            {
+                multicloud_persistence::resource_sync::apply_inventory_page(
+                    &transaction,
+                    claimed.operation.organization_id,
+                    claimed.provider_account_id,
+                    &provider_kind,
+                    multicloud_provider::InventoryPage {
+                        items: vec![multicloud_provider::InventoryItem {
+                            external_type: claimed.request.resource_type.clone(),
+                            external_id,
+                            name: name.to_owned(),
+                            state: result.state.clone(),
+                            metadata: result.state.clone(),
+                        }],
+                        next_cursor: None,
+                    },
+                    multicloud_persistence::resource_sync::ReconciliationPolicy::ManualApproval,
+                )
+                .await?;
+            }
             multicloud_persistence::provider_operations::complete_provider_operation(
                 &transaction,
                 claimed,

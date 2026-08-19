@@ -38,6 +38,8 @@ pub struct ProviderSettings {
     pub credential_key_version: i32,
     #[serde(default = "default_cloudflare_base_url")]
     pub cloudflare_base_url: String,
+    #[serde(default = "default_vultr_base_url")]
+    pub vultr_base_url: String,
 }
 
 const fn default_key_version() -> i32 {
@@ -46,6 +48,10 @@ const fn default_key_version() -> i32 {
 
 fn default_cloudflare_base_url() -> String {
     "https://api.cloudflare.com/client/v4".to_owned()
+}
+
+fn default_vultr_base_url() -> String {
+    "https://api.vultr.com/v2".to_owned()
 }
 
 #[derive(Debug, Error)]

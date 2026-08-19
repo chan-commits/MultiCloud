@@ -38,9 +38,14 @@ async fn main() -> anyhow::Result<()> {
         settings.provider.credential_key_version,
     )
     .context("MULTICLOUD__PROVIDER__CREDENTIAL_MASTER_KEY must contain a base64 32-byte key")?;
-    let mut adapters: Vec<Arc<dyn multicloud_provider::ProviderAdapter>> = vec![Arc::new(
-        multicloud_provider::CloudflareAdapter::new(settings.provider.cloudflare_base_url),
-    )];
+    let mut adapters: Vec<Arc<dyn multicloud_provider::ProviderAdapter>> = vec![
+        Arc::new(multicloud_provider::CloudflareAdapter::new(
+            settings.provider.cloudflare_base_url,
+        )),
+        Arc::new(multicloud_provider::VultrAdapter::new(
+            settings.provider.vultr_base_url,
+        )),
+    ];
     if settings.environment == "development" {
         adapters.push(Arc::new(multicloud_provider::FakeProviderAdapter));
     }

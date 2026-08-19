@@ -452,7 +452,10 @@ async fn queue_sync(
     Path(account_id): Path<Uuid>,
     Json(request): Json<SyncRequest>,
 ) -> Result<Json<QueuedOperationResponse>, ApiError> {
-    if !matches!(request.resource_type.as_str(), "dns_zone" | "dns_record") {
+    if !matches!(
+        request.resource_type.as_str(),
+        "dns_zone" | "dns_record" | "compute_instance"
+    ) {
         return Err(ApiError::BadRequest("resource type is not supported"));
     }
     validate_idempotency_key(&request.idempotency_key)?;
@@ -460,7 +463,12 @@ async fn queue_sync(
         super::authorization::authorize_transaction(&state, &context, permissions::RESOURCE_SYNC)
             .await?;
     let account = find_account(&transaction, context.organization_id, account_id).await?;
-    require_active_capability(&account, "dns")?;
+    let capability = if request.resource_type == "compute_instance" {
+        "compute"
+    } else {
+        "dns"
+    };
+    require_active_capability(&account, capability)?;
     let operation = create_provider_operation(
         &transaction,
         NewProviderOperation {
@@ -492,9 +500,21 @@ async fn queue_operation(
     Path(account_id): Path<Uuid>,
     Json(request): Json<QueueProviderOperationRequest>,
 ) -> Result<Json<QueuedOperationResponse>, ApiError> {
-    if !matches!(request.action.as_str(), "create" | "update" | "delete")
-        || request.resource_type != "dns_record"
-    {
+    let capability = match request.resource_type.as_str() {
+        "dns_record" if matches!(request.action.as_str(), "create" | "update" | "delete") => "dns",
+        "compute_instance"
+            if matches!(
+                request.action.as_str(),
+                "get" | "create" | "start" | "stop" | "reboot" | "delete"
+            ) =>
+        {
+            "compute"
+        }
+        _ => {
+            return Err(ApiError::BadRequest("provider operation is not supported"));
+        }
+    };
+    if request.action == "create" && request.external_id.is_some() {
         return Err(ApiError::BadRequest("provider operation is not supported"));
     }
     validate_idempotency_key(&request.idempotency_key)?;
@@ -502,7 +522,7 @@ async fn queue_operation(
         super::authorization::authorize_transaction(&state, &context, permissions::RESOURCE_MANAGE)
             .await?;
     let account = find_account(&transaction, context.organization_id, account_id).await?;
-    require_active_capability(&account, "dns")?;
+    require_active_capability(&account, capability)?;
     let operation = create_provider_operation(
         &transaction,
         NewProviderOperation {
