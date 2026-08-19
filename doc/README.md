@@ -12,10 +12,11 @@
 - [開發順序](development-roadmap.md)：分階段交付順序與完成條件。
 - [Phase 1 API](phase-1-api.md)：Identity、Organization 與 TenantContext API 使用方式。
 - [Phase 2 RBAC](phase-2-rbac.md)：Permission、Role、Binding 與授權矩陣。
+- [Phase 3 Operation 與可靠事件](phase-3-operation-events.md)：Operation、Outbox、Inbox、Worker retry 與 Redis fan-out。
 
 ## 文件狀態
 
-- 階段：設計第一版
-- 程式碼：尚未開始
+- 階段：Phase 3 已完成
+- 程式碼：工程基線、Identity/Organization、RBAC、Operation 與可靠事件已實作
 - 架構方式：Modular Monolith，保留日後拆分服務的邊界
 - 最後更新：2026-08-19

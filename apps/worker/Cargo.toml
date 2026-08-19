@@ -8,9 +8,17 @@ rust-version.workspace = true
 [dependencies]
 anyhow.workspace = true
 multicloud-configuration = { path = "../../crates/configuration" }
+multicloud-messaging = { path = "../../crates/messaging" }
 multicloud-observability = { path = "../../crates/observability" }
+multicloud-operation = { path = "../../crates/operation" }
+multicloud-persistence = { path = "../../crates/persistence" }
+redis.workspace = true
+sea-orm.workspace = true
+serde_json.workspace = true
+time.workspace = true
 tokio.workspace = true
 tracing.workspace = true
+uuid.workspace = true
 
 [lints]
 workspace = true

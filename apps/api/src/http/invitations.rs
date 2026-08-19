@@ -6,6 +6,7 @@ use super::{
 use axum::{Json, Router, extract::State, routing::post};
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use multicloud_identity::Email;
+use multicloud_operation::EventEnvelope;
 use multicloud_persistence::entities::{
     organization_invitations, organization_memberships, role_bindings, roles, users,
 };
@@ -62,6 +63,29 @@ async fn create(
         created_at: Set(OffsetDateTime::now_utc()),
     }
     .insert(&transaction)
+    .await
+    .map_err(super::error::internal)?;
+    multicloud_persistence::reliable_events::enqueue_event(
+        &transaction,
+        EventEnvelope {
+            id: multicloud_shared_kernel::EventId::new(),
+            organization_id: multicloud_shared_kernel::OrganizationId::from_uuid(
+                context.organization_id,
+            ),
+            aggregate_type: "organization_invitation".to_owned(),
+            aggregate_id: id.to_string(),
+            event_type: "organization.invitation.created".to_owned(),
+            event_version: 1,
+            payload: serde_json::json!({
+                "invitation_id": id,
+                "expires_at": expires_at
+                    .format(&time::format_description::well_known::Rfc3339)
+                    .map_err(super::error::internal)?,
+            }),
+            trace_id: None,
+            occurred_at: OffsetDateTime::now_utc(),
+        },
+    )
     .await
     .map_err(super::error::internal)?;
     transaction.commit().await.map_err(super::error::internal)?;

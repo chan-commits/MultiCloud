@@ -14,6 +14,7 @@ multicloud-configuration = { path = "../../crates/configuration" }
 multicloud-authorization = { path = "../../crates/authorization" }
 multicloud-identity = { path = "../../crates/identity" }
 multicloud-observability = { path = "../../crates/observability" }
+multicloud-operation = { path = "../../crates/operation" }
 multicloud-organization = { path = "../../crates/organization" }
 multicloud-persistence = { path = "../../crates/persistence" }
 multicloud-shared-kernel = { path = "../../crates/shared-kernel" }

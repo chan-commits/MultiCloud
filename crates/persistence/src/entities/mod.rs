@@ -1,6 +1,9 @@
+pub mod inbox_messages;
+pub mod operations;
 pub mod organization_invitations;
 pub mod organization_memberships;
 pub mod organizations;
+pub mod outbox_events;
 pub mod permissions;
 pub mod role_bindings;
 pub mod role_permissions;

@@ -116,6 +116,8 @@ fn system_role_specs() -> [SystemRoleSpec; 4] {
                 permission_keys::ROLE_READ,
                 permission_keys::ROLE_MANAGE,
                 permission_keys::BINDING_MANAGE,
+                permission_keys::OPERATION_READ,
+                permission_keys::OPERATION_CANCEL,
             ],
         ),
         (
@@ -131,6 +133,8 @@ fn system_role_specs() -> [SystemRoleSpec; 4] {
                 permission_keys::ROLE_READ,
                 permission_keys::ROLE_MANAGE,
                 permission_keys::BINDING_MANAGE,
+                permission_keys::OPERATION_READ,
+                permission_keys::OPERATION_CANCEL,
             ],
         ),
         (
@@ -140,6 +144,7 @@ fn system_role_specs() -> [SystemRoleSpec; 4] {
             &[
                 permission_keys::ORGANIZATION_READ,
                 permission_keys::MEMBER_READ,
+                permission_keys::OPERATION_READ,
             ],
         ),
         (

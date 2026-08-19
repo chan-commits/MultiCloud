@@ -1749,6 +1749,7 @@ dependencies = [
  "multicloud-configuration",
  "multicloud-identity",
  "multicloud-observability",
+ "multicloud-operation",
  "multicloud-organization",
  "multicloud-persistence",
  "multicloud-shared-kernel",
@@ -1819,6 +1820,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "multicloud-operation"
+version = "0.1.0"
+dependencies = [
+ "multicloud-shared-kernel",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "time",
+ "uuid",
+]
+
+[[package]]
 name = "multicloud-organization"
 version = "0.1.0"
 dependencies = [
@@ -1833,8 +1846,13 @@ dependencies = [
 name = "multicloud-persistence"
 version = "0.1.0"
 dependencies = [
+ "multicloud-operation",
+ "multicloud-shared-kernel",
  "sea-orm",
+ "serde_json",
  "thiserror",
+ "time",
+ "uuid",
 ]
 
 [[package]]
@@ -1863,9 +1881,17 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "multicloud-configuration",
+ "multicloud-messaging",
  "multicloud-observability",
+ "multicloud-operation",
+ "multicloud-persistence",
+ "redis",
+ "sea-orm",
+ "serde_json",
+ "time",
  "tokio",
  "tracing",
+ "uuid",
 ]
 
 [[package]]

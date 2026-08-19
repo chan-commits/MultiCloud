@@ -2,6 +2,7 @@ mod auth;
 mod authorization;
 mod error;
 mod invitations;
+mod operations;
 mod organizations;
 mod tenant;
 
@@ -18,6 +19,7 @@ pub fn router() -> Router<AppState> {
         .nest("/auth", auth::router())
         .nest("/rbac", authorization::router())
         .nest("/invitations", invitations::router())
+        .nest("/operations", operations::router())
         .nest("/organizations", organizations::router())
         .nest("/tenant", tenant::router())
 }

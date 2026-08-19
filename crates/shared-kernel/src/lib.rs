@@ -76,3 +76,5 @@ typed_id!(UserId);
 typed_id!(SessionId);
 typed_id!(MembershipId);
 typed_id!(InvitationId);
+typed_id!(OperationId);
+typed_id!(EventId);

@@ -40,8 +40,10 @@
 ## Operation 與可靠訊息
 
 - `operations`：organization、type、target、requester、idempotency、status、progress、error、timestamps。
-- `outbox_events`：aggregate、event type/version、payload、trace、occurred/published time、retry。
-- `inbox_messages`：consumer/message ID 複合主鍵、processed time、result。
+- `outbox_events`：organization、aggregate、event type/version、payload、trace、occurred/published time、retry、dead-letter time；Worker 以 `SKIP LOCKED` 競爭派送。
+- `inbox_messages`：organization、consumer/message ID 複合主鍵、processed time、result；claim 與資料庫副作用必須在同一 transaction。
+
+Outbox 採 at-least-once delivery，Redis Pub/Sub 僅負責即時 fan-out；consumer 以 inbox 或下游 idempotency key 消除重複副作用。
 
 ## Ticket 與 Chat
 
@@ -83,4 +85,3 @@
 - `agent_command_results`：command、sequence、status、sanitized output/error、time。
 
 高頻 metrics 後續使用 time-series backend；PostgreSQL 僅保留摘要或降採樣資料。
-

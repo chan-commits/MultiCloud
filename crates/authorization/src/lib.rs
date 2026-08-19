@@ -13,6 +13,8 @@ pub mod permissions {
     pub const ROLE_READ: &str = "authorization.role.read";
     pub const ROLE_MANAGE: &str = "authorization.role.manage";
     pub const BINDING_MANAGE: &str = "authorization.binding.manage";
+    pub const OPERATION_READ: &str = "operation.operation.read";
+    pub const OPERATION_CANCEL: &str = "operation.operation.cancel";
 
     pub const ALL: &[(&str, &str)] = &[
         (ORGANIZATION_READ, "Read organization details"),
@@ -23,6 +25,8 @@ pub mod permissions {
         (ROLE_READ, "Read roles and permissions"),
         (ROLE_MANAGE, "Create and update custom roles"),
         (BINDING_MANAGE, "Assign and remove role bindings"),
+        (OPERATION_READ, "Read operation status"),
+        (OPERATION_CANCEL, "Cancel queued operations"),
     ];
 }
 

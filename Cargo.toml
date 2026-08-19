@@ -10,6 +10,7 @@ members = [
     "crates/identity",
     "crates/messaging",
     "crates/observability",
+    "crates/operation",
     "crates/organization",
     "crates/persistence",
     "crates/shared-kernel",

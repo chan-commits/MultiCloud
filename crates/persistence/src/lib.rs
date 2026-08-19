@@ -3,6 +3,7 @@ use std::time::Duration;
 use thiserror::Error;
 
 pub mod entities;
+pub mod reliable_events;
 
 #[derive(Debug, Error)]
 pub enum PersistenceError {
