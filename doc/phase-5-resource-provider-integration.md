@@ -1,0 +1,107 @@
+# Phase 5：Resource Management 與 Real Provider Integration
+
+Phase 5 使用 Phase 4 已建立的 Credential、Capability、Adapter、Registry 與 normalized error contracts，接入 Cloudflare、Vultr 與 OVH VPS。此階段不重做 Provider Foundation。
+
+## Canonical Resource Model
+
+- `Resource`：平台對 Provider 資源的統一表示，例如 VPS、Zone、DNS Record。
+- `ExternalResourceMapping`：Provider Account、external type/id 與 Resource 的唯一映射，是外部身份的單一真實來源。
+- `Asset`：業務管理視角，可組合或關聯多個 Resource，不保存重複的 Provider external ID。
+- `DesiredState`：使用者或平台期望且受管理的欄位。
+- `ObservedState`：最近一次由 Provider 正規化取得的狀態、hash 與觀測時間。
+- `ResourceMetadata`：Provider-specific、非核心且不直接參與 drift 比較的資料。
+
+```text
+External Provider Resource
+          |
+External Resource Mapping
+          |
+Canonical Resource ------- Asset
+          |
+Desired State / Observed State
+```
+
+## Provider Operation Executor
+
+所有 Provider 寫操作採非同步流程：
+
+```text
+API transaction
+  -> Operation + Outbox
+  -> Worker claim / lease
+  -> decrypt active credential
+  -> resolve capability adapter
+  -> Provider API
+  -> persist mapping and observed state
+  -> Operation terminal state + Outbox
+```
+
+每次執行寫入 immutable attempt，包含 attempt number、lease、provider request ID、masked request/result、normalized error、retry time 與完成時間。Operation 保存整體狀態，不覆蓋 attempt 歷史。
+
+Idempotency 分層處理：
+
+- tenant-scoped client idempotency key 阻止重複建立 Operation。
+- Worker lease 阻止同一 Operation 同時執行。
+- Provider 支援時傳遞 provider idempotency/request key。
+- timeout 後重試 create 前先以 client reference、tag、request ID 或 inventory 查證結果。
+- reconciliation task 以 resource、desired-state version 與 drift fingerprint 去重。
+
+## Cloudflare Credential Extension
+
+### API Token
+
+- 預設且 Recommended。
+- 支援 validation、permission scope identification 與 capability discovery。
+- UI 說明 permissions 可被限制。
+
+### Global API Key
+
+- Legacy Compatibility、`risk_level=high`，不作預設選項。
+- Credential envelope 是版本化 typed payload，包含 email 與 API key；兩者一起加密。
+- UI 放在高級選項並顯示明確警告及二次確認。
+- 建立、驗證、輪換、撤銷均要求 credential manage permission 並產生遮罩後的 security event。
+
+API response 只返回 credential type、risk level、version、masked identifier 及 lifecycle timestamps，不返回 secret。明文不得進入 log、Operation snapshot、Provider error 或 event。
+
+## Cloudflare DNS
+
+Zone：分頁 list、details 與 external mapping。
+
+DNS Record：分頁 list、create、update、delete；支援 A、AAAA、CNAME、TXT、MX。正規化 record name、TXT content、TTL、MX priority 與 proxied applicability，並保存受控 Provider metadata。
+
+所有請求經 DNS capability adapter 與 Operation executor，不由 API handler 直接呼叫 Cloudflare。
+
+## Compute Providers
+
+Vultr：list/get/create/start/stop/reboot/delete，正規化 region、plan、image、CPU、memory、disk、IP 與 provisioning/power state。
+
+OVH 此階段明確限定為 **OVH VPS API**：list/get、inventory、state sync，以及 API 實際支援的 power operation。不把 OVH Public Cloud Instance 或 Dedicated Server 混入同一 adapter/resource type。
+
+## Synchronization
+
+Scheduler 建立 sync Operation；Worker 依 cursor 分頁讀取 inventory，正規化後依 `(provider_account_id, external_type, external_id)` upsert mapping 與 Resource。相同 inventory 重送不得建立重複 Resource。
+
+Provider 已刪除、暫時不可見與權限不足必須分開表示，不能在一次缺失後直接刪除 canonical Resource。
+
+## Drift 與 Reconciliation
+
+只比較 managed fields 的 Desired/Observed State，Provider 自動產生的 metadata 不參與 drift。狀態為 `in_sync`、`drifted`、`unknown` 或 `ignored`。
+
+Reconciliation policy：
+
+- `observe_only`
+- `manual_approval`
+- `automatic`
+
+初期 DNS Record 採 manual approval、VPS power state 採 observe only；刪除型 drift 不自動修復。Task 必須包含 cooldown、desired-state version、stale observation check、max attempts 與唯一 drift fingerprint，避免修復循環。
+
+## Event 與 Phase 6 邊界
+
+Phase 5 只產生 audit-ready、已遮罩的 Domain Event；Phase 6 再投影至正式 `audit_logs`、query/export 與 retention。事件至少涵蓋 credential lifecycle、connection failure、resource discovery/change、operation requested/succeeded/failed、drift detected 與 reconciliation requested。
+
+## 最小 UI
+
+- Provider Account、connection status、capabilities。
+- API Token Recommended 與 Global API Key High Risk 選擇/警告。
+- Resource inventory、Operation/attempt 狀態。
+- Drift 狀態與 reconciliation approval。

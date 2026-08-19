@@ -14,9 +14,9 @@
 | Identity | 使用者、登入、session、API token、SSO/MFA 擴充點 | users、identities、sessions、api_tokens |
 | Organization | Organization lifecycle、membership、invitation、tenant switching | organizations、memberships、invitations |
 | Authorization | permission catalog、role、binding、policy evaluation | permissions、roles、role_permissions、role_bindings |
-| Asset | 平台 canonical VPS、IP、DNS、network/firewall inventory | assets 與各 asset detail tables |
-| Provider | account、credential lifecycle、adapter registry、capability、sync contract、外部操作 | provider_accounts、resource_refs、provider_operations |
-| Operation | 長時間工作狀態、冪等、進度、錯誤 | operations、outbox、inbox |
+| Asset/Resource | 業務 Asset、canonical Resource、Desired/Observed State、Drift 與 Reconciliation | assets、resources、resource states、drifts、reconciliation_tasks |
+| Provider | account、credential lifecycle、adapter registry、capability、external mapping、sync cursor | provider_accounts、provider_credentials、external_resource_mappings、provider_sync_cursors |
+| Operation | 長時間工作狀態、attempt/lease、冪等、進度、retry 與錯誤 | operations、provider_operation_attempts、outbox、inbox |
 | Ticket | ticket lifecycle、comment、assignment、SLA、attachment metadata | tickets、comments、events、sla_policies |
 | Chat | conversation、message、participant、read cursor | conversations、messages、participants、read cursors |
 | Audit | append-only 管理與安全事件 | audit_logs |
@@ -27,6 +27,8 @@
 ## 依賴規則
 
 - Asset 只能依賴 Provider port 或發出 operation intent，不引用 OVH/Vultr/Cloudflare SDK。
+- Resource 擁有 canonical state；Provider 擁有 external identity mapping，Asset 只建立業務關聯，不重複保存 external ID。
+- Desired State 與 Observed State 分離，只有 managed fields 參與 drift comparison。
 - Provider abstraction 不假設 Compute；Compute、DNS、Firewall、Certificate 由獨立 capability 表達。
 - Provider 不直接修改其他 Domain 的 table；經 application service 或 event 交互。
 - Billing 只消費 canonical usage，不讀 Provider 私有 response 計價。

@@ -27,15 +27,22 @@
 ## Provider 與 Asset
 
 - `provider_accounts`：organization、kind、name、status、configuration、capabilities、validation state；不保存 credential。
-- `provider_credentials`：organization、provider account、credential type、AES-GCM ciphertext/nonce、key/version、status、activation/revocation；每帳號只允許一笔 active credential。
-- `provider_resource_refs`：provider account、external type/id、internal asset type/id、region；外部識別唯一。
-- `provider_operations`：operation、request ID、type、idempotency、masked snapshots、status、retry、error。
+- `provider_credentials`：organization、provider account、credential type、risk level、AES-GCM typed payload ciphertext/nonce、key/version、masked identifier、status、activation/revocation；每帳號只允許一笔 active credential。
+- `resources`：organization、resource type、name、lifecycle、region、canonical attributes、timestamps；不直接保存 Provider external ID。
+- `external_resource_mappings`：organization、provider account、resource、external type/id、client reference；`(provider_account_id, external_type, external_id)` 唯一。
+- `resource_desired_states`：resource、version、managed fields、normalized state/hash、creator、timestamps。
+- `resource_observed_states`：resource、source mapping、normalized state/hash、observed time；保存最新值，歷史 snapshot 依 retention 分表。
+- `resource_metadata`：resource、source、namespace、Provider-specific metadata、observed time，不直接參與 drift。
+- `resource_drifts`：resource、desired/observed version、fingerprint、status、diff、detected/resolved time。
+- `reconciliation_tasks`：drift、policy、desired version、status、operation、cooldown、attempt、approval、timestamps；active drift fingerprint 唯一。
+- `provider_operation_attempts`：operation、attempt number、lease owner/expiry、provider request ID、masked request/result、normalized error、retry/completion time；append-only attempt history。
 - `provider_sync_cursors`：account、resource type、cursor、last sync、status/error。
-- `assets`：organization、type、name、lifecycle、provider、external ID、region、tags、metadata、sync timestamps。
+- `assets`：organization、type、name、lifecycle、tags、metadata 與業務屬性。
+- `asset_resources`：asset/resource 關聯與用途；一個 Asset 可組合多個 Resource。
 - `vps_assets`：asset ID、hostname、plan/image、CPU、memory、disk、architecture、power state。
 - `ip_addresses`：asset、address、family、visibility、primary flag、reverse DNS。
 - `dns_zones`：asset ID、zone、status、nameservers、serial。
-- `dns_records`：zone、external ID、type、name、content、TTL、priority、proxied。
+- `dns_records`：resource ID、zone resource ID、type、name、content、TTL、priority、proxied canonical details。
 - `asset_state_snapshots`：asset、source、state、capture time，需 retention policy。
 
 ## Operation 與可靠訊息

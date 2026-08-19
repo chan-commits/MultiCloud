@@ -14,6 +14,7 @@
 - [Phase 2 RBAC](phase-2-rbac.md)：Permission、Role、Binding 與授權矩陣。
 - [Phase 3 Operation 與可靠事件](phase-3-operation-events.md)：Operation、Outbox、Inbox、Worker retry 與 Redis fan-out。
 - [Phase 4 Provider Foundation](phase-4-provider-foundation.md)：Provider abstraction、加密 credential、Cloudflare 與 Fake adapter。
+- [Phase 5 Resource 與 Real Provider](phase-5-resource-provider-integration.md)：canonical Resource、Cloudflare DNS、Vultr/OVH VPS、Operation executor 與 Drift。
 
 ## 文件狀態
 

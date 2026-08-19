@@ -79,59 +79,27 @@ Provider abstraction 原則：
 
 ## Phase 5：Resource Management 與 Real Provider Integration
 
-實作統一資源模型並接入真實 Provider。
+使用 Phase 4 的 Provider 能力，建立 Credential → Adapter → Operation → Resource 的完整流程。詳細契約見 [Phase 5 設計](phase-5-resource-provider-integration.md)。
 
-Canonical resource model：
+交付順序：
 
-- Asset
-- Resource
-- External Resource Mapping
-- Resource State
-- Drift Detection
-
-Provider 資源同步範圍：
-
-- Compute Provider：Vultr、OVH
-- Network Provider：Cloudflare DNS
-
-實作內容：
-
-- Resource inventory sync
-- External ID mapping
-- Resource lifecycle operation
-- Provider state reconciliation
-- Drift detection
-
-VPS 資源操作：
-
-- list
-- create
-- start
-- stop
-- reboot
-- delete
-
-Cloudflare DNS 操作：
-
-- list zones
-- list DNS records
-- create record
-- update record
-- delete record
-
-所有 Provider 操作必須通過：
-
-- Operation framework
-- retry mechanism
-- idempotency handling
-- audit event pipeline
+1. Canonical Resource Domain 與資料模型。
+2. Provider Operation Worker、attempt、lease、retry 與 idempotency。
+3. Cloudflare Global API Key compatibility 與 credential risk policy。
+4. Cloudflare DNS Zone/Record inventory 與 CRUD vertical slice。
+5. Vultr VPS 完整 lifecycle，以及明確限定為 OVH VPS API 的 inventory/power integration。
+6. Desired/Observed state、drift detection、reconciliation policy 與最小管理 UI。
 
 完成條件：
 
-- VPS Provider 可完成完整 inventory 同步。
-- VPS lifecycle 操作可通過 Operation 全程追蹤。
-- Cloudflare DNS 資源可同步並執行 CRUD 操作。
-- Provider drift 可被檢測並產生 reconciliation task。
+- Cloudflare API Token 與 Global API Key 均通過 mock contract validation。
+- Cloudflare Zone/Record 可分頁同步，支援 A、AAAA、CNAME、TXT、MX，Record CRUD 全程通過 Operation。
+- Vultr 完成 inventory、details、create/start/stop/reboot/delete；OVH VPS 完成 inventory、details 與實際支援的 power operation。
+- 相同 inventory 重送不重複建立 Resource；外部資源透過唯一 mapping 關聯 canonical Resource。
+- Provider create 在 timeout/retry 情況下不重複建立資源，所有 attempt 均可追蹤。
+- Desired/Observed state 可檢測 drift，並依 policy 建立唯一 reconciliation task。
+- credential、Provider error、event、log 與 API response 不洩漏敏感欄位。
+- 高風險 credential 在 Domain、API、RBAC 與 UI 都有明確標記及警告。
 
 ## Phase 6：Audit Log
 
