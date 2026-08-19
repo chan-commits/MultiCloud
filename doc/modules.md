@@ -15,7 +15,7 @@
 | Organization | Organization lifecycle、membership、invitation、tenant switching | organizations、memberships、invitations |
 | Authorization | permission catalog、role、binding、policy evaluation | permissions、roles、role_permissions、role_bindings |
 | Asset | 平台 canonical VPS、IP、DNS、network/firewall inventory | assets 與各 asset detail tables |
-| Provider | account、credential、adapter、capability、sync、外部操作 | provider_accounts、resource_refs、provider_operations |
+| Provider | account、credential lifecycle、adapter registry、capability、sync contract、外部操作 | provider_accounts、resource_refs、provider_operations |
 | Operation | 長時間工作狀態、冪等、進度、錯誤 | operations、outbox、inbox |
 | Ticket | ticket lifecycle、comment、assignment、SLA、attachment metadata | tickets、comments、events、sla_policies |
 | Chat | conversation、message、participant、read cursor | conversations、messages、participants、read cursors |
@@ -27,6 +27,7 @@
 ## 依賴規則
 
 - Asset 只能依賴 Provider port 或發出 operation intent，不引用 OVH/Vultr/Cloudflare SDK。
+- Provider abstraction 不假設 Compute；Compute、DNS、Firewall、Certificate 由獨立 capability 表達。
 - Provider 不直接修改其他 Domain 的 table；經 application service 或 event 交互。
 - Billing 只消費 canonical usage，不讀 Provider 私有 response 計價。
 - Chat 不以 Redis 作永久訊息儲存。
@@ -37,4 +38,3 @@
 ## RBAC 規則
 
 Permission key 採 `domain.resource.action`，例如 `asset.vps.read`、`asset.vps.create`、`ticket.ticket.assign`。初期 scope 為 Organization，資料模型保留 Project/Asset scope。所有 use case 必須宣告 permission，不能只依賴前端隱藏操作。
-

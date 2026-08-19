@@ -31,17 +31,105 @@
 
 完成條件：可重複投遞事件而不造成重複副作用。
 
-## Phase 4：Provider Foundation
+## Phase 4：Provider Foundation 與 Credential Integration
 
-實作 encrypted Provider Account、capability model、registry、sync framework、rate-limit handling 與 fake adapter。
+實作 Provider 基礎平台與第三方憑證管理能力。
 
-完成條件：使用 fake provider 完成 credential、inventory 與 operation 的整合測試。
+包含：
 
-## Phase 5：Asset 與真實 Provider
+- encrypted Provider Account
+- credential lifecycle management
+- credential validation / connection test
+- capability model
+- provider registry
+- provider adapter interface
+- sync framework
+- operation adapter framework
+- provider error normalization
+- rate-limit handling
+- fake provider adapter
 
-實作 canonical Asset/VPS、resource mapping、drift detection。建議依序接入 Vultr、OVH，再以 DNS capability 接入 Cloudflare。
+Provider abstraction 原則：
 
-完成條件：VPS list/create/start/stop/delete 可用 Operation 全程追蹤。
+- Provider 不直接綁定 Compute 資源。
+- 以 capability model 描述 Provider 能力。
+- 支援 Compute、DNS、Firewall、Certificate 等不同資源類型。
+- 新增 Provider 不需要修改核心 Domain。
+
+第一個真實 Provider 整合採 Cloudflare：
+
+- API Token credential
+- Token validation
+- Account capability discovery
+
+支援流程：
+
+1. 建立 Provider Account。
+2. 加密保存 credential。
+3. 測試 Provider connection。
+4. 取得並保存 Provider capabilities。
+
+完成條件：
+
+- 使用 fake provider 完成 credential、inventory 與 operation 的整合測試。
+- 使用 Cloudflare adapter 完成 credential 驗證與 capability discovery 測試。
+- Provider adapter 可獨立新增，不影響核心業務邏輯。
+
+## Phase 5：Resource Management 與 Real Provider Integration
+
+實作統一資源模型並接入真實 Provider。
+
+Canonical resource model：
+
+- Asset
+- Resource
+- External Resource Mapping
+- Resource State
+- Drift Detection
+
+Provider 資源同步範圍：
+
+- Compute Provider：Vultr、OVH
+- Network Provider：Cloudflare DNS
+
+實作內容：
+
+- Resource inventory sync
+- External ID mapping
+- Resource lifecycle operation
+- Provider state reconciliation
+- Drift detection
+
+VPS 資源操作：
+
+- list
+- create
+- start
+- stop
+- reboot
+- delete
+
+Cloudflare DNS 操作：
+
+- list zones
+- list DNS records
+- create record
+- update record
+- delete record
+
+所有 Provider 操作必須通過：
+
+- Operation framework
+- retry mechanism
+- idempotency handling
+- audit event pipeline
+
+完成條件：
+
+- VPS Provider 可完成完整 inventory 同步。
+- VPS lifecycle 操作可通過 Operation 全程追蹤。
+- Cloudflare DNS 資源可同步並執行 CRUD 操作。
+- Provider drift 可被檢測並產生 reconciliation task。
 
 ## Phase 6：Audit Log
 

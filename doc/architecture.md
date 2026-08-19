@@ -47,9 +47,11 @@
 
 ## Provider Adapter
 
-Adapter 依能力切分：credential validation、inventory、compute lifecycle、DNS、network/firewall、usage ingestion。Provider Registry 依 `ProviderKind` 與 capability 解析 adapter。
+Provider Domain 不直接綁定 Compute 或 VPS。Adapter 依能力切分：credential validation、inventory、compute lifecycle、DNS、firewall、certificate、usage ingestion。Provider Registry 依 `ProviderKind` 與 capability 解析 adapter，新增 Provider 不需要修改核心 Domain。
 
 第三方 response 必須轉換成平台 canonical model；Provider 特有欄位可保存在受控 metadata，不得滲入 Asset Domain 核心模型。
+
+Provider Account credential 採獨立 lifecycle 管理，包括加密保存、key version、輪替、撤銷、connection test 與 capability discovery。Phase 4 先以 fake adapter 建立 contract test，再用 Cloudflare API Token 驗證真實 credential 與 capability 流程；Compute inventory 與 resource lifecycle 延至 Phase 5。
 
 ## WebSocket
 
@@ -63,4 +65,3 @@ Adapter 依能力切分：credential validation、inventory、compute lifecycle�
 ## Rust Agent
 
 Agent 主動連向 Control Plane，不開放入站管理 port。首次安裝使用短效 enrollment token，成功後換取獨立且可輪替的 identity。Command 具有 ID、期限、nonce、允許類型與冪等鍵；預設不提供任意 shell。所有命令、進度與結果進入 Audit Log。
-
