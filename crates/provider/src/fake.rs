@@ -99,6 +99,7 @@ mod tests {
             credential_type: crate::CredentialType::ApiToken,
             identity: None,
             secret: "valid-fake-token".to_owned(),
+            consumer_key: None,
         };
         assert!(
             runtime

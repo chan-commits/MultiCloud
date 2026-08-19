@@ -71,6 +71,12 @@ impl CloudflareAdapter {
             CredentialType::ApiToken | CredentialType::Opaque => {
                 request.bearer_auth(&credential.secret)
             }
+            CredentialType::OvhApplication => {
+                return Err(ProviderError::configuration(
+                    "unsupported_cloudflare_credential_type",
+                    false,
+                ));
+            }
             CredentialType::GlobalApiKey => request
                 .header(
                     "X-Auth-Email",
@@ -121,7 +127,7 @@ impl ProviderAdapter for CloudflareAdapter {
                         .map(str::to_owned),
                 )
             }
-            CredentialType::ApiToken | CredentialType::Opaque => {
+            CredentialType::ApiToken | CredentialType::Opaque | CredentialType::OvhApplication => {
                 let response: CloudflareEnvelope<TokenVerification> =
                     self.get(credential, "/user/tokens/verify").await?;
                 (
@@ -488,6 +494,7 @@ mod tests {
             credential_type: CredentialType::ApiToken,
             identity: None,
             secret: "test-token".to_owned(),
+            consumer_key: None,
         };
         let validation = adapter.validate_credential(&credential).await.unwrap();
         assert!(validation.valid);
@@ -551,6 +558,7 @@ mod tests {
             credential_type: CredentialType::GlobalApiKey,
             identity: Some("owner@example.com".to_owned()),
             secret: "global-key".to_owned(),
+            consumer_key: None,
         };
         assert!(adapter.validate_credential(&global).await.unwrap().valid);
     }

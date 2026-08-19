@@ -16,3 +16,4 @@ credential_master_key = ""
 credential_key_version = 1
 cloudflare_base_url = "https://api.cloudflare.com/client/v4"
 vultr_base_url = "https://api.vultr.com/v2"
+ovh_base_url = "https://eu.api.ovh.com/1.0"

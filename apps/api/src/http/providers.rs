@@ -56,6 +56,9 @@ struct CredentialInput {
     api_token: Option<String>,
     email: Option<String>,
     global_api_key: Option<String>,
+    application_key: Option<String>,
+    application_secret: Option<String>,
+    consumer_key: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -64,6 +67,8 @@ struct StoredCredential {
     credential_type: CredentialType,
     identity: Option<String>,
     secret: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    consumer_key: Option<String>,
 }
 
 struct PreparedCredential {
@@ -522,6 +527,11 @@ async fn queue_operation(
         super::authorization::authorize_transaction(&state, &context, permissions::RESOURCE_MANAGE)
             .await?;
     let account = find_account(&transaction, context.organization_id, account_id).await?;
+    if account.provider_kind == "ovh" && matches!(request.action.as_str(), "create" | "delete") {
+        return Err(ApiError::BadRequest(
+            "OVH VPS does not support this lifecycle operation",
+        ));
+    }
     require_active_capability(&account, capability)?;
     let operation = create_provider_operation(
         &transaction,
@@ -724,20 +734,22 @@ fn prepare_credential(
     input: CredentialInput,
 ) -> Result<PreparedCredential, ApiError> {
     let credential_type = input.credential_type.unwrap_or_else(|| {
-        if input.global_api_key.is_some() {
+        if provider_kind.as_str() == "ovh" {
+            CredentialType::OvhApplication
+        } else if input.global_api_key.is_some() {
             CredentialType::GlobalApiKey
         } else {
             CredentialType::ApiToken
         }
     });
-    let (identity, secret, risk_level, masked_identifier) = match credential_type {
+    let (identity, secret, consumer_key, risk_level, masked_identifier) = match credential_type {
         CredentialType::ApiToken => {
             let secret = input
                 .api_token
                 .filter(|value| !value.trim().is_empty() && value.len() <= 8_192)
                 .ok_or(ApiError::BadRequest("provider API token is invalid"))?;
             let masked = mask_secret(&secret);
-            (None, secret, CredentialRiskLevel::Restricted, masked)
+            (None, secret, None, CredentialRiskLevel::Restricted, masked)
         }
         CredentialType::GlobalApiKey => {
             if provider_kind.as_str() != "cloudflare" {
@@ -754,7 +766,33 @@ fn prepare_credential(
                 .filter(|value| !value.trim().is_empty() && value.len() <= 8_192)
                 .ok_or(ApiError::BadRequest("Cloudflare Global API Key is invalid"))?;
             let masked = mask_email(&identity);
-            (Some(identity), secret, CredentialRiskLevel::High, masked)
+            (
+                Some(identity),
+                secret,
+                None,
+                CredentialRiskLevel::High,
+                masked,
+            )
+        }
+        CredentialType::OvhApplication => {
+            if provider_kind.as_str() != "ovh" {
+                return Err(ApiError::BadRequest(
+                    "OVH application credential is only supported for OVH",
+                ));
+            }
+            let application_key =
+                validate_credential_part(input.application_key, "OVH Application Key")?;
+            let application_secret =
+                validate_credential_part(input.application_secret, "OVH Application Secret")?;
+            let consumer_key = validate_credential_part(input.consumer_key, "OVH Consumer Key")?;
+            let masked = mask_secret(&application_key);
+            (
+                Some(application_key),
+                application_secret,
+                Some(consumer_key),
+                CredentialRiskLevel::Restricted,
+                masked,
+            )
         }
         CredentialType::Opaque => {
             return Err(ApiError::BadRequest("credential type is not supported"));
@@ -766,6 +804,7 @@ fn prepare_credential(
             credential_type,
             identity,
             secret,
+            consumer_key,
         },
         risk_level,
         masked_identifier,
@@ -776,8 +815,15 @@ const fn credential_type_key(value: CredentialType) -> &'static str {
     match value {
         CredentialType::ApiToken => "api_token",
         CredentialType::GlobalApiKey => "global_api_key",
+        CredentialType::OvhApplication => "ovh_application",
         CredentialType::Opaque => "opaque",
     }
+}
+
+fn validate_credential_part(value: Option<String>, name: &'static str) -> Result<String, ApiError> {
+    value
+        .filter(|value| !value.trim().is_empty() && value.len() <= 8_192)
+        .ok_or(ApiError::BadRequest(name))
 }
 
 const fn risk_level_key(value: CredentialRiskLevel) -> &'static str {

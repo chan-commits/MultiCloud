@@ -45,6 +45,9 @@ async fn main() -> anyhow::Result<()> {
         Arc::new(multicloud_provider::VultrAdapter::new(
             settings.provider.vultr_base_url,
         )),
+        Arc::new(multicloud_provider::OvhAdapter::new(
+            settings.provider.ovh_base_url,
+        )),
     ];
     if settings.environment == "development" {
         adapters.push(Arc::new(multicloud_provider::FakeProviderAdapter));

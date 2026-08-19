@@ -488,6 +488,7 @@ mod tests {
             credential_type: CredentialType::ApiToken,
             identity: None,
             secret: "token".to_owned(),
+            consumer_key: None,
         }
     }
 

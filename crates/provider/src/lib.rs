@@ -1,11 +1,13 @@
 mod cloudflare;
 mod crypto;
 mod fake;
+mod ovh;
 mod vultr;
 
 pub use cloudflare::CloudflareAdapter;
 pub use crypto::{EncryptedCredential, EnvelopeCipher};
 pub use fake::FakeProviderAdapter;
+pub use ovh::OvhAdapter;
 pub use vultr::VultrAdapter;
 
 use async_trait::async_trait;
@@ -63,6 +65,7 @@ pub enum Capability {
 pub enum CredentialType {
     ApiToken,
     GlobalApiKey,
+    OvhApplication,
     Opaque,
 }
 
@@ -79,6 +82,7 @@ pub struct CredentialMaterial {
     pub credential_type: CredentialType,
     pub identity: Option<String>,
     pub secret: String,
+    pub consumer_key: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -86,6 +90,8 @@ struct StoredCredentialEnvelope {
     credential_type: CredentialType,
     identity: Option<String>,
     secret: String,
+    #[serde(default)]
+    consumer_key: Option<String>,
 }
 
 #[must_use]
@@ -95,6 +101,7 @@ pub fn decode_credential_envelope(plaintext: &str, legacy_type: &str) -> Credent
             credential_type: stored.credential_type,
             identity: stored.identity,
             secret: stored.secret,
+            consumer_key: stored.consumer_key,
         };
     }
     CredentialMaterial {
@@ -105,6 +112,7 @@ pub fn decode_credential_envelope(plaintext: &str, legacy_type: &str) -> Credent
         },
         identity: None,
         secret: plaintext.to_owned(),
+        consumer_key: None,
     }
 }
 

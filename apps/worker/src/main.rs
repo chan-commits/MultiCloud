@@ -4,7 +4,7 @@ use multicloud_operation::RetryPolicy;
 use multicloud_persistence::entities::{outbox_events, provider_accounts, provider_credentials};
 use multicloud_provider::{
     CloudflareAdapter, EncryptedCredential, EnvelopeCipher, FakeProviderAdapter, InventoryRequest,
-    ProviderAdapter, ProviderRegistry, VultrAdapter, decode_credential_envelope,
+    OvhAdapter, ProviderAdapter, ProviderRegistry, VultrAdapter, decode_credential_envelope,
 };
 use redis::AsyncCommands;
 use sea_orm::{
@@ -40,6 +40,7 @@ async fn main() -> anyhow::Result<()> {
             settings.provider.cloudflare_base_url,
         )),
         Arc::new(VultrAdapter::new(settings.provider.vultr_base_url)),
+        Arc::new(OvhAdapter::new(settings.provider.ovh_base_url)),
     ];
     if settings.environment == "development" {
         adapters.push(Arc::new(FakeProviderAdapter));

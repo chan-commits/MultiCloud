@@ -40,6 +40,8 @@ pub struct ProviderSettings {
     pub cloudflare_base_url: String,
     #[serde(default = "default_vultr_base_url")]
     pub vultr_base_url: String,
+    #[serde(default = "default_ovh_base_url")]
+    pub ovh_base_url: String,
 }
 
 const fn default_key_version() -> i32 {
@@ -52,6 +54,10 @@ fn default_cloudflare_base_url() -> String {
 
 fn default_vultr_base_url() -> String {
     "https://api.vultr.com/v2".to_owned()
+}
+
+fn default_ovh_base_url() -> String {
+    "https://eu.api.ovh.com/1.0".to_owned()
 }
 
 #[derive(Debug, Error)]

@@ -10,9 +10,10 @@ Phase 5 使用 Phase 4 已建立的 Credential、Capability、Adapter、Registry
 - 已完成 Cloudflare Zone/Record 分頁 inventory 與 DNS Record CRUD adapter contract。
 - 已完成 Vultr API Token validation、Compute capability discovery、分頁 instance inventory，以及 get/create/start/stop/reboot/delete adapter contract。
 - 已將 Vultr `halt` 正規化為平台 `stop`；操作成功後回寫 canonical Resource、mapping 與 Observed State。
+- 已完成 OVH application credential（三段式簽名）、VPS list/get inventory 與 start/stop/reboot 非同步 Task 操作。
 - 已完成 Resource/Desired State/Drift/Reconciliation REST API。
 - 已完成 Fake inventory 重送 E2E：兩次 Operation/attempt 只建立一個 Resource mapping，Observed State 版本正常遞增。
-- 待完成 OVH VPS adapter、完整 UI 與真實 Provider opt-in 驗證。
+- 待完成完整 UI 與真實 Provider opt-in 驗證。
 
 ## Canonical Resource Model
 
@@ -87,7 +88,7 @@ DNS Record：分頁 list、create、update、delete；支援 A、AAAA、CNAME、
 
 Vultr 已實作 list/get/create/start/stop/reboot/delete，正規化 region、plan、OS、CPU、memory、disk、IP 與 provisioning/power state；REST 層只接受 canonical `stop`，adapter 才轉換成 Vultr `halt`。
 
-OVH 此階段明確限定為 **OVH VPS API**：list/get、inventory、state sync，以及 API 實際支援的 power operation。不把 OVH Public Cloud Instance 或 Dedicated Server 混入同一 adapter/resource type。
+OVH 此階段明確限定為 **OVH VPS API**：已實作 list/get、inventory、state sync，以及 API 實際提供的 start/stop/reboot。OVH power API 回傳非同步 Task，Operation 保存 Task 並由後續 inventory/reconciliation 收斂最終狀態。VPS API 未提供的 create/delete 不對外宣稱支援；不把 OVH Public Cloud Instance 或 Dedicated Server 混入同一 adapter/resource type。
 
 ## Synchronization
 
