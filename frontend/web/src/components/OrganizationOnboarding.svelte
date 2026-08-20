@@ -11,26 +11,29 @@
   }
 </script>
 
-<section class="empty-state onboarding">
+<section class="empty-state">
   <div class="empty-orbit">◎</div>
-  <h2>Create your organization</h2>
+  <h2 class="mb-1">Create your organization</h2>
   <p>Your account is ready. Establish an isolated tenant workspace to continue.</p>
   <form
+    class="mt-[15px] grid w-[min(420px,90%)] gap-[13px] text-left"
     onsubmit={(event) => {
       event.preventDefault();
       submit();
     }}
   >
-    <label
+    <label class="flex flex-col gap-[6px] text-[9px] tracking-[0.08em] text-[#71899a]"
       >Organization name<input
+        class="rounded-[4px] border border-[#203140] bg-[#09111a] p-[11px] text-[#eaf6ff]"
         bind:value={name}
         maxlength="160"
         placeholder="Acme Infrastructure"
         required
       /></label
     >
-    <label
+    <label class="flex flex-col gap-[6px] text-[9px] tracking-[0.08em] text-[#71899a]"
       >Organization slug<input
+        class="rounded-[4px] border border-[#203140] bg-[#09111a] p-[11px] text-[#eaf6ff]"
         bind:value={slug}
         minlength="3"
         maxlength="80"
@@ -39,8 +42,9 @@
         required
       /></label
     >
-    <button class="primary" disabled={creating}
-      >{creating ? 'Creating…' : 'Create workspace'}</button
+    <button
+      class="justify-self-start rounded-[5px] border border-[#20dce6] bg-gradient-to-br from-[#18cbd5] to-[#0796a7] px-[17px] py-3 font-extrabold text-[#001114] shadow-[0_0_28px_#15d7e221]"
+      disabled={creating}>{creating ? 'Creating…' : 'Create workspace'}</button
     >
   </form>
 </section>
