@@ -1,10 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import AuthScreen from './components/AuthScreen.svelte';
+  import OrganizationOnboarding from './components/OrganizationOnboarding.svelte';
   import {
     ApiClient,
     ApiError,
     login,
     register,
+    registrationSettings,
     type AuditFilters,
     type AuditLog,
     type Drift,
@@ -26,13 +29,13 @@
   ];
 
   let token = $state(''),
-    email = $state(''),
-    password = $state(''),
-    displayName = $state(''),
-    authMode = $state<'login' | 'register'>('login'),
     loginError = $state(''),
     error = $state(''),
     notice = $state('');
+  let registrationEnabled = $state(false),
+    platformInitialized = $state(false),
+    isPlatformAdmin = $state(false),
+    registrationBusy = $state(false);
   let loading = $state(false),
     authenticating = $state(false),
     mobileNav = $state(false),
@@ -59,9 +62,7 @@
     resourceDrifts = $state<Drift[]>([]),
     reconciliations = $state<Reconciliation[]>([]),
     detailLoading = $state(false);
-  let organizationName = $state(''),
-    organizationSlug = $state(''),
-    creatingOrganization = $state(false);
+  let creatingOrganization = $state(false);
   let auditAction = $state(''),
     auditOutcome = $state(''),
     auditLoadingMore = $state(false),
@@ -84,12 +85,24 @@
   let failedOperations = $derived(operations.filter((item) => item.status === 'failed'));
 
   onMount(async () => {
+    try {
+      const settings = await registrationSettings();
+      registrationEnabled = settings.registration_enabled;
+      platformInitialized = settings.initialized;
+    } catch {
+      loginError = 'Could not load platform registration status.';
+    }
     const stored = sessionStorage.getItem('multicloud.session');
     if (!stored) return;
     try {
-      const session = JSON.parse(stored) as { token: string; expiresAt: string };
+      const session = JSON.parse(stored) as {
+        token: string;
+        expiresAt: string;
+        isPlatformAdmin?: boolean;
+      };
       if (new Date(session.expiresAt) <= new Date()) throw new Error('expired');
       token = session.token;
+      isPlatformAdmin = session.isPlatformAdmin ?? false;
       await initialize();
     } catch {
       sessionStorage.removeItem('multicloud.session');
@@ -97,17 +110,21 @@
     }
   });
 
-  async function submitLogin() {
+  async function submitLogin(email: string, password: string) {
     authenticating = true;
     loginError = '';
     try {
       const session = await login(email, password);
       token = session.access_token;
+      isPlatformAdmin = session.is_platform_admin;
       sessionStorage.setItem(
         'multicloud.session',
-        JSON.stringify({ token, expiresAt: session.expires_at }),
+        JSON.stringify({
+          token,
+          expiresAt: session.expires_at,
+          isPlatformAdmin: session.is_platform_admin,
+        }),
       );
-      password = '';
       await initialize();
     } catch (cause) {
       loginError = messageOf(cause);
@@ -117,18 +134,22 @@
     }
   }
 
-  async function submitRegistration() {
+  async function submitRegistration(email: string, password: string, displayName: string) {
     authenticating = true;
     loginError = '';
     try {
       await register(email, password, displayName);
       const session = await login(email, password);
       token = session.access_token;
+      isPlatformAdmin = session.is_platform_admin;
       sessionStorage.setItem(
         'multicloud.session',
-        JSON.stringify({ token, expiresAt: session.expires_at }),
+        JSON.stringify({
+          token,
+          expiresAt: session.expires_at,
+          isPlatformAdmin: session.is_platform_admin,
+        }),
       );
-      password = '';
       await initialize();
     } catch (cause) {
       loginError = messageOf(cause);
@@ -185,7 +206,7 @@
       loading = false;
     }
   }
-  async function createOrganization() {
+  async function createOrganization(organizationName: string, organizationSlug: string) {
     if (!client) return;
     creatingOrganization = true;
     error = '';
@@ -198,8 +219,6 @@
       organizationId = organization.id;
       client.setOrganization(organization.id);
       localStorage.setItem('multicloud.organization', organization.id);
-      organizationName = '';
-      organizationSlug = '';
       notice = 'Organization workspace created.';
       await refreshAll();
     } catch (cause) {
@@ -253,12 +272,27 @@
     sessionStorage.removeItem('multicloud.session');
     localStorage.removeItem('multicloud.organization');
     token = '';
+    isPlatformAdmin = false;
     client = null;
     organizations = [];
     providers = [];
     resources = [];
     operations = [];
     auditLogs = [];
+  }
+
+  async function toggleRegistration() {
+    if (!client || !organizationId || !isPlatformAdmin) return;
+    registrationBusy = true;
+    try {
+      const settings = await client.updateRegistration(!registrationEnabled);
+      registrationEnabled = settings.registration_enabled;
+      notice = `Public registration ${registrationEnabled ? 'enabled' : 'disabled'}.`;
+    } catch (cause) {
+      error = messageOf(cause);
+    } finally {
+      registrationBusy = false;
+    }
   }
 
   async function createProvider() {
@@ -440,83 +474,14 @@
 >
 
 {#if !token}
-  <main class="auth-shell">
-    <section class="auth-ambient" aria-hidden="true">
-      <div class="orbit one"></div>
-      <div class="orbit two"></div>
-      <div class="auth-mark">MC</div>
-      <p class="eyebrow">MULTI-TENANT CONTROL PLANE</p>
-      <h1>Operate every cloud<br />from one command layer.</h1>
-      <p>Provider-neutral infrastructure, deterministic operations, and tenant-safe control.</p>
-      <div class="signal-row"><span></span> CONTROL FABRIC ONLINE</div>
-    </section>
-    <section class="auth-panel">
-      <form
-        class="auth-form"
-        onsubmit={(event) => {
-          event.preventDefault();
-          authMode === 'login' ? submitLogin() : submitRegistration();
-        }}
-      >
-        <div class="brand"><span class="brand-glyph">M</span><span>MultiCloud</span></div>
-        <div>
-          <p class="kicker">SECURE ACCESS</p>
-          <h2>{authMode === 'login' ? 'Welcome back' : 'Create account'}</h2>
-          <p>
-            {authMode === 'login'
-              ? 'Authenticate to enter your organization workspace.'
-              : 'Join the control plane and create your tenant workspace.'}
-          </p>
-        </div>
-        {#if authMode === 'register'}<label
-            >Display name<input
-              bind:value={displayName}
-              autocomplete="name"
-              maxlength="120"
-              required
-            /></label
-          >{/if}<label
-          >Email address<input
-            bind:value={email}
-            type="email"
-            autocomplete="email"
-            placeholder="operator@company.com"
-            required
-          /></label
-        ><label
-          >Password<input
-            bind:value={password}
-            type="password"
-            autocomplete={authMode === 'login' ? 'current-password' : 'new-password'}
-            minlength="12"
-            placeholder="••••••••••••"
-            required
-          /></label
-        >{#if loginError}<p class="form-error">{loginError}</p>{/if}<button
-          class="primary wide"
-          disabled={authenticating}
-          >{authenticating
-            ? 'Working…'
-            : authMode === 'login'
-              ? 'Enter Command Center'
-              : 'Create account'}<span>→</span></button
-        ><button
-          class="auth-switch"
-          type="button"
-          onclick={() => {
-            authMode = authMode === 'login' ? 'register' : 'login';
-            loginError = '';
-          }}
-          >{authMode === 'login'
-            ? 'New user? Create an account'
-            : 'Already registered? Sign in'}</button
-        >
-        <p class="security-note">
-          <span>◆</span> The first platform administrator is initialized locally by CLI.
-        </p>
-      </form>
-    </section>
-  </main>
+  <AuthScreen
+    {registrationEnabled}
+    {platformInitialized}
+    {authenticating}
+    error={loginError}
+    onLogin={submitLogin}
+    onRegister={submitRegistration}
+  />
 {:else}
   <div class="app-shell">
     <aside class:open={mobileNav}>
@@ -564,6 +529,14 @@
           <h1>{navigation.find((item) => item.id === view)?.label}</h1>
         </div>
         <div class="top-actions">
+          {#if isPlatformAdmin}<button
+              class="registration-toggle"
+              class:enabled={registrationEnabled}
+              onclick={toggleRegistration}
+              disabled={registrationBusy || !organizationId}
+              title="Platform-wide public registration"
+              ><i></i>{registrationEnabled ? 'Registration on' : 'Registration off'}</button
+            >{/if}
           <select
             aria-label="Organization"
             bind:value={organizationId}
@@ -589,37 +562,10 @@
           <button onclick={() => (notice = '')}>×</button>
         </div>{/if}
       <div class="content" class:loading>
-        {#if !organizationId}<section class="empty-state onboarding">
-            <div class="empty-orbit">◎</div>
-            <h2>Create your organization</h2>
-            <p>Your account is ready. Establish an isolated tenant workspace to continue.</p>
-            <form
-              onsubmit={(event) => {
-                event.preventDefault();
-                createOrganization();
-              }}
-            >
-              <label
-                >Organization name<input
-                  bind:value={organizationName}
-                  maxlength="160"
-                  placeholder="Acme Infrastructure"
-                  required
-                /></label
-              ><label
-                >Organization slug<input
-                  bind:value={organizationSlug}
-                  minlength="3"
-                  maxlength="80"
-                  pattern="[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
-                  placeholder="acme-infra"
-                  required
-                /></label
-              ><button class="primary" disabled={creatingOrganization}
-                >{creatingOrganization ? 'Creating…' : 'Create workspace'}</button
-              >
-            </form>
-          </section>
+        {#if !organizationId}<OrganizationOnboarding
+            creating={creatingOrganization}
+            onCreate={createOrganization}
+          />
         {:else if view === 'overview'}
           <section class="hero-panel">
             <div>

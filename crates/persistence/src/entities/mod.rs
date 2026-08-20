@@ -10,6 +10,7 @@ pub mod organization_memberships;
 pub mod organizations;
 pub mod outbox_events;
 pub mod permissions;
+pub mod platform_settings;
 pub mod provider_accounts;
 pub mod provider_credentials;
 pub mod provider_operation_attempts;

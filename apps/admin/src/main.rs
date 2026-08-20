@@ -144,6 +144,7 @@ async fn initialize(
         display_name: Set(display_name),
         status: Set("active".to_owned()),
         password_hash: Set(password_hash),
+        is_platform_admin: Set(true),
         email_verified_at: Set(None),
         created_at: Set(now),
         updated_at: Set(now),

@@ -75,6 +75,7 @@ export type AuditFilters = {
   occurred_before_id?: string;
   limit?: number;
 };
+export type RegistrationSettings = { initialized: boolean; registration_enabled: boolean };
 
 const API_ROOT = '/api/v1';
 
@@ -121,6 +122,12 @@ export class ApiClient {
   }
   logout() {
     return this.request<void>('/auth/logout', { method: 'POST' });
+  }
+  updateRegistration(registrationEnabled: boolean) {
+    return this.request<RegistrationSettings>('/auth/registration-settings', {
+      method: 'PUT',
+      body: JSON.stringify({ registration_enabled: registrationEnabled }),
+    });
   }
   createOrganization(payload: { name: string; slug: string }) {
     return this.request<Organization>('/organizations/', {
@@ -220,7 +227,17 @@ export async function login(email: string, password: string) {
     body: JSON.stringify({ email, password }),
   });
   if (!response.ok) throw new ApiError('Email or password is incorrect', response.status);
-  return (await response.json()) as { access_token: string; expires_at: string };
+  return (await response.json()) as {
+    access_token: string;
+    expires_at: string;
+    is_platform_admin: boolean;
+  };
+}
+
+export async function registrationSettings() {
+  const response = await fetch(`${API_ROOT}/auth/registration-settings`);
+  if (!response.ok) throw new ApiError('Could not load registration settings', response.status);
+  return (await response.json()) as RegistrationSettings;
 }
 
 export async function register(email: string, password: string, displayName: string) {

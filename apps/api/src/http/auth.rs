@@ -1,11 +1,19 @@
 use super::{AppState, error::ApiError};
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier, password_hash::SaltString};
-use axum::{Json, Router, extract::State, routing::post};
+use axum::{
+    Json, Router,
+    extract::State,
+    routing::{get, post},
+};
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use multicloud_identity::Email;
-use multicloud_persistence::entities::{sessions, users};
+use multicloud_operation::EventEnvelope;
+use multicloud_persistence::{
+    entities::{platform_settings, sessions, users},
+    reliable_events::enqueue_event,
+};
 use rand::RngCore;
-use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set};
+use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set, TransactionTrait};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use time::{Duration, OffsetDateTime};
@@ -16,6 +24,10 @@ pub fn router() -> Router<AppState> {
         .route("/register", post(register))
         .route("/login", post(login))
         .route("/logout", post(logout))
+        .route(
+            "/registration-settings",
+            get(registration_settings).put(update_registration_settings),
+        )
 }
 
 #[derive(Deserialize)]
@@ -32,6 +44,100 @@ struct UserResponse {
     display_name: String,
 }
 
+#[derive(Deserialize)]
+struct UpdateRegistrationSettingsRequest {
+    registration_enabled: bool,
+}
+
+#[derive(Serialize)]
+struct RegistrationSettingsResponse {
+    initialized: bool,
+    registration_enabled: bool,
+}
+
+async fn registration_settings(
+    State(state): State<AppState>,
+) -> Result<Json<RegistrationSettingsResponse>, ApiError> {
+    let initialized = users::Entity::find()
+        .one(&state.database)
+        .await
+        .map_err(super::error::internal)?
+        .is_some();
+    let settings = platform_settings::Entity::find_by_id(1_i16)
+        .one(&state.database)
+        .await
+        .map_err(super::error::internal)?
+        .ok_or(ApiError::Internal)?;
+    Ok(Json(RegistrationSettingsResponse {
+        initialized,
+        registration_enabled: initialized && settings.registration_enabled,
+    }))
+}
+
+async fn update_registration_settings(
+    context: super::tenant::TenantContext,
+    State(state): State<AppState>,
+    Json(request): Json<UpdateRegistrationSettingsRequest>,
+) -> Result<Json<RegistrationSettingsResponse>, ApiError> {
+    let user = users::Entity::find_by_id(context.user_id)
+        .one(&state.database)
+        .await
+        .map_err(super::error::internal)?
+        .ok_or(ApiError::Unauthorized)?;
+    if !user.is_platform_admin {
+        return Err(ApiError::Forbidden);
+    }
+    let transaction = state
+        .database
+        .begin()
+        .await
+        .map_err(super::error::internal)?;
+    super::tenant::set_tenant_context(&transaction, context.user_id, Some(context.organization_id))
+        .await?;
+    let mut settings: platform_settings::ActiveModel = platform_settings::Entity::find_by_id(1_i16)
+        .one(&transaction)
+        .await
+        .map_err(super::error::internal)?
+        .ok_or(ApiError::Internal)?
+        .into();
+    let previous_enabled = settings.registration_enabled.as_ref().to_owned();
+    settings.registration_enabled = Set(request.registration_enabled);
+    settings.updated_by = Set(Some(context.user_id));
+    settings.updated_at = Set(OffsetDateTime::now_utc());
+    settings
+        .update(&transaction)
+        .await
+        .map_err(super::error::internal)?;
+    enqueue_event(
+        &transaction,
+        EventEnvelope {
+            id: multicloud_shared_kernel::EventId::new(),
+            organization_id: multicloud_shared_kernel::OrganizationId::from_uuid(
+                context.organization_id,
+            ),
+            aggregate_type: "platform_settings".to_owned(),
+            aggregate_id: "registration".to_owned(),
+            event_type: "identity.registration.updated".to_owned(),
+            event_version: 1,
+            payload: serde_json::json!({
+                "requested_by": context.user_id,
+                "registration_enabled": request.registration_enabled,
+                "before": { "registration_enabled": previous_enabled },
+                "after": { "registration_enabled": request.registration_enabled },
+            }),
+            trace_id: None,
+            occurred_at: OffsetDateTime::now_utc(),
+        },
+    )
+    .await
+    .map_err(super::error::internal)?;
+    transaction.commit().await.map_err(super::error::internal)?;
+    Ok(Json(RegistrationSettingsResponse {
+        initialized: true,
+        registration_enabled: request.registration_enabled,
+    }))
+}
+
 async fn register(
     State(state): State<AppState>,
     Json(request): Json<RegisterRequest>,
@@ -45,6 +151,14 @@ async fn register(
         return Err(ApiError::Unavailable(
             "platform administrator must be initialized before public registration",
         ));
+    }
+    let registration_enabled = platform_settings::Entity::find_by_id(1_i16)
+        .one(&state.database)
+        .await
+        .map_err(super::error::internal)?
+        .is_some_and(|settings| settings.registration_enabled);
+    if !registration_enabled {
+        return Err(ApiError::Forbidden);
     }
     let email = Email::parse(request.email).map_err(|_| ApiError::BadRequest("invalid email"))?;
     if request.password.len() < 12 {
@@ -81,6 +195,7 @@ async fn register(
         display_name: Set(display_name.to_owned()),
         status: Set("active".to_owned()),
         password_hash: Set(password_hash),
+        is_platform_admin: Set(false),
         email_verified_at: Set(None),
         created_at: Set(now),
         updated_at: Set(now),
@@ -111,6 +226,7 @@ struct LoginResponse {
     token_type: &'static str,
     #[serde(with = "time::serde::rfc3339")]
     expires_at: OffsetDateTime,
+    is_platform_admin: bool,
 }
 
 async fn logout(
@@ -172,6 +288,7 @@ async fn login(
         access_token,
         token_type: "Bearer",
         expires_at,
+        is_platform_admin: user.is_platform_admin,
     }))
 }
 

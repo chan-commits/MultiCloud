@@ -11,7 +11,7 @@
 
 | 模組 | 核心責任 | 主要資料所有權 |
 |---|---|---|
-| Identity | 使用者、登入、session、API token、SSO/MFA 擴充點 | users、identities、sessions、api_tokens |
+| Identity | 使用者、登入、session、平台註冊政策、API token、SSO/MFA 擴充點 | users、platform_settings、identities、sessions、api_tokens |
 | Organization | Organization lifecycle、membership、invitation、tenant switching | organizations、memberships、invitations |
 | Authorization | permission catalog、role、binding、policy evaluation | permissions、roles、role_permissions、role_bindings |
 | Asset/Resource | 業務 Asset、canonical Resource、Desired/Observed State、Drift 與 Reconciliation | assets、resources、resource states、drifts、reconciliation_tasks |
@@ -40,3 +40,9 @@
 ## RBAC 規則
 
 Permission key 採 `domain.resource.action`，例如 `asset.vps.read`、`asset.vps.create`、`ticket.ticket.assign`。初期 scope 為 Organization，資料模型保留 Project/Asset scope。所有 use case 必須宣告 permission，不能只依賴前端隱藏操作。
+
+Platform Admin 與 Organization RBAC 分離：只有 CLI 初始化的 Platform Admin 能修改全平台註冊政策；Organization Owner/Admin 不因此取得平台設定權限。
+
+## Web UI 邊界
+
+`App.svelte` 只保留 session、tenant selection、跨頁資料協調與 view routing。具備獨立狀態或表單生命週期的 UI 拆成 `components/`，目前包含 authentication 與 Organization onboarding；後續依 Overview、Provider、Resource、Operation、Audit page view 漸進拆分，避免單次機械重構。

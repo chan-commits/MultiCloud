@@ -31,6 +31,8 @@ Command Center 新增 Audit Stream：顯示 immutable event、actor、target、o
 
 Identity onboarding 採兩層邊界：首位平台管理員只能透過本機 `multicloud-admin init` 建立；平台初始化後，普通使用者可由 Web 註冊並建立自己的 Organization。Organization 建立與 Owner bootstrap 會產生 tenant audit event。
 
+公開註冊政策預設關閉，只有 Platform Admin 可在已選定的 Organization context 中切換；事件保存 sanitized before/after，讓平台級安全變更在管理員租戶的 Audit Stream 可追蹤。
+
 ## 驗證
 
 - recursive redaction unit test。

@@ -244,6 +244,12 @@ button:disabled {
   color: #53cbd2;
   font-size: 11px;
 }
+.registration-closed {
+  margin: -10px 0 0;
+  text-align: center;
+  color: #a1747d;
+  font-size: 10px;
+}
 .onboarding form {
   width: min(420px, 90%);
   display: grid;
@@ -469,6 +475,32 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+.registration-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #49313a;
+  background: #1b1117;
+  color: #aa7c88;
+  padding: 9px 10px;
+  border-radius: 5px;
+  font-size: 9px;
+}
+.registration-toggle i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ad5367;
+}
+.registration-toggle.enabled {
+  border-color: #205846;
+  background: #0d211a;
+  color: #54d7a1;
+}
+.registration-toggle.enabled i {
+  background: #3de6a1;
+  box-shadow: 0 0 8px #3de6a1;
 }
 .top-actions select {
   padding: 9px 32px 9px 11px;
