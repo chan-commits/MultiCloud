@@ -3,6 +3,7 @@
   import AuthScreen from './components/AuthScreen.svelte';
   import AppHeader from './components/AppHeader.svelte';
   import AppSidebar from './components/AppSidebar.svelte';
+  import AppAlerts from './components/AppAlerts.svelte';
   import OrganizationOnboarding from './components/OrganizationOnboarding.svelte';
   import AuditView from './components/AuditView.svelte';
   import OperationsView from './components/OperationsView.svelte';
@@ -479,19 +480,12 @@
         onRefresh={refreshAll}
         onToggleRegistration={toggleRegistration}
       />
-      {#if error}<div
-          class="mx-8 mt-[18px] flex items-center gap-[10px] rounded-[5px] border border-[#60202e] bg-[#2b1118] px-[14px] py-[10px] text-[12px] text-[#ff788e] max-[760px]:mx-[14px] max-[760px]:mt-3"
-        >
-          <span>!</span>
-          <p class="m-0 flex-1">{error}</p>
-          <button class="border-0 bg-transparent" onclick={() => (error = '')}>×</button>
-        </div>{/if}{#if notice}<div
-          class="mx-8 mt-[18px] flex items-center gap-[10px] rounded-[5px] border border-[#205846] bg-[#0d211a] px-[14px] py-[10px] text-[12px] text-[#54d7a1] max-[760px]:mx-[14px] max-[760px]:mt-3"
-        >
-          <span>✓</span>
-          <p class="m-0 flex-1">{notice}</p>
-          <button class="border-0 bg-transparent" onclick={() => (notice = '')}>×</button>
-        </div>{/if}
+      <AppAlerts
+        {error}
+        {notice}
+        onDismissError={() => (error = '')}
+        onDismissNotice={() => (notice = '')}
+      />
       <div
         class:loading
         class="mx-auto max-w-[1600px] px-8 pb-[60px] pt-[30px] transition-opacity max-[760px]:px-[14px] max-[760px]:pb-[50px] max-[760px]:pt-5"
