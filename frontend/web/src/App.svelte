@@ -451,7 +451,7 @@
     onRegister={submitRegistration}
   />
 {:else}
-  <div class="app-shell">
+  <div class="grid min-h-screen grid-cols-[248px_minmax(0,1fr)] max-[760px]:block">
     <AppSidebar
       {navigation}
       {view}
@@ -463,7 +463,7 @@
       }}
       onLogout={logout}
     />
-    <main class="workspace">
+    <main class="min-w-0 [grid-column:2] max-[760px]:[grid-column:auto]">
       <AppHeader
         {view}
         {navigation}
@@ -478,16 +478,23 @@
         onRefresh={refreshAll}
         onToggleRegistration={toggleRegistration}
       />
-      {#if error}<div class="alert error">
+      {#if error}<div
+          class="mx-8 mt-[18px] flex items-center gap-[10px] rounded-[5px] border border-[#60202e] bg-[#2b1118] px-[14px] py-[10px] text-[12px] text-[#ff788e] max-[760px]:mx-[14px] max-[760px]:mt-3"
+        >
           <span>!</span>
-          <p>{error}</p>
-          <button onclick={() => (error = '')}>×</button>
-        </div>{/if}{#if notice}<div class="alert success">
+          <p class="m-0 flex-1">{error}</p>
+          <button class="border-0 bg-transparent" onclick={() => (error = '')}>×</button>
+        </div>{/if}{#if notice}<div
+          class="mx-8 mt-[18px] flex items-center gap-[10px] rounded-[5px] border border-[#205846] bg-[#0d211a] px-[14px] py-[10px] text-[12px] text-[#54d7a1] max-[760px]:mx-[14px] max-[760px]:mt-3"
+        >
           <span>✓</span>
-          <p>{notice}</p>
-          <button onclick={() => (notice = '')}>×</button>
+          <p class="m-0 flex-1">{notice}</p>
+          <button class="border-0 bg-transparent" onclick={() => (notice = '')}>×</button>
         </div>{/if}
-      <div class="content" class:loading>
+      <div
+        class:loading
+        class="mx-auto max-w-[1600px] px-8 pb-[60px] pt-[30px] transition-opacity max-[760px]:px-[14px] max-[760px]:pb-[50px] max-[760px]:pt-5"
+      >
         {#if !organizationId}<OrganizationOnboarding
             creating={creatingOrganization}
             onCreate={createOrganization}
