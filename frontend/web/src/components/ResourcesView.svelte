@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Resource } from '../lib/api';
+  import { statusClass } from '../lib/ui';
   let {
     resources,
     onOpenResource,
@@ -31,7 +32,9 @@
   </div>
 </section>
 <section class="overflow-hidden rounded-none border border-[#1b2a39] bg-[#0b121c] p-0">
-  <div class="w-full overflow-x-auto">
+  <div
+    class="overflow-auto [&_table]:w-full [&_table]:min-w-[600px] [&_table]:border-collapse [&_th]:border-b [&_th]:border-[#1b2a36] [&_th]:p-[9px] [&_th]:text-left [&_th]:text-[8px] [&_th]:tracking-[0.14em] [&_th]:text-[#52697b] [&_td]:border-b [&_td]:border-[#14212b] [&_td]:p-[12px_9px] [&_td]:text-[10px] [&_td]:text-[#8fa3b3] [&_td_strong]:block [&_td_strong]:text-[11px] [&_td_strong]:text-[#bfced8] [&_td_small]:mt-[3px] [&_td_small]:block [&_td_small]:text-[8px] [&_td_small]:text-[#4e6677]"
+  >
     <table>
       <thead
         ><tr
@@ -55,7 +58,7 @@
             <td>{resource.resource_type.replaceAll('_', ' ')}</td><td
               >{resource.region ?? 'global'}</td
             >
-            <td><span class="status {resource.lifecycle}">{resource.lifecycle}</span></td><td
+            <td><span class={statusClass(resource.lifecycle)}>{resource.lifecycle}</span></td><td
               >v{resource.observed_state?.version ?? 0}</td
             >
             <td
@@ -66,10 +69,10 @@
             >
           </tr>{:else}<tr
             ><td colspan="6"
-              ><div class="empty-row">
-                <span>◇</span><strong>No resources discovered</strong><small
-                  >Run inventory sync from Provider Fabric.</small
-                >
+              ><div class="flex flex-col items-center gap-[6px] p-[50px] text-[#536979]">
+                <span class="text-[25px] text-[#2caeb7]">◇</span><strong class="text-[#8498a7]"
+                  >No resources discovered</strong
+                ><small>Run inventory sync from Provider Fabric.</small>
               </div></td
             ></tr
           >{/each}

@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { AuditLog } from '../lib/api';
+  import { statusClass } from '../lib/ui';
   let {
     auditLogs,
     auditAction,
@@ -99,7 +100,9 @@
   >
 </form>
 <section class="overflow-hidden border border-[#1b2a39] bg-[#0b121c] p-0">
-  <div class="w-full overflow-x-auto">
+  <div
+    class="overflow-auto [&_table]:w-full [&_table]:min-w-[600px] [&_table]:border-collapse [&_th]:border-b [&_th]:border-[#1b2a36] [&_th]:p-[9px] [&_th]:text-left [&_th]:text-[8px] [&_th]:tracking-[0.14em] [&_th]:text-[#52697b] [&_td]:border-b [&_td]:border-[#14212b] [&_td]:p-[12px_9px] [&_td]:text-[10px] [&_td]:text-[#8fa3b3] [&_td_strong]:block [&_td_strong]:text-[11px] [&_td_strong]:text-[#bfced8] [&_td_small]:mt-[3px] [&_td_small]:block [&_td_small]:text-[8px] [&_td_small]:text-[#4e6677]"
+  >
     <table>
       <thead
         ><tr
@@ -118,15 +121,15 @@
                 >{audit.actor_id ? shortId(audit.actor_id) : 'control plane'}</small
               ></td
             ><td><strong>{audit.target_type}</strong><small>{shortId(audit.target_id)}</small></td
-            ><td><span class="status {audit.outcome}">{audit.outcome}</span></td><td
+            ><td><span class={statusClass(audit.outcome)}>{audit.outcome}</span></td><td
               ><span class="severity {audit.severity}">{audit.severity}</span></td
             ><td>{audit.trace_id ? shortId(audit.trace_id) : '—'}</td></tr
           >{:else}<tr
             ><td colspan="6"
-              ><div class="empty-row">
-                <span>≋</span><strong>No projected audit events</strong><small
-                  >New domain events appear after the Worker projection runs.</small
-                >
+              ><div class="flex flex-col items-center gap-[6px] p-[50px] text-[#536979]">
+                <span class="text-[25px] text-[#2caeb7]">≋</span><strong class="text-[#8498a7]"
+                  >No projected audit events</strong
+                ><small>New domain events appear after the Worker projection runs.</small>
               </div></td
             ></tr
           >{/each}

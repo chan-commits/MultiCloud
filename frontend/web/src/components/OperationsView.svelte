@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Operation } from '../lib/api';
+  import { statusClass } from '../lib/ui';
   let {
     operations,
     actionBusy,
@@ -31,7 +32,9 @@
   </div>
 </section>
 <section class="overflow-hidden border border-[#1b2a39] bg-[#0b121c] p-0">
-  <div class="w-full overflow-x-auto">
+  <div
+    class="overflow-auto [&_table]:w-full [&_table]:min-w-[600px] [&_table]:border-collapse [&_th]:border-b [&_th]:border-[#1b2a36] [&_th]:p-[9px] [&_th]:text-left [&_th]:text-[8px] [&_th]:tracking-[0.14em] [&_th]:text-[#52697b] [&_td]:border-b [&_td]:border-[#14212b] [&_td]:p-[12px_9px] [&_td]:text-[10px] [&_td]:text-[#8fa3b3] [&_td_strong]:block [&_td_strong]:text-[11px] [&_td_strong]:text-[#bfced8] [&_td_small]:mt-[3px] [&_td_small]:block [&_td_small]:text-[8px] [&_td_small]:text-[#4e6677]"
+  >
     <table>
       <thead
         ><tr
@@ -49,13 +52,21 @@
               ></td
             >
             <td
-              ><span class="status {operation.status}">{operation.status}</span
+              ><span class={statusClass(operation.status)}>{operation.status}</span
               >{#if operation.error_code}<small class="text-[#fb6d86]">{operation.error_code}</small
                 >{/if}</td
             >
             <td
-              ><div class="progress labeled">
-                <i style={`width:${operation.progress}%`}></i><span>{operation.progress}%</span>
+              ><div
+                class="relative mt-1 h-[3px] w-[120px] bg-[#1b2934]
+                "
+              >
+                <i
+                  class="block h-full bg-[#1bd4de] shadow-[0_0_7px_#1bd4de]"
+                  style={`width:${operation.progress}%`}
+                ></i><span class="absolute right-[-28px] top-[-5px] text-[8px] text-[#577080]"
+                  >{operation.progress}%</span
+                >
               </div></td
             >
             <td>{relativeDate(operation.created_at)}</td><td
@@ -65,7 +76,10 @@
                   disabled={actionBusy === operation.id}>Cancel</button
                 >{/if}</td
             >
-          </tr>{:else}<tr><td colspan="6" class="table-empty">Operation history is empty.</td></tr
+          </tr>{:else}<tr
+            ><td colspan="6" class="p-[30px] text-center text-[11px] text-[#526a7a]"
+              >Operation history is empty.</td
+            ></tr
           >{/each}
       </tbody>
     </table>

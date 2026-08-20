@@ -24,6 +24,7 @@
     type Reconciliation,
     type Resource,
   } from './lib/api';
+  import { providerLogoClass, statusClass } from './lib/ui';
 
   type View = 'overview' | 'providers' | 'resources' | 'operations' | 'audit';
   const navigation: { id: View; label: string; caption: string; icon: string }[] = [
@@ -642,7 +643,7 @@
                 {#each providers.slice(0, 4) as provider}<button
                     class="flex items-center gap-[10px] border border-[#172633] bg-[#0a1119] p-[9px] text-left text-[#b8c9d5]"
                     onclick={() => (view = 'providers')}
-                    ><span class="provider-logo {provider.provider_kind}"
+                    ><span class={providerLogoClass(provider.provider_kind)}
                       >{provider.provider_kind.slice(0, 2).toUpperCase()}</span
                     ><span class="flex-1"
                       ><strong class="block text-[11px]">{provider.name}</strong><small
@@ -668,7 +669,9 @@
                   <h3 class="m-0 text-[14px] text-[#c5d6df]">Operation ledger</h3>
                 </div>
               </div>
-              <div class="table-wrap">
+              <div
+                class="overflow-auto [&_table]:w-full [&_table]:min-w-[600px] [&_table]:border-collapse [&_th]:border-b [&_th]:border-[#1b2a36] [&_th]:p-[9px] [&_th]:text-left [&_th]:text-[8px] [&_th]:tracking-[0.14em] [&_th]:text-[#52697b] [&_td]:border-b [&_td]:border-[#14212b] [&_td]:p-[12px_9px] [&_td]:text-[10px] [&_td]:text-[#8fa3b3] [&_td_strong]:block [&_td_strong]:text-[11px] [&_td_strong]:text-[#bfced8] [&_td_small]:mt-[3px] [&_td_small]:block [&_td_small]:text-[8px] [&_td_small]:text-[#4e6677]"
+              >
                 <table>
                   <thead
                     ><tr
@@ -683,7 +686,7 @@
                             >{shortId(operation.id)}</small
                           ></td
                         ><td>{operation.target_type}</td><td
-                          ><span class="status {operation.status}">{operation.status}</span></td
+                          ><span class={statusClass(operation.status)}>{operation.status}</span></td
                         ><td
                           ><div class="relative h-[3px] w-[100px] bg-[#1b2934]">
                             <i
@@ -693,7 +696,9 @@
                           </div></td
                         ><td>{relativeDate(operation.created_at)}</td></tr
                       >{:else}<tr
-                        ><td colspan="5" class="table-empty">No operations recorded yet.</td></tr
+                        ><td colspan="5" class="p-[30px] text-center text-[11px] text-[#526a7a]"
+                          >No operations recorded yet.</td
+                        ></tr
                       >{/each}</tbody
                   >
                 </table>
@@ -749,7 +754,7 @@
                 class="border border-[#1b2e3b] bg-gradient-to-br from-[#0d1721] to-[#090f16] p-5"
               >
                 <div class="flex items-center gap-3 border-b border-[#182733] pb-[18px]">
-                  <span class="provider-logo large {provider.provider_kind}"
+                  <span class={providerLogoClass(provider.provider_kind, true)}
                     >{provider.provider_kind.slice(0, 2).toUpperCase()}</span
                   >
                   <div class="flex-1">
@@ -758,7 +763,7 @@
                     </p>
                     <h3 class="m-0 text-[15px] text-[#dce8ef]">{provider.name}</h3>
                   </div>
-                  <span class="status {provider.status}">{provider.status}</span>
+                  <span class={statusClass(provider.status)}>{provider.status}</span>
                 </div>
                 <div class="grid grid-cols-2 gap-[18px] py-5">
                   <div>
@@ -805,11 +810,19 @@
                     >{actionBusy === provider.id ? 'Working…' : 'Sync inventory'}</button
                   >
                 </div>
-              </article>{:else}<section class="empty-state panel-wide">
-                <div class="empty-orbit">⌁</div>
-                <h2>No providers connected</h2>
-                <p>Connect Cloudflare, Vultr, or OVH to discover your first resources.</p>
-                <button class="primary" onclick={() => (providerDialog = true)}
+              </article>{:else}<section
+                class="col-span-full flex min-h-[400px] flex-col items-center justify-center border border-dashed border-[#233746] bg-[#091019] text-center text-[#617687]"
+              >
+                <div
+                  class="mb-[10px] grid h-[70px] w-[70px] place-items-center rounded-full border border-[#1f6771] text-[25px] text-[#37d7df] shadow-[0_0_30px_#19d4df15]"
+                >
+                  ⌁
+                </div>
+                <h2 class="mb-1 text-[#c7d5df]">No providers connected</h2>
+                <p class="max-w-[430px] text-[12px]">
+                  Connect Cloudflare, Vultr, or OVH to discover your first resources.
+                </p>
+                <button class="primary mt-[14px]" onclick={() => (providerDialog = true)}
                   >Connect provider</button
                 >
               </section>{/each}

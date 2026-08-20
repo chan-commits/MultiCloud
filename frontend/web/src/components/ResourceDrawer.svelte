@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Drift, Reconciliation, Resource } from '../lib/api';
+  import { providerLogoClass, statusClass } from '../lib/ui';
   let {
     resource,
     drifts,
@@ -42,11 +43,14 @@
       >
     </div>
     <div class="flex items-center gap-[13px] py-5">
-      <span class="provider-logo large"
-        >{resource.resource_type === 'compute_instance' ? 'VM' : 'DN'}</span
+      <span
+        class={providerLogoClass(
+          resource.resource_type === 'compute_instance' ? 'vultr' : 'cloudflare',
+          true,
+        )}>{resource.resource_type === 'compute_instance' ? 'VM' : 'DN'}</span
       >
       <div>
-        <span class="status {resource.lifecycle}">{resource.lifecycle}</span>
+        <span class={statusClass(resource.lifecycle)}>{resource.lifecycle}</span>
         <p class="m-[7px_0_0] text-[10px] capitalize text-[#667c8d]">
           {resource.resource_type.replaceAll('_', ' ')} · {resource.region ?? 'global'}
         </p>
@@ -85,7 +89,7 @@
         </p>{:else if drifts.length}{#each drifts as drift}<div
             class="flex items-center gap-3 border-t border-[#172631] py-[10px]"
           >
-            <span class="status {drift.status}">{drift.status}</span>
+            <span class={statusClass(drift.status)}>{drift.status}</span>
             <div class="flex-1">
               <strong class="block text-[10px] text-[#b9c9d4]"
                 >{Object.keys(drift.differences).length} managed differences</strong
@@ -117,7 +121,7 @@
           class="flex items-center gap-3 border-t border-[#172631] py-[10px]"
         >
           <div class="flex-1">
-            <span class="status {task.status}">{task.status}</span><strong
+            <span class={statusClass(task.status)}>{task.status}</span><strong
               class="ml-2 text-[10px] capitalize text-[#95a9b7]"
               >{task.policy.replaceAll('_', ' ')}</strong
             >
