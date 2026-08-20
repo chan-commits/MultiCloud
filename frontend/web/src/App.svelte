@@ -505,9 +505,7 @@
             class="relative mb-[14px] flex min-h-[260px] items-center justify-between overflow-hidden border border-[#1b4b58] bg-[radial-gradient(circle_at_75%_50%,#0d3640,#0a151e_58%)] p-10 max-[760px]:min-h-[250px] max-[760px]:p-[30px]"
           >
             <div>
-              <p
-                class="m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-[var(--cyan)]"
-              >
+              <p class="m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-brand-cyan">
                 LIVE INFRASTRUCTURE POSTURE
               </p>
               <h2 class="m-0 text-[34px] tracking-[-0.045em] text-[#edf6fb]">
@@ -604,14 +602,14 @@
               >
                 <div>
                   <p
-                    class="m-0 mb-[5px] text-[8px] font-extrabold tracking-[0.2em] text-[var(--cyan)]"
+                    class="m-0 mb-[5px] text-[8px] font-extrabold tracking-[0.2em] text-brand-cyan"
                   >
                     OPERATION TELEMETRY
                   </p>
                   <h3 class="m-0 text-[14px] text-[#c5d6df]">Execution stream</h3>
                 </div>
                 <button
-                  class="border-0 bg-transparent p-1 text-[11px] text-[#6f8799] hover:text-[var(--cyan)]"
+                  class="border-0 bg-transparent p-1 text-[11px] text-[#6f8799] hover:text-brand-cyan"
                   onclick={() => (view = 'operations')}>View all →</button
                 >
               </div>
@@ -638,7 +636,7 @@
               >
                 <div>
                   <p
-                    class="m-0 mb-[5px] text-[8px] font-extrabold tracking-[0.2em] text-[var(--cyan)]"
+                    class="m-0 mb-[5px] text-[8px] font-extrabold tracking-[0.2em] text-brand-cyan"
                   >
                     PROVIDER FABRIC
                   </p>
@@ -670,7 +668,7 @@
               >
                 <div>
                   <p
-                    class="m-0 mb-[5px] text-[8px] font-extrabold tracking-[0.2em] text-[var(--cyan)]"
+                    class="m-0 mb-[5px] text-[8px] font-extrabold tracking-[0.2em] text-brand-cyan"
                   >
                     RECENT ACTIVITY
                   </p>
@@ -718,7 +716,7 @@
               >
                 <div>
                   <p
-                    class="m-0 mb-[5px] text-[8px] font-extrabold tracking-[0.2em] text-[var(--cyan)]"
+                    class="m-0 mb-[5px] text-[8px] font-extrabold tracking-[0.2em] text-brand-cyan"
                   >
                     COST SIGNAL
                   </p>
@@ -751,9 +749,7 @@
             class="mb-7 flex items-end justify-between max-[760px]:flex-col max-[760px]:items-start max-[760px]:gap-5"
           >
             <div>
-              <p
-                class="m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-[var(--cyan)]"
-              >
+              <p class="m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-brand-cyan">
                 ADAPTER REGISTRY
               </p>
               <h2>Provider Fabric</h2>

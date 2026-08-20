@@ -45,12 +45,12 @@
       class="absolute right-[-20px] top-[calc(50%-200px)] h-[400px] w-[400px] rounded-full border border-dashed border-[#1ddde526]"
     ></div>
     <div
-      class="relative z-[1] mb-12 grid h-[58px] w-[58px] place-items-center border border-[#1fcad7] font-extrabold text-[var(--cyan)] shadow-[0_0_45px_#16d9e326]"
+      class="relative z-[1] mb-12 grid h-[58px] w-[58px] place-items-center border border-[#1fcad7] font-extrabold text-brand-cyan shadow-[0_0_45px_#16d9e326]"
     >
       MC
     </div>
     <p
-      class="relative z-[1] m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-[var(--cyan)]"
+      class="relative z-[1] m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-brand-cyan"
     >
       MULTI-TENANT CONTROL PLANE
     </p>
@@ -84,18 +84,18 @@
         "
       >
         <span
-          class="grid h-[30px] w-[30px] rotate-45 place-items-center border border-[var(--cyan)] text-[14px] text-[var(--cyan)]"
+          class="grid h-[30px] w-[30px] rotate-45 place-items-center border border-brand-cyan text-[14px] text-brand-cyan"
           >M</span
         ><span>MultiCloud</span>
       </div>
       <div>
-        <p class="m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-[var(--cyan)]">
+        <p class="m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-brand-cyan">
           SECURE ACCESS
         </p>
         <h2 class="m-0 text-[30px] tracking-[-0.035em] text-[#f2f8ff]">
           {mode === 'login' ? 'Welcome back' : 'Create account'}
         </h2>
-        <p class="m-[8px_0_0] text-[var(--muted)]">
+        <p class="m-[8px_0_0] text-muted">
           {mode === 'login'
             ? 'Authenticate to enter your organization workspace.'
             : 'Join the control plane and create your tenant workspace.'}

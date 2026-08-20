@@ -34,7 +34,7 @@
   >
     <div class="flex items-start justify-between border-b border-[#192a36] pb-[17px]">
       <div>
-        <p class="m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-[var(--cyan)]">
+        <p class="m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-brand-cyan">
           RESOURCE DETAIL
         </p>
         <h2 class="m-0 text-[30px] tracking-[-0.035em] text-[#f2f8ff]">{resource.name}</h2>

@@ -27,7 +27,7 @@
       "
     >
       <span
-        class="grid h-[30px] w-[30px] rotate-45 place-items-center border border-[var(--cyan)] text-[14px] text-[var(--cyan)]"
+        class="grid h-[30px] w-[30px] rotate-45 place-items-center border border-brand-cyan text-[14px] text-brand-cyan"
         >M</span
       ><span>MultiCloud</span>
     </div>
@@ -51,7 +51,7 @@
   </div>
   <nav class="flex flex-col gap-[5px]" aria-label="Primary navigation">
     {#each navigation as item}<button
-        class={`flex items-center gap-3 rounded-[5px] border border-transparent bg-transparent p-[11px] text-left ${view === item.id ? 'border-[#17404c] bg-gradient-to-r from-[#0d2d36] to-[#0a151e] text-[#e3fbff] shadow-[inset_2px_0_var(--cyan)]' : 'text-[#6d8294]'}`}
+        class={`flex items-center gap-3 rounded-[5px] border border-transparent bg-transparent p-[11px] text-left ${view === item.id ? 'border-[#17404c] bg-gradient-to-r from-[#0d2d36] to-[#0a151e] text-[#e3fbff] shadow-[inset_2px_0_var(--color-brand-cyan)]' : 'text-[#6d8294]'}`}
         onclick={() => onNavigate(item.id)}
       >
         <span class="w-6 text-center text-[17px] text-[#41cdd5]">{item.icon}</span><span
@@ -70,7 +70,7 @@
       >
     </div>
     <button
-      class="border-0 bg-transparent p-1 text-[11px] text-[#6f8799] hover:text-[var(--cyan)]"
+      class="border-0 bg-transparent p-1 text-[11px] text-[#6f8799] hover:text-brand-cyan"
       onclick={onLogout}>Sign out</button
     >
   </div>

@@ -9,15 +9,11 @@
 }
 
 :root {
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans);
   color: #dce8f5;
   background: #05090f;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  --cyan: #16d9e3;
-  --panel: #0b121c;
-  --line: #1b2a39;
-  --muted: #718397;
 }
 
 *,

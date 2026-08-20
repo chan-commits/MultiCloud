@@ -20,7 +20,7 @@
   class="mb-7 flex items-end justify-between max-[760px]:flex-col max-[760px]:items-start max-[760px]:gap-5"
 >
   <div>
-    <p class="m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-[var(--cyan)]">
+    <p class="m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-brand-cyan">
       RELIABLE EXECUTION
     </p>
     <h2>Operation Stream</h2>
