@@ -29,6 +29,13 @@
   } from './lib/api';
   import { messageOf, relativeDate, shortId } from './lib/format';
   import { navigation, type View } from './lib/navigation';
+  import {
+    clearSession,
+    persistOrganization,
+    persistSession,
+    readPreferredOrganization,
+    readSession,
+  } from './lib/session';
 
   let token = $state(''),
     loginError = $state(''),
@@ -85,20 +92,14 @@
     } catch {
       loginError = 'Could not load platform registration status.';
     }
-    const stored = sessionStorage.getItem('multicloud.session');
-    if (!stored) return;
+    const session = readSession();
+    if (!session) return;
     try {
-      const session = JSON.parse(stored) as {
-        token: string;
-        expiresAt: string;
-        isPlatformAdmin?: boolean;
-      };
-      if (new Date(session.expiresAt) <= new Date()) throw new Error('expired');
       token = session.token;
       isPlatformAdmin = session.isPlatformAdmin ?? false;
       await initialize();
     } catch {
-      sessionStorage.removeItem('multicloud.session');
+      clearSession();
       token = '';
     }
   });
@@ -110,14 +111,11 @@
       const session = await login(email, password);
       token = session.access_token;
       isPlatformAdmin = session.is_platform_admin;
-      sessionStorage.setItem(
-        'multicloud.session',
-        JSON.stringify({
-          token,
-          expiresAt: session.expires_at,
-          isPlatformAdmin: session.is_platform_admin,
-        }),
-      );
+      persistSession({
+        token,
+        expiresAt: session.expires_at,
+        isPlatformAdmin: session.is_platform_admin,
+      });
       await initialize();
     } catch (cause) {
       loginError = messageOf(cause);
@@ -135,14 +133,11 @@
       const session = await login(email, password);
       token = session.access_token;
       isPlatformAdmin = session.is_platform_admin;
-      sessionStorage.setItem(
-        'multicloud.session',
-        JSON.stringify({
-          token,
-          expiresAt: session.expires_at,
-          isPlatformAdmin: session.is_platform_admin,
-        }),
-      );
+      persistSession({
+        token,
+        expiresAt: session.expires_at,
+        isPlatformAdmin: session.is_platform_admin,
+      });
       await initialize();
     } catch (cause) {
       loginError = messageOf(cause);
@@ -158,7 +153,7 @@
     client = new ApiClient(token);
     try {
       organizations = await client.organizations();
-      const preferred = localStorage.getItem('multicloud.organization');
+      const preferred = readPreferredOrganization();
       organizationId = organizations.some((item) => item.id === preferred)
         ? (preferred ?? '')
         : (organizations[0]?.id ?? '');
@@ -178,7 +173,7 @@
     if (event?.currentTarget instanceof HTMLSelectElement)
       organizationId = event.currentTarget.value;
     if (!client || !organizationId) return;
-    localStorage.setItem('multicloud.organization', organizationId);
+    persistOrganization(organizationId);
     client.setOrganization(organizationId);
     selectedResource = null;
     await refreshAll();
@@ -213,7 +208,7 @@
       organizations = [...organizations, organization];
       organizationId = organization.id;
       client.setOrganization(organization.id);
-      localStorage.setItem('multicloud.organization', organization.id);
+      persistOrganization(organization.id);
       notice = 'Organization workspace created.';
       await refreshAll();
     } catch (cause) {
@@ -264,8 +259,7 @@
     } catch {
       /* Local sign-out must still complete. */
     }
-    sessionStorage.removeItem('multicloud.session');
-    localStorage.removeItem('multicloud.organization');
+    clearSession();
     token = '';
     isPlatformAdmin = false;
     client = null;
