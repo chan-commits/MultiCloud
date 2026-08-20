@@ -1,0 +1,46 @@
+.resource-panel,
+.operation-panel {
+  padding: 0;
+}
+.resource-panel th,
+.operation-panel th {
+  padding: 14px 17px;
+}
+.resource-panel td,
+.operation-panel td {
+  padding: 15px 17px;
+}
+.resource-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.resource-name > span {
+  color: #31d6de;
+  font-size: 17px;
+}
+.row-action {
+  border: 0;
+  background: none;
+  color: #43ced7;
+  font-size: 9px;
+  white-space: nowrap;
+}
+.row-action.danger {
+  color: #ff718b;
+}
+.empty-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 50px;
+  gap: 6px;
+  color: #536979;
+}
+.empty-row > span {
+  font-size: 25px;
+  color: #2caeb7;
+}
+.empty-row strong {
+  color: #8498a7;
+}
