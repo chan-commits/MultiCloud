@@ -30,6 +30,13 @@
   import { messageOf, relativeDate, shortId } from './lib/format';
   import { navigation, type View } from './lib/navigation';
   import {
+    cancelOperation,
+    providerSync,
+    providerTest,
+    resourceOperation,
+    resourceProvider,
+  } from './lib/app-actions';
+  import {
     activeResourcesOf,
     driftedResourcesOf,
     failedOperationsOf,
@@ -301,7 +308,7 @@
     if (!client) return;
     actionBusy = provider.id;
     try {
-      const result = await client.testProvider(provider.id);
+      const result = await providerTest(client, provider);
       notice = result.valid
         ? `${provider.name} connection verified.`
         : `${provider.name} validation failed.`;
@@ -316,10 +323,7 @@
     if (!client) return;
     actionBusy = provider.id;
     try {
-      await client.syncProvider(
-        provider.id,
-        provider.provider_kind === 'cloudflare' ? 'dns_zone' : 'compute_instance',
-      );
+      await providerSync(client, provider);
       notice = `${provider.name} inventory sync queued.`;
       await refreshAll();
     } catch (cause) {
@@ -343,12 +347,9 @@
       detailLoading = false;
     }
   }
-  function resourceProvider(resource: Resource) {
-    return providers.find((item) => item.id === resource.provider_account_id) ?? null;
-  }
   async function lifecycle(resource: Resource, action: string) {
     if (!client) return;
-    const provider = resourceProvider(resource),
+    const provider = resourceProvider(providers, resource),
       externalId = resource.external_id ?? '';
     if (!provider || !externalId) {
       error = 'This resource does not expose an operable provider mapping yet.';
@@ -356,7 +357,7 @@
     }
     actionBusy = `${resource.id}:${action}`;
     try {
-      await client.runProviderOperation(provider.id, action, externalId);
+      await resourceOperation(client, provider, resource, action);
       notice = `${action} operation queued for ${resource.name}.`;
       await refreshAll();
     } catch (cause) {
@@ -382,7 +383,7 @@
     if (!client) return;
     actionBusy = operation.id;
     try {
-      await client.cancelOperation(operation.id);
+      await cancelOperation(client, operation);
       notice = 'Queued operation cancelled.';
       await refreshAll();
     } catch (cause) {
