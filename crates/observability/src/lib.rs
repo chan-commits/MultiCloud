@@ -3,7 +3,7 @@ use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitEx
 pub fn init(service_name: &'static str) {
     let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
 
-    tracing_subscriber::registry()
+    let _ = tracing_subscriber::registry()
         .with(filter)
         .with(
             tracing_subscriber::fmt::layer()
@@ -11,7 +11,7 @@ pub fn init(service_name: &'static str) {
                 .with_current_span(true)
                 .with_target(true),
         )
-        .init();
+        .try_init();
 
     tracing::info!(service.name = service_name, "observability initialized");
 }

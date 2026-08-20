@@ -21,8 +21,8 @@ async fn health() -> axum::Json<HealthResponse> {
     })
 }
 
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
+#[allow(clippy::missing_errors_doc)]
+pub async fn run() -> anyhow::Result<()> {
     multicloud_observability::init("multicloud-api");
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
     let settings = Settings::load(root).context("could not load settings")?;

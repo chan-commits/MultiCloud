@@ -1,5 +1,5 @@
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
+#[allow(clippy::missing_errors_doc)]
+pub async fn run() -> anyhow::Result<()> {
     multicloud_observability::init("multicloud-agent");
     tracing::info!("agent started");
     tokio::signal::ctrl_c().await?;

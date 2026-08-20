@@ -24,10 +24,7 @@ use time::OffsetDateTime;
 use uuid::Uuid;
 
 #[derive(Parser)]
-#[command(
-    name = "multicloud-admin",
-    about = "MultiCloud local administration utility"
-)]
+#[command(name = "multicloud", about = "MultiCloud local administration utility")]
 struct Cli {
     #[command(subcommand)]
     command: Command,
@@ -55,8 +52,8 @@ enum Command {
     },
 }
 
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
+#[allow(clippy::missing_errors_doc)]
+pub async fn run() -> anyhow::Result<()> {
     let cli = Cli::parse();
     assert_interactive_terminal()?;
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");

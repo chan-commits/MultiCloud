@@ -2,7 +2,7 @@
 
 ## 0. 首次初始化與管理權限恢復
 
-1. 完成 database migration 後，在 Control Plane 主機的交互式終端執行 `just admin-init`。
+1. 完成 database migration 後，在 Control Plane 主機的交互式終端執行 `just admin-init`（由單一 `multicloud` binary 的 `init` 子命令執行）。
 2. CLI 原子建立首位 active User、Organization、active membership、system roles 與 Owner binding。
 3. Password 僅由隱藏輸入讀取，不接受 command-line password，也不寫入 log；資料庫只保存 Argon2 hash。
 4. 無法登入時執行 `just recover-access [email]`；使用者未指定時由 CLI 列出可恢復帳號。

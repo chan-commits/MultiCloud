@@ -1999,6 +1999,45 @@ dependencies = [
 ]
 
 [[package]]
+name = "multicloud"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "argon2",
+ "axum",
+ "base64",
+ "clap",
+ "dialoguer",
+ "multicloud-admin",
+ "multicloud-agent",
+ "multicloud-api",
+ "multicloud-authorization",
+ "multicloud-configuration",
+ "multicloud-identity",
+ "multicloud-messaging",
+ "multicloud-observability",
+ "multicloud-operation",
+ "multicloud-organization",
+ "multicloud-persistence",
+ "multicloud-provider",
+ "multicloud-resource",
+ "multicloud-scheduler",
+ "multicloud-shared-kernel",
+ "multicloud-worker",
+ "rand 0.9.5",
+ "redis",
+ "sea-orm",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "thiserror",
+ "time",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "multicloud-admin"
 version = "0.1.0"
 dependencies = [
