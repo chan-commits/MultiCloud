@@ -15,16 +15,23 @@
   } = $props();
 </script>
 
-<section class="page-intro">
+<section
+  class="mb-7 flex items-end justify-between max-[760px]:flex-col max-[760px]:items-start max-[760px]:gap-5"
+>
   <div>
     <p class="eyebrow">RELIABLE EXECUTION</p>
     <h2>Operation Stream</h2>
     <p>Idempotent commands, retry state, and immutable execution history.</p>
   </div>
-  <div class="live-pill"><i></i> LIVE QUEUE</div>
+  <div
+    class="flex items-center gap-2 border border-[#1b4b3b] bg-[#0b211a] px-[10px] py-[7px] text-[8px] font-extrabold tracking-[0.12em] text-[#50dca4]
+    "
+  >
+    <i class="h-[7px] w-[7px] rounded-full bg-[#3ff1a7] shadow-[0_0_12px_#3ff1a7]"></i> LIVE QUEUE
+  </div>
 </section>
-<section class="panel operation-panel">
-  <div class="table-wrap">
+<section class="overflow-hidden border border-[#1b2a39] bg-[#0b121c] p-0">
+  <div class="w-full overflow-x-auto">
     <table>
       <thead
         ><tr
@@ -43,7 +50,7 @@
             >
             <td
               ><span class="status {operation.status}">{operation.status}</span
-              >{#if operation.error_code}<small class="error-code">{operation.error_code}</small
+              >{#if operation.error_code}<small class="text-[#fb6d86]">{operation.error_code}</small
                 >{/if}</td
             >
             <td
@@ -53,7 +60,7 @@
             >
             <td>{relativeDate(operation.created_at)}</td><td
               >{#if operation.status === 'queued'}<button
-                  class="row-action danger"
+                  class="border-0 bg-transparent text-[9px] text-[#ff718b]"
                   onclick={() => onCancel(operation)}
                   disabled={actionBusy === operation.id}>Cancel</button
                 >{/if}</td

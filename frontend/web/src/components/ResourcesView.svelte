@@ -11,21 +11,27 @@
   } = $props();
 </script>
 
-<section class="page-intro">
+<section
+  class="mb-7 flex items-end justify-between max-[760px]:flex-col max-[760px]:items-start max-[760px]:gap-5"
+>
   <div>
     <p class="eyebrow">CANONICAL INVENTORY</p>
     <h2>Resource Matrix</h2>
     <p>Provider-neutral assets with normalized state and drift visibility.</p>
   </div>
-  <div class="segmented">
-    <button class="active">All {resources.length}</button><button
+  <div class="flex border border-[#20323f] bg-[#091018] p-[3px]">
+    <button class="bg-[#103039] px-[11px] py-[7px] text-[9px] text-[#60e4eb]"
+      >All {resources.length}</button
+    ><button class="border-0 bg-transparent px-[11px] py-[7px] text-[9px] text-[#63798a]"
       >Compute {resources.filter((item) => item.resource_type === 'compute_instance')
         .length}</button
-    ><button>DNS {resources.filter((item) => item.resource_type.startsWith('dns_')).length}</button>
+    ><button class="border-0 bg-transparent px-[11px] py-[7px] text-[9px] text-[#63798a]"
+      >DNS {resources.filter((item) => item.resource_type.startsWith('dns_')).length}</button
+    >
   </div>
 </section>
-<section class="panel resource-panel">
-  <div class="table-wrap">
+<section class="overflow-hidden rounded-none border border-[#1b2a39] bg-[#0b121c] p-0">
+  <div class="w-full overflow-x-auto">
     <table>
       <thead
         ><tr
@@ -35,9 +41,15 @@
       ><tbody>
         {#each resources as resource}<tr>
             <td
-              ><div class="resource-name">
-                <span>{resource.resource_type === 'compute_instance' ? '▣' : '◎'}</span>
-                <div><strong>{resource.name}</strong><small>{shortId(resource.id)}</small></div>
+              ><div class="flex items-center gap-[10px]">
+                <span class="text-[17px] text-[#31d6de]"
+                  >{resource.resource_type === 'compute_instance' ? '▣' : '◎'}</span
+                >
+                <div>
+                  <strong class="block">{resource.name}</strong><small class="block text-[#587080]"
+                    >{shortId(resource.id)}</small
+                  >
+                </div>
               </div></td
             >
             <td>{resource.resource_type.replaceAll('_', ' ')}</td><td
@@ -47,7 +59,9 @@
               >v{resource.observed_state?.version ?? 0}</td
             >
             <td
-              ><button class="row-action" onclick={() => onOpenResource(resource)}>Inspect →</button
+              ><button
+                class="border-0 bg-transparent text-[9px] text-[#43ced7]"
+                onclick={() => onOpenResource(resource)}>Inspect →</button
               ></td
             >
           </tr>{:else}<tr
