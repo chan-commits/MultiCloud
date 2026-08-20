@@ -27,15 +27,8 @@
     type Reconciliation,
     type Resource,
   } from './lib/api';
-
-  type View = 'overview' | 'providers' | 'resources' | 'operations' | 'audit';
-  const navigation: { id: View; label: string; caption: string; icon: string }[] = [
-    { id: 'overview', label: 'Command Center', caption: 'Global posture', icon: '◫' },
-    { id: 'providers', label: 'Provider Fabric', caption: 'Connections', icon: '⌁' },
-    { id: 'resources', label: 'Resource Matrix', caption: 'Live inventory', icon: '◇' },
-    { id: 'operations', label: 'Operation Stream', caption: 'Execution trace', icon: '↯' },
-    { id: 'audit', label: 'Audit Stream', caption: 'Immutable trail', icon: '≋' },
-  ];
+  import { messageOf, relativeDate, shortId } from './lib/format';
+  import { navigation, type View } from './lib/navigation';
 
   let token = $state(''),
     loginError = $state(''),
@@ -418,22 +411,6 @@
     } finally {
       actionBusy = '';
     }
-  }
-  function messageOf(cause: unknown) {
-    return cause instanceof Error ? cause.message : 'An unexpected error occurred';
-  }
-  function relativeDate(value: string | null) {
-    if (!value) return 'Never';
-    const seconds = Math.floor((Date.now() - new Date(value).getTime()) / 1000);
-    if (seconds < 60) return 'Just now';
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-    return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(
-      new Date(value),
-    );
-  }
-  function shortId(value: string) {
-    return value.length > 16 ? `${value.slice(0, 8)}…${value.slice(-4)}` : value;
   }
 </script>
 

@@ -1,0 +1,10 @@
+export type View = 'overview' | 'providers' | 'resources' | 'operations' | 'audit';
+export type NavigationItem = { id: View; label: string; caption: string; icon: string };
+
+export const navigation: NavigationItem[] = [
+  { id: 'overview', label: 'Command Center', caption: 'Global posture', icon: '◫' },
+  { id: 'providers', label: 'Provider Fabric', caption: 'Connections', icon: '⌁' },
+  { id: 'resources', label: 'Resource Matrix', caption: 'Live inventory', icon: '◇' },
+  { id: 'operations', label: 'Operation Stream', caption: 'Execution trace', icon: '↯' },
+  { id: 'audit', label: 'Audit Stream', caption: 'Immutable trail', icon: '≋' },
+];
