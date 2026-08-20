@@ -598,9 +598,7 @@
           <section
             class="grid grid-cols-2 gap-[14px] max-[1100px]:grid-cols-2 max-[760px]:grid-cols-1"
           >
-            <article
-              class="col-span-2 border border-[#1b2e3b] bg-[#0b121c] p-5 max-[760px]:col-span-1"
-            >
+            <article class="col-span-2 border border-[#1b2e3b] bg-panel p-5 max-[760px]:col-span-1">
               <div
                 class="mb-[18px] flex items-start justify-between border-b border-[#192a36] pb-3"
               >
@@ -634,7 +632,7 @@
                 >
               </div>
             </article>
-            <article class="border border-[#1b2e3b] bg-[#0b121c] p-5">
+            <article class="border border-[#1b2e3b] bg-panel p-5">
               <div
                 class="mb-[18px] flex items-start justify-between border-b border-[#192a36] pb-3"
               >
@@ -666,9 +664,7 @@
                   </div>{/each}
               </div>
             </article>
-            <article
-              class="col-span-2 border border-[#1b2e3b] bg-[#0b121c] p-5 max-[760px]:col-span-1"
-            >
+            <article class="col-span-2 border border-[#1b2e3b] bg-panel p-5 max-[760px]:col-span-1">
               <div
                 class="mb-[18px] flex items-start justify-between border-b border-[#192a36] pb-3"
               >
@@ -716,7 +712,7 @@
                 </table>
               </div>
             </article>
-            <article class="border border-[#1b2e3b] bg-[#0b121c] p-5">
+            <article class="border border-[#1b2e3b] bg-panel p-5">
               <div
                 class="mb-[18px] flex items-start justify-between border-b border-[#192a36] pb-3"
               >

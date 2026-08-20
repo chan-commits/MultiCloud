@@ -1,5 +1,13 @@
 @import 'tailwindcss';
 
+@theme {
+  --color-brand-cyan: #16d9e3;
+  --color-panel: #0b121c;
+  --color-line: #1b2a39;
+  --color-muted: #718397;
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
 :root {
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   color: #dce8f5;
