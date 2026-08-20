@@ -612,13 +612,21 @@
                   onclick={() => (view = 'operations')}>View all →</button
                 >
               </div>
-              <div class="timeline-chart">
-                <div class="chart-grid"></div>
-                <svg viewBox="0 0 800 180" preserveAspectRatio="none"
+              <div class="relative h-[195px] overflow-hidden">
+                <div
+                  class="absolute inset-[10px_0_18px] bg-[linear-gradient(#29404d35_1px,transparent_1px),linear-gradient(90deg,#29404d25_1px,transparent_1px)] bg-[length:100%_33%,12.5%_100%]"
+                ></div>
+                <svg
+                  viewBox="0 0 800 180"
+                  preserveAspectRatio="none"
+                  class="absolute inset-[10px_0_18px] h-[calc(100%-28px)] w-full overflow-visible"
                   ><path
+                    class="fill-none stroke-[#26d5df] [filter:drop-shadow(0_0_6px_#26d5df77)] [stroke-width:2] [vector-effect:non-scaling-stroke]"
                     d="M0 145 C70 130 90 135 150 105 S250 135 315 80 S420 115 485 55 S590 90 650 38 S750 55 800 20"
                   /></svg
-                ><span>Time-series telemetry connects in Observability phase</span>
+                ><span class="absolute bottom-0 right-1 text-[8px] text-[#425968]"
+                  >Time-series telemetry connects in Observability phase</span
+                >
               </div>
             </article>
             <article class="border border-[#1b2e3b] bg-[#0b121c] p-5">
@@ -630,15 +638,21 @@
                   <h3 class="m-0 text-[14px] text-[#c5d6df]">Connection status</h3>
                 </div>
               </div>
-              <div class="provider-mini-list">
+              <div class="flex flex-col gap-2">
                 {#each providers.slice(0, 4) as provider}<button
+                    class="flex items-center gap-[10px] border border-[#172633] bg-[#0a1119] p-[9px] text-left text-[#b8c9d5]"
                     onclick={() => (view = 'providers')}
                     ><span class="provider-logo {provider.provider_kind}"
                       >{provider.provider_kind.slice(0, 2).toUpperCase()}</span
-                    ><span
-                      ><strong>{provider.name}</strong><small>{provider.provider_kind}</small></span
-                    ><i class:online={provider.status === 'active'}></i></button
-                  >{:else}<div class="compact-empty">
+                    ><span class="flex-1"
+                      ><strong class="block text-[11px]">{provider.name}</strong><small
+                        class="block text-[9px] uppercase text-[#536c7e]"
+                        >{provider.provider_kind}</small
+                      ></span
+                    ><i
+                      class={`h-[6px] w-[6px] rounded-full ${provider.status === 'active' ? 'bg-[#3de6a1] shadow-[0_0_9px_#3de6a1]' : 'bg-[#77404a]'}`}
+                    ></i></button
+                  >{:else}<div class="p-[30px] text-center text-[11px] text-[#526a7a]">
                     Connect a provider to activate the fabric.
                   </div>{/each}
               </div>
@@ -671,8 +685,11 @@
                         ><td>{operation.target_type}</td><td
                           ><span class="status {operation.status}">{operation.status}</span></td
                         ><td
-                          ><div class="progress">
-                            <i style={`width:${operation.progress}%`}></i>
+                          ><div class="relative h-[3px] w-[100px] bg-[#1b2934]">
+                            <i
+                              class="block h-full bg-[#1bd4de] shadow-[0_0_7px_#1bd4de]"
+                              style={`width:${operation.progress}%`}
+                            ></i>
                           </div></td
                         ><td>{relativeDate(operation.created_at)}</td></tr
                       >{:else}<tr
@@ -692,10 +709,20 @@
                 </div>
                 <span class="beta">PHASE 9</span>
               </div>
-              <div class="future-metric">
-                <span>—</span>
-                <p>Billing telemetry is reserved for the Billing bounded context.</p>
-                <div class="ghost-bars"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              <div>
+                <span class="text-[38px] text-[#37505e]">—</span>
+                <p class="text-[11px] leading-[1.5] text-[#5c7181]">
+                  Billing telemetry is reserved for the Billing bounded context.
+                </p>
+                <div class="flex h-[75px] items-end gap-[7px] opacity-30">
+                  <i class="h-[30%] flex-1 bg-gradient-to-b from-[#1dbec7] to-[#143541]"></i><i
+                    class="h-[55%] flex-1 bg-gradient-to-b from-[#1dbec7] to-[#143541]"
+                  ></i><i class="h-[40%] flex-1 bg-gradient-to-b from-[#1dbec7] to-[#143541]"></i><i
+                    class="h-[75%] flex-1 bg-gradient-to-b from-[#1dbec7] to-[#143541]"
+                  ></i><i class="h-[62%] flex-1 bg-gradient-to-b from-[#1dbec7] to-[#143541]"></i><i
+                    class="h-[90%] flex-1 bg-gradient-to-b from-[#1dbec7] to-[#143541]"
+                  ></i>
+                </div>
               </div>
             </article>
           </section>
