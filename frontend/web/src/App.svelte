@@ -500,51 +500,116 @@
             onCreate={createOrganization}
           />
         {:else if view === 'overview'}
-          <section class="hero-panel">
+          <section
+            class="relative mb-[14px] flex min-h-[260px] items-center justify-between overflow-hidden border border-[#1b4b58] bg-[radial-gradient(circle_at_75%_50%,#0d3640,#0a151e_58%)] p-10 max-[760px]:min-h-[250px] max-[760px]:p-[30px]"
+          >
             <div>
-              <p class="eyebrow">LIVE INFRASTRUCTURE POSTURE</p>
-              <h2>Your cloud estate,<br /><span>resolved in real time.</span></h2>
-              <p>Unified visibility across every connected provider and canonical resource.</p>
+              <p
+                class="m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-[var(--cyan)]"
+              >
+                LIVE INFRASTRUCTURE POSTURE
+              </p>
+              <h2 class="m-0 text-[34px] tracking-[-0.045em] text-[#edf6fb]">
+                Your cloud estate,<br /><span class="text-[#65e8ed]">resolved in real time.</span>
+              </h2>
+              <p class="max-w-[500px] text-[12px] leading-[1.7] text-[#78909f]">
+                Unified visibility across every connected provider and canonical resource.
+              </p>
             </div>
-            <div class="pulse-core">
-              <div class="pulse-ring"></div>
-              <strong>{activeResources.length}</strong><small>ACTIVE</small>
+            <div
+              class="relative mr-[8%] grid h-[128px] w-[128px] place-items-center rounded-full border border-[#2ebac5] bg-[#0b222a] shadow-[0_0_50px_#19d4df33] max-[760px]:hidden"
+            >
+              <div
+                class="absolute inset-[10px] rounded-full border border-dashed border-[#2ebac5] opacity-60"
+              ></div>
+              <strong class="text-[31px] text-[#d9fbff]">{activeResources.length}</strong><small
+                class="absolute bottom-[28px] text-[8px] tracking-[0.15em] text-[#69cdd3]"
+                >ACTIVE</small
+              >
             </div>
           </section>
-          <section class="metric-grid">
-            <article>
-              <div class="metric-head"><span>CONNECTED PROVIDERS</span><i class="cyan">⌁</i></div>
-              <strong
+          <section
+            class="mb-[14px] grid grid-cols-4 gap-[14px] max-[1100px]:grid-cols-2 max-[760px]:grid-cols-1"
+          >
+            <article
+              class="border border-[#1b2e3b] bg-gradient-to-br from-[#0d1721] to-[#090f16] p-[18px]"
+            >
+              <div
+                class="flex items-center justify-between text-[9px] font-extrabold tracking-[0.13em] text-[#6c8292]"
+              >
+                <span>CONNECTED PROVIDERS</span><i class="text-[18px] not-italic text-[#24dbe3]"
+                  >⌁</i
+                >
+              </div>
+              <strong class="mt-4 block text-[30px] text-[#dcecf4]"
                 >{providers.filter((item) => item.status === 'active').length}<small>
                   / {providers.length}</small
                 ></strong
               >
-              <p><span class="up">●</span> Capability registry online</p>
+              <p class="text-[10px] text-[#718798]">
+                <span class="text-[#3fe4a2]">●</span> Capability registry online
+              </p>
             </article>
-            <article>
-              <div class="metric-head"><span>MANAGED RESOURCES</span><i class="violet">◇</i></div>
-              <strong>{resources.length}</strong>
-              <p>{activeResources.length} currently active</p>
+            <article
+              class="border border-[#1b2e3b] bg-gradient-to-br from-[#0d1721] to-[#090f16] p-[18px]"
+            >
+              <div
+                class="flex items-center justify-between text-[9px] font-extrabold tracking-[0.13em] text-[#6c8292]"
+              >
+                <span>MANAGED RESOURCES</span><i class="text-[18px] not-italic text-[#a48bff]">◇</i>
+              </div>
+              <strong class="mt-4 block text-[30px] text-[#dcecf4]">{resources.length}</strong>
+              <p class="text-[10px] text-[#718798]">{activeResources.length} currently active</p>
             </article>
-            <article>
-              <div class="metric-head"><span>ACTIVE OPERATIONS</span><i class="amber">↯</i></div>
-              <strong>{runningOperations.length}</strong>
-              <p>{failedOperations.length} failures in recent history</p>
+            <article
+              class="border border-[#1b2e3b] bg-gradient-to-br from-[#0d1721] to-[#090f16] p-[18px]"
+            >
+              <div
+                class="flex items-center justify-between text-[9px] font-extrabold tracking-[0.13em] text-[#6c8292]"
+              >
+                <span>ACTIVE OPERATIONS</span><i class="text-[18px] not-italic text-[#ffc064]">↯</i>
+              </div>
+              <strong class="mt-4 block text-[30px] text-[#dcecf4]"
+                >{runningOperations.length}</strong
+              >
+              <p class="text-[10px] text-[#718798]">
+                {failedOperations.length} failures in recent history
+              </p>
             </article>
-            <article>
-              <div class="metric-head"><span>CONFIGURATION DRIFT</span><i class="rose">∆</i></div>
-              <strong>{driftedResources.length}</strong>
-              <p>{driftedResources.length ? 'Review required' : 'Desired state aligned'}</p>
+            <article
+              class="border border-[#1b2e3b] bg-gradient-to-br from-[#0d1721] to-[#090f16] p-[18px]"
+            >
+              <div
+                class="flex items-center justify-between text-[9px] font-extrabold tracking-[0.13em] text-[#6c8292]"
+              >
+                <span>CONFIGURATION DRIFT</span><i class="text-[18px] not-italic text-[#ff718b]"
+                  >∆</i
+                >
+              </div>
+              <strong class="mt-4 block text-[30px] text-[#dcecf4]"
+                >{driftedResources.length}</strong
+              >
+              <p class="text-[10px] text-[#718798]">
+                {driftedResources.length ? 'Review required' : 'Desired state aligned'}
+              </p>
             </article>
           </section>
-          <section class="dashboard-grid">
-            <article class="panel span-two">
-              <div class="panel-head">
+          <section
+            class="grid grid-cols-2 gap-[14px] max-[1100px]:grid-cols-2 max-[760px]:grid-cols-1"
+          >
+            <article
+              class="col-span-2 border border-[#1b2e3b] bg-[#0b121c] p-5 max-[760px]:col-span-1"
+            >
+              <div
+                class="mb-[18px] flex items-start justify-between border-b border-[#192a36] pb-3"
+              >
                 <div>
                   <p class="kicker">OPERATION TELEMETRY</p>
-                  <h3>Execution stream</h3>
+                  <h3 class="m-0 text-[14px] text-[#c5d6df]">Execution stream</h3>
                 </div>
-                <button class="text-button" onclick={() => (view = 'operations')}>View all →</button
+                <button
+                  class="border-0 bg-transparent p-1 text-[11px] text-[#6f8799] hover:text-[var(--cyan)]"
+                  onclick={() => (view = 'operations')}>View all →</button
                 >
               </div>
               <div class="timeline-chart">
@@ -556,11 +621,13 @@
                 ><span>Time-series telemetry connects in Observability phase</span>
               </div>
             </article>
-            <article class="panel">
-              <div class="panel-head">
+            <article class="border border-[#1b2e3b] bg-[#0b121c] p-5">
+              <div
+                class="mb-[18px] flex items-start justify-between border-b border-[#192a36] pb-3"
+              >
                 <div>
                   <p class="kicker">PROVIDER FABRIC</p>
-                  <h3>Connection status</h3>
+                  <h3 class="m-0 text-[14px] text-[#c5d6df]">Connection status</h3>
                 </div>
               </div>
               <div class="provider-mini-list">
@@ -576,11 +643,15 @@
                   </div>{/each}
               </div>
             </article>
-            <article class="panel span-two">
-              <div class="panel-head">
+            <article
+              class="col-span-2 border border-[#1b2e3b] bg-[#0b121c] p-5 max-[760px]:col-span-1"
+            >
+              <div
+                class="mb-[18px] flex items-start justify-between border-b border-[#192a36] pb-3"
+              >
                 <div>
                   <p class="kicker">RECENT ACTIVITY</p>
-                  <h3>Operation ledger</h3>
+                  <h3 class="m-0 text-[14px] text-[#c5d6df]">Operation ledger</h3>
                 </div>
               </div>
               <div class="table-wrap">
@@ -611,11 +682,13 @@
                 </table>
               </div>
             </article>
-            <article class="panel">
-              <div class="panel-head">
+            <article class="border border-[#1b2e3b] bg-[#0b121c] p-5">
+              <div
+                class="mb-[18px] flex items-start justify-between border-b border-[#192a36] pb-3"
+              >
                 <div>
                   <p class="kicker">COST SIGNAL</p>
-                  <h3>Cloud spend</h3>
+                  <h3 class="m-0 text-[14px] text-[#c5d6df]">Cloud spend</h3>
                 </div>
                 <span class="beta">PHASE 9</span>
               </div>
