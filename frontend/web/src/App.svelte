@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { ApiClient, ApiError, login, type AuditLog, type Drift, type Operation, type Organization, type ProviderAccount, type Reconciliation, type Resource } from './lib/api';
+  import { ApiClient, ApiError, login, register, type AuditFilters, type AuditLog, type Drift, type Operation, type Organization, type ProviderAccount, type Reconciliation, type Resource } from './lib/api';
 
   type View = 'overview' | 'providers' | 'resources' | 'operations' | 'audit';
   type ProviderKind = 'cloudflare' | 'vultr' | 'ovh';
@@ -12,13 +12,15 @@
     { id: 'audit', label: 'Audit Stream', caption: 'Immutable trail', icon: '≋' }
   ];
 
-  let token = $state(''), email = $state(''), password = $state(''), loginError = $state(''), error = $state(''), notice = $state('');
+  let token = $state(''), email = $state(''), password = $state(''), displayName = $state(''), authMode = $state<'login' | 'register'>('login'), loginError = $state(''), error = $state(''), notice = $state('');
   let loading = $state(false), authenticating = $state(false), mobileNav = $state(false), providerDialog = $state(false), savingProvider = $state(false);
   let organizations = $state<Organization[]>([]), organizationId = $state(''), providers = $state<ProviderAccount[]>([]), resources = $state<Resource[]>([]), operations = $state<Operation[]>([]), auditLogs = $state<AuditLog[]>([]);
   let view = $state<View>('overview');
   let providerKind = $state<ProviderKind>('cloudflare'), providerName = $state(''), apiToken = $state(''), emailIdentity = $state(''), globalApiKey = $state('');
   let applicationKey = $state(''), applicationSecret = $state(''), consumerKey = $state(''), useGlobalKey = $state(false), actionBusy = $state('');
   let selectedResource = $state<Resource | null>(null), resourceDrifts = $state<Drift[]>([]), reconciliations = $state<Reconciliation[]>([]), detailLoading = $state(false);
+  let organizationName = $state(''), organizationSlug = $state(''), creatingOrganization = $state(false);
+  let auditAction = $state(''), auditOutcome = $state(''), auditLoadingMore = $state(false), auditHasMore = $state(false);
   let client = $state<ApiClient | null>(null);
 
   let activeOrganization = $derived(organizations.find((item) => item.id === organizationId));
@@ -49,6 +51,18 @@
     finally { authenticating = false; }
   }
 
+  async function submitRegistration() {
+    authenticating = true; loginError = '';
+    try {
+      await register(email, password, displayName);
+      const session = await login(email, password);
+      token = session.access_token;
+      sessionStorage.setItem('multicloud.session', JSON.stringify({ token, expiresAt: session.expires_at }));
+      password = ''; await initialize();
+    } catch (cause) { loginError = messageOf(cause); token = ''; }
+    finally { authenticating = false; }
+  }
+
   async function initialize() {
     loading = true; error = ''; client = new ApiClient(token);
     try {
@@ -67,11 +81,36 @@
   async function refreshAll() {
     if (!client || !organizationId) return;
     loading = true; error = '';
-    try { [providers, resources, operations, auditLogs] = await Promise.all([client.providers(), client.resources(), client.operations(), client.auditLogs()]); }
+    try { [providers, resources, operations, auditLogs] = await Promise.all([client.providers(), client.resources(), client.operations(), client.auditLogs(auditFilters())]); auditHasMore = auditLogs.length === 100; }
     catch (cause) { error = messageOf(cause); }
     finally { loading = false; }
   }
-  function logout() {
+  async function createOrganization() {
+    if (!client) return; creatingOrganization = true; error = '';
+    try {
+      const organization = await client.createOrganization({ name: organizationName, slug: organizationSlug });
+      organizations = [...organizations, organization]; organizationId = organization.id;
+      client.setOrganization(organization.id); localStorage.setItem('multicloud.organization', organization.id);
+      organizationName = ''; organizationSlug = ''; notice = 'Organization workspace created.'; await refreshAll();
+    } catch (cause) { error = messageOf(cause); } finally { creatingOrganization = false; }
+  }
+  function auditFilters(before?: AuditLog): AuditFilters {
+    return { action: auditAction.trim() || undefined, outcome: auditOutcome || undefined, occurred_before: before?.occurred_at, occurred_before_id: before?.id, limit: 100 };
+  }
+  async function applyAuditFilters() {
+    if (!client) return; loading = true; error = '';
+    try { auditLogs = await client.auditLogs(auditFilters()); auditHasMore = auditLogs.length === 100; }
+    catch (cause) { error = messageOf(cause); } finally { loading = false; }
+  }
+  async function loadMoreAudit() {
+    if (!client || !auditLogs.length) return; auditLoadingMore = true;
+    try {
+      const rows = await client.auditLogs(auditFilters(auditLogs.at(-1)));
+      const existing = new Set(auditLogs.map((item) => item.id)); auditLogs = [...auditLogs, ...rows.filter((item) => !existing.has(item.id))]; auditHasMore = rows.length === 100;
+    } catch (cause) { error = messageOf(cause); } finally { auditLoadingMore = false; }
+  }
+  async function logout() {
+    try { await client?.logout(); } catch { /* Local sign-out must still complete. */ }
     sessionStorage.removeItem('multicloud.session'); localStorage.removeItem('multicloud.organization');
     token = ''; client = null; organizations = []; providers = []; resources = []; operations = []; auditLogs = [];
   }
@@ -129,7 +168,7 @@
   }
   async function exportAudit() {
     if (!client) return; actionBusy = 'audit-export';
-    try { await client.downloadAudit(); notice = 'Sanitized audit export generated.'; }
+    try { await client.downloadAudit(auditFilters()); notice = 'Sanitized audit export generated.'; }
     catch (cause) { error = messageOf(cause); } finally { actionBusy = ''; }
   }
   function messageOf(cause: unknown) { return cause instanceof Error ? cause.message : 'An unexpected error occurred'; }
@@ -146,7 +185,7 @@
 {#if !token}
   <main class="auth-shell">
     <section class="auth-ambient" aria-hidden="true"><div class="orbit one"></div><div class="orbit two"></div><div class="auth-mark">MC</div><p class="eyebrow">MULTI-TENANT CONTROL PLANE</p><h1>Operate every cloud<br />from one command layer.</h1><p>Provider-neutral infrastructure, deterministic operations, and tenant-safe control.</p><div class="signal-row"><span></span> CONTROL FABRIC ONLINE</div></section>
-    <section class="auth-panel"><form class="auth-form" onsubmit={(event) => { event.preventDefault(); submitLogin(); }}><div class="brand"><span class="brand-glyph">M</span><span>MultiCloud</span></div><div><p class="kicker">SECURE ACCESS</p><h2>Welcome back</h2><p>Authenticate to enter your organization workspace.</p></div><label>Email address<input bind:value={email} type="email" autocomplete="email" placeholder="operator@company.com" required /></label><label>Password<input bind:value={password} type="password" autocomplete="current-password" placeholder="••••••••••••" required /></label>{#if loginError}<p class="form-error">{loginError}</p>{/if}<button class="primary wide" disabled={authenticating}>{authenticating ? 'Authenticating…' : 'Enter Command Center'}<span>→</span></button><p class="security-note"><span>◆</span> Session credentials remain in this browser only.</p></form></section>
+    <section class="auth-panel"><form class="auth-form" onsubmit={(event) => { event.preventDefault(); authMode === 'login' ? submitLogin() : submitRegistration(); }}><div class="brand"><span class="brand-glyph">M</span><span>MultiCloud</span></div><div><p class="kicker">SECURE ACCESS</p><h2>{authMode === 'login' ? 'Welcome back' : 'Create account'}</h2><p>{authMode === 'login' ? 'Authenticate to enter your organization workspace.' : 'Join the control plane and create your tenant workspace.'}</p></div>{#if authMode === 'register'}<label>Display name<input bind:value={displayName} autocomplete="name" maxlength="120" required /></label>{/if}<label>Email address<input bind:value={email} type="email" autocomplete="email" placeholder="operator@company.com" required /></label><label>Password<input bind:value={password} type="password" autocomplete={authMode === 'login' ? 'current-password' : 'new-password'} minlength="12" placeholder="••••••••••••" required /></label>{#if loginError}<p class="form-error">{loginError}</p>{/if}<button class="primary wide" disabled={authenticating}>{authenticating ? 'Working…' : authMode === 'login' ? 'Enter Command Center' : 'Create account'}<span>→</span></button><button class="auth-switch" type="button" onclick={() => { authMode = authMode === 'login' ? 'register' : 'login'; loginError = ''; }}>{authMode === 'login' ? 'New user? Create an account' : 'Already registered? Sign in'}</button><p class="security-note"><span>◆</span> The first platform administrator is initialized locally by CLI.</p></form></section>
   </main>
 {:else}
   <div class="app-shell">
@@ -154,7 +193,7 @@
     <main class="workspace"><header class="topbar"><button class="menu-button" aria-label="Toggle navigation" onclick={() => mobileNav = !mobileNav}>☰</button><div><p class="breadcrumb">CONTROL PLANE / <span>{view.toUpperCase()}</span></p><h1>{navigation.find((item) => item.id === view)?.label}</h1></div><div class="top-actions"><select aria-label="Organization" bind:value={organizationId} onchange={changeOrganization}>{#each organizations as organization}<option value={organization.id}>{organization.name}</option>{/each}</select><button class="icon-button" aria-label="Refresh data" onclick={refreshAll} disabled={loading}>↻</button><span class="operator-avatar">OP</span></div></header>
       {#if error}<div class="alert error"><span>!</span><p>{error}</p><button onclick={() => error = ''}>×</button></div>{/if}{#if notice}<div class="alert success"><span>✓</span><p>{notice}</p><button onclick={() => notice = ''}>×</button></div>{/if}
       <div class="content" class:loading>
-        {#if !organizationId}<section class="empty-state"><div class="empty-orbit">◎</div><h2>No organization workspace</h2><p>Create an organization through the API to initialize your tenant control plane.</p></section>
+        {#if !organizationId}<section class="empty-state onboarding"><div class="empty-orbit">◎</div><h2>Create your organization</h2><p>Your account is ready. Establish an isolated tenant workspace to continue.</p><form onsubmit={(event) => { event.preventDefault(); createOrganization(); }}><label>Organization name<input bind:value={organizationName} maxlength="160" placeholder="Acme Infrastructure" required /></label><label>Organization slug<input bind:value={organizationSlug} minlength="3" maxlength="80" pattern="[a-z0-9](?:[a-z0-9-]*[a-z0-9])?" placeholder="acme-infra" required /></label><button class="primary" disabled={creatingOrganization}>{creatingOrganization ? 'Creating…' : 'Create workspace'}</button></form></section>
         {:else if view === 'overview'}
           <section class="hero-panel"><div><p class="eyebrow">LIVE INFRASTRUCTURE POSTURE</p><h2>Your cloud estate,<br /><span>resolved in real time.</span></h2><p>Unified visibility across every connected provider and canonical resource.</p></div><div class="pulse-core"><div class="pulse-ring"></div><strong>{activeResources.length}</strong><small>ACTIVE</small></div></section>
           <section class="metric-grid"><article><div class="metric-head"><span>CONNECTED PROVIDERS</span><i class="cyan">⌁</i></div><strong>{providers.filter((item) => item.status === 'active').length}<small> / {providers.length}</small></strong><p><span class="up">●</span> Capability registry online</p></article><article><div class="metric-head"><span>MANAGED RESOURCES</span><i class="violet">◇</i></div><strong>{resources.length}</strong><p>{activeResources.length} currently active</p></article><article><div class="metric-head"><span>ACTIVE OPERATIONS</span><i class="amber">↯</i></div><strong>{runningOperations.length}</strong><p>{failedOperations.length} failures in recent history</p></article><article><div class="metric-head"><span>CONFIGURATION DRIFT</span><i class="rose">∆</i></div><strong>{driftedResources.length}</strong><p>{driftedResources.length ? 'Review required' : 'Desired state aligned'}</p></article></section>
@@ -168,8 +207,9 @@
           <section class="page-intro"><div><p class="eyebrow">RELIABLE EXECUTION</p><h2>Operation Stream</h2><p>Idempotent commands, retry state, and immutable execution history.</p></div><div class="live-pill"><i></i> LIVE QUEUE</div></section><section class="panel operation-panel"><div class="table-wrap"><table><thead><tr><th>ID / Type</th><th>Target</th><th>Status</th><th>Progress</th><th>Created</th><th></th></tr></thead><tbody>{#each operations as operation}<tr><td><strong>{operation.operation_type}</strong><small>{shortId(operation.id)}</small></td><td><strong>{operation.target_type}</strong><small>{operation.target_id ? shortId(operation.target_id) : '—'}</small></td><td><span class="status {operation.status}">{operation.status}</span>{#if operation.error_code}<small class="error-code">{operation.error_code}</small>{/if}</td><td><div class="progress labeled"><i style={`width:${operation.progress}%`}></i><span>{operation.progress}%</span></div></td><td>{relativeDate(operation.created_at)}</td><td>{#if operation.status === 'queued'}<button class="row-action danger" onclick={() => cancel(operation)} disabled={actionBusy === operation.id}>Cancel</button>{/if}</td></tr>{:else}<tr><td colspan="6" class="table-empty">Operation history is empty.</td></tr>{/each}</tbody></table></div></section>
         {:else}
           <section class="page-intro"><div><p class="eyebrow">APPEND-ONLY SECURITY LEDGER</p><h2>Audit Stream</h2><p>Sanitized tenant events with actor, outcome, target, and immutable source identity.</p></div><button class="primary" onclick={exportAudit} disabled={actionBusy === 'audit-export'}>{actionBusy === 'audit-export' ? 'Generating…' : '↓ Export CSV'}</button></section>
-          <section class="audit-summary"><article><small>RECORDED EVENTS</small><strong>{auditLogs.length}</strong></article><article><small>SECURITY WARNINGS</small><strong>{auditLogs.filter((item) => item.severity !== 'info').length}</strong></article><article><small>FAILED OUTCOMES</small><strong>{auditLogs.filter((item) => item.outcome === 'failed' || item.outcome === 'denied').length}</strong></article></section>
-          <section class="panel operation-panel"><div class="table-wrap"><table><thead><tr><th>Time / Event</th><th>Actor</th><th>Target</th><th>Outcome</th><th>Severity</th><th>Trace</th></tr></thead><tbody>{#each auditLogs as audit}<tr><td><strong>{audit.action}</strong><small>{relativeDate(audit.occurred_at)} · {shortId(audit.source_event_id)}</small></td><td><strong>{audit.actor_type}</strong><small>{audit.actor_id ? shortId(audit.actor_id) : 'control plane'}</small></td><td><strong>{audit.target_type}</strong><small>{shortId(audit.target_id)}</small></td><td><span class="status {audit.outcome}">{audit.outcome}</span></td><td><span class="severity {audit.severity}">{audit.severity}</span></td><td>{audit.trace_id ? shortId(audit.trace_id) : '—'}</td></tr>{:else}<tr><td colspan="6"><div class="empty-row"><span>≋</span><strong>No projected audit events</strong><small>New domain events appear after the Worker projection runs.</small></div></td></tr>{/each}</tbody></table></div></section>
+          <section class="audit-summary"><article><small>LOADED EVENTS</small><strong>{auditLogs.length}</strong></article><article><small>SECURITY WARNINGS</small><strong>{auditLogs.filter((item) => item.severity !== 'info').length}</strong></article><article><small>FAILED OUTCOMES</small><strong>{auditLogs.filter((item) => item.outcome === 'failed' || item.outcome === 'denied').length}</strong></article></section>
+          <form class="audit-filters" onsubmit={(event) => { event.preventDefault(); applyAuditFilters(); }}><label>Action<input bind:value={auditAction} placeholder="provider.credential.updated" /></label><label>Outcome<select bind:value={auditOutcome}><option value="">All outcomes</option><option value="attempted">Attempted</option><option value="succeeded">Succeeded</option><option value="failed">Failed</option><option value="denied">Denied</option><option value="cancelled">Cancelled</option></select></label><button>Apply filters</button></form>
+          <section class="panel operation-panel"><div class="table-wrap"><table><thead><tr><th>Time / Event</th><th>Actor</th><th>Target</th><th>Outcome</th><th>Severity</th><th>Trace</th></tr></thead><tbody>{#each auditLogs as audit}<tr><td><strong>{audit.action}</strong><small>{relativeDate(audit.occurred_at)} · {shortId(audit.source_event_id)}</small></td><td><strong>{audit.actor_type}</strong><small>{audit.actor_id ? shortId(audit.actor_id) : 'control plane'}</small></td><td><strong>{audit.target_type}</strong><small>{shortId(audit.target_id)}</small></td><td><span class="status {audit.outcome}">{audit.outcome}</span></td><td><span class="severity {audit.severity}">{audit.severity}</span></td><td>{audit.trace_id ? shortId(audit.trace_id) : '—'}</td></tr>{:else}<tr><td colspan="6"><div class="empty-row"><span>≋</span><strong>No projected audit events</strong><small>New domain events appear after the Worker projection runs.</small></div></td></tr>{/each}</tbody></table></div>{#if auditHasMore}<button class="load-more" onclick={loadMoreAudit} disabled={auditLoadingMore}>{auditLoadingMore ? 'Loading…' : 'Load older events'}</button>{/if}</section>
         {/if}
       </div>
     </main>

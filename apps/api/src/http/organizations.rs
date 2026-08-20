@@ -4,7 +4,9 @@ use super::{
     tenant::{AuthIdentity, set_tenant_context},
 };
 use axum::{Json, Router, extract::State, routing::get};
+use multicloud_operation::EventEnvelope;
 use multicloud_persistence::entities::{organization_memberships, organizations};
+use multicloud_persistence::reliable_events::enqueue_event;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set, SqlErr, TransactionTrait,
 };
@@ -87,6 +89,26 @@ async fn create(
         identity.user_id,
     )
     .await?;
+    enqueue_event(
+        &transaction,
+        EventEnvelope {
+            id: multicloud_shared_kernel::EventId::new(),
+            organization_id: multicloud_shared_kernel::OrganizationId::from_uuid(organization_id),
+            aggregate_type: "organization".to_owned(),
+            aggregate_id: organization_id.to_string(),
+            event_type: "organization.organization.created".to_owned(),
+            event_version: 1,
+            payload: serde_json::json!({
+                "requested_by": identity.user_id,
+                "slug": slug,
+                "initial_membership": "owner",
+            }),
+            trace_id: None,
+            occurred_at: now,
+        },
+    )
+    .await
+    .map_err(super::error::internal)?;
     transaction.commit().await.map_err(super::error::internal)?;
 
     Ok((

@@ -37,6 +37,7 @@ export type AuditLog = {
   action: string; target_type: string; target_id: string; outcome: string; severity: string;
   trace_id: string | null; changes: Record<string, unknown>; metadata: Record<string, unknown>; occurred_at: string;
 };
+export type AuditFilters = { action?: string; target_type?: string; outcome?: string; occurred_before?: string; occurred_before_id?: string; limit?: number };
 
 const API_ROOT = '/api/v1';
 
@@ -67,14 +68,25 @@ export class ApiClient {
   }
 
   organizations() { return this.request<Organization[]>('/organizations/'); }
+  logout() { return this.request<void>('/auth/logout', { method: 'POST' }); }
+  createOrganization(payload: { name: string; slug: string }) {
+    return this.request<Organization>('/organizations/', { method: 'POST', body: JSON.stringify(payload) });
+  }
   providers() { return this.request<ProviderAccount[]>('/providers/'); }
   resources() { return this.request<Resource[]>('/resources/'); }
   operations() { return this.request<Operation[]>('/operations/'); }
-  auditLogs() { return this.request<AuditLog[]>('/audit-logs/?limit=200'); }
-  async downloadAudit() {
+  auditLogs(filters: AuditFilters = {}) {
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(filters)) if (value) query.set(key, String(value));
+    query.set('limit', String(filters.limit ?? 100));
+    return this.request<AuditLog[]>(`/audit-logs/?${query}`);
+  }
+  async downloadAudit(filters: AuditFilters = {}) {
     const headers = new Headers({ Authorization: `Bearer ${this.token}` });
     headers.set('x-organization-id', this.organizationId);
-    const response = await fetch(`${API_ROOT}/audit-logs/export`, { headers });
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(filters)) if (value) query.set(key, String(value));
+    const response = await fetch(`${API_ROOT}/audit-logs/export?${query}`, { headers });
     if (!response.ok) throw new ApiError(`Audit export failed (${response.status})`, response.status);
     const url = URL.createObjectURL(await response.blob());
     const anchor = document.createElement('a');
@@ -109,4 +121,16 @@ export async function login(email: string, password: string) {
   const response = await fetch(`${API_ROOT}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
   if (!response.ok) throw new ApiError('Email or password is incorrect', response.status);
   return (await response.json()) as { access_token: string; expires_at: string };
+}
+
+export async function register(email: string, password: string, displayName: string) {
+  const response = await fetch(`${API_ROOT}/auth/register`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, display_name: displayName })
+  });
+  if (!response.ok) {
+    let message = `Registration failed (${response.status})`;
+    try { message = ((await response.json()) as { message?: string }).message ?? message; } catch { /* use status */ }
+    throw new ApiError(message, response.status);
+  }
 }

@@ -56,6 +56,8 @@ just recover-access
 just recover-access admin@example.com
 ```
 
+首位管理员初始化完成后，普通使用者可直接在 Web 登录页注册账号，并在首次登入后建立自己的 Organization。公开注册在平台初始化前保持关闭。
+
 执行完整检查：
 
 ```bash

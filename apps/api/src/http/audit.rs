@@ -9,7 +9,7 @@ use axum::{
 use multicloud_authorization::permissions;
 use multicloud_operation::EventEnvelope;
 use multicloud_persistence::{entities::audit_logs, reliable_events::enqueue_event};
-use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
+use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use time::OffsetDateTime;
@@ -29,6 +29,7 @@ struct AuditQuery {
     actor_id: Option<Uuid>,
     #[serde(with = "time::serde::rfc3339::option", default)]
     occurred_before: Option<OffsetDateTime>,
+    occurred_before_id: Option<Uuid>,
     limit: Option<u64>,
 }
 
@@ -155,12 +156,26 @@ fn apply_filters(
         select = select.filter(audit_logs::Column::ActorId.eq(actor_id));
     }
     if let Some(before) = query.occurred_before {
-        select = select.filter(audit_logs::Column::OccurredAt.lt(before));
+        let cursor = Condition::any()
+            .add(audit_logs::Column::OccurredAt.lt(before))
+            .add(
+                Condition::all()
+                    .add(audit_logs::Column::OccurredAt.eq(before))
+                    .add(
+                        audit_logs::Column::Id.lt(query.occurred_before_id.unwrap_or(Uuid::nil())),
+                    ),
+            );
+        select = select.filter(cursor);
     }
     select
 }
 
 fn validate_query(query: &AuditQuery) -> Result<(), ApiError> {
+    if query.occurred_before_id.is_some() && query.occurred_before.is_none() {
+        return Err(ApiError::BadRequest(
+            "audit cursor id requires occurred_before",
+        ));
+    }
     for value in [query.action.as_deref(), query.target_type.as_deref()]
         .into_iter()
         .flatten()
@@ -244,5 +259,22 @@ mod tests {
     fn csv_fields_escape_formula_and_quotes_as_data() {
         assert_eq!(csv_field("a\"b"), "\"a\"\"b\"");
         assert_eq!(csv_field("=1+1"), "\"'=1+1\"");
+    }
+
+    #[test]
+    fn composite_cursor_requires_timestamp() {
+        let query = AuditQuery {
+            action: None,
+            target_type: None,
+            outcome: None,
+            actor_id: None,
+            occurred_before: None,
+            occurred_before_id: Some(Uuid::now_v7()),
+            limit: Some(100),
+        };
+        assert!(matches!(
+            validate_query(&query),
+            Err(ApiError::BadRequest(_))
+        ));
     }
 }

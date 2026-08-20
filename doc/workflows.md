@@ -10,6 +10,7 @@
 6. 恢復會重設 password、啟用 User/membership、確保 Owner binding，並撤銷該使用者所有既有 session。
 7. 初始化與恢復均透過 transactional outbox 產生 security audit event；任何 event payload 均不包含 password/hash。
 8. 這些能力只存在於本機 CLI，不提供 HTTP recovery endpoint。
+9. 公開 Web 註冊只在首位管理員已初始化後開放；普通使用者註冊後可在 Web 建立自己的 Organization，並成為該租戶 Owner。
 
 ## 1. 登入與租戶切換
 

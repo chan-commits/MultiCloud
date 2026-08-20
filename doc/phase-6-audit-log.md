@@ -16,7 +16,7 @@ Phase 6 將既有 transactional outbox Domain Event 投影成 tenant-scoped、ap
 
 ## Query 與 Export
 
-- `GET /api/v1/audit-logs/`：依 action、target type、outcome、actor、時間 cursor 篩選，單頁最多 200 筆。
+- `GET /api/v1/audit-logs/`：依 action、target type、outcome、actor 篩選，以 `occurred_before + occurred_before_id` 穩定複合 cursor 分頁，單頁最多 200 筆。
 - `GET /api/v1/audit-logs/export`：輸出最多 10,000 筆 sanitized CSV，並防止 spreadsheet formula injection。
 - 查詢與匯出本身都建立 Audit Event，避免 Audit access 成為不可見的管理行為。
 - Export 不包含完整 metadata，只包含時間、action、outcome、severity、actor、target 與 trace ID。
@@ -27,7 +27,9 @@ Phase 6 將既有 transactional outbox Domain Event 投影成 tenant-scoped、ap
 
 ## UI
 
-Command Center 新增 Audit Stream：顯示 immutable event、actor、target、outcome、severity、trace 與摘要卡，並提供 RBAC-protected CSV export。UI 只接收已遮罩資料，不接觸 outbox 原始 payload。
+Command Center 新增 Audit Stream：顯示 immutable event、actor、target、outcome、severity、trace 與摘要卡，支援 action/outcome 篩選、舊事件分頁及 RBAC-protected CSV export。UI 只接收已遮罩資料，不接觸 outbox 原始 payload。
+
+Identity onboarding 採兩層邊界：首位平台管理員只能透過本機 `multicloud-admin init` 建立；平台初始化後，普通使用者可由 Web 註冊並建立自己的 Organization。Organization 建立與 Owner bootstrap 會產生 tenant audit event。
 
 ## 驗證
 

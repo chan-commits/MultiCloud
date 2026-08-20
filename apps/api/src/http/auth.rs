@@ -36,6 +36,16 @@ async fn register(
     State(state): State<AppState>,
     Json(request): Json<RegisterRequest>,
 ) -> Result<(axum::http::StatusCode, Json<UserResponse>), ApiError> {
+    if users::Entity::find()
+        .one(&state.database)
+        .await
+        .map_err(super::error::internal)?
+        .is_none()
+    {
+        return Err(ApiError::Unavailable(
+            "platform administrator must be initialized before public registration",
+        ));
+    }
     let email = Email::parse(request.email).map_err(|_| ApiError::BadRequest("invalid email"))?;
     if request.password.len() < 12 {
         return Err(ApiError::BadRequest(

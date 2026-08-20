@@ -7,6 +7,7 @@ pub enum ApiError {
     Unauthorized,
     Forbidden,
     Conflict(&'static str),
+    Unavailable(&'static str),
     Internal,
 }
 
@@ -27,6 +28,11 @@ impl IntoResponse for ApiError {
             ),
             Self::Forbidden => (StatusCode::FORBIDDEN, "forbidden", "access is denied"),
             Self::Conflict(message) => (StatusCode::CONFLICT, "conflict", message),
+            Self::Unavailable(message) => (
+                StatusCode::SERVICE_UNAVAILABLE,
+                "service_unavailable",
+                message,
+            ),
             Self::Internal => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "internal_error",
