@@ -37,23 +37,6 @@
   .workspace {
     grid-column: auto;
   }
-  .menu-button {
-    display: block;
-  }
-  .topbar {
-    padding: 0 15px;
-    height: 72px;
-  }
-  .topbar > div:nth-child(2) {
-    flex: 1;
-    margin-left: 12px;
-  }
-  .top-actions select {
-    max-width: 110px;
-  }
-  .operator-avatar {
-    display: none;
-  }
   .content {
     padding: 20px 14px 50px;
   }

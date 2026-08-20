@@ -159,15 +159,6 @@
 .auth-form input,
 .modal input,
 .modal select,
-.top-actions select {
-  border: 1px solid #203140;
-  background: #09111a;
-  color: #eaf6ff;
-  border-radius: 6px;
-  padding: 13px 14px;
-  outline: none;
-  transition: 0.2s;
-}
 .auth-form input:focus,
 .modal input:focus,
 .modal select:focus {
