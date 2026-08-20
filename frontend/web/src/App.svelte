@@ -30,9 +30,14 @@
   import { messageOf, relativeDate, shortId } from './lib/format';
   import { navigation, type View } from './lib/navigation';
   import {
+    approveReconciliation,
     cancelOperation,
+    createOrganization as createOrganizationAction,
+    exportAudit as exportAuditAction,
+    loadResourceDetails,
     providerSync,
     providerTest,
+    queryAudit,
     resourceOperation,
     resourceProvider,
   } from './lib/app-actions';
@@ -191,7 +196,7 @@
         client.providers(),
         client.resources(),
         client.operations(),
-        client.auditLogs(auditFilters()),
+        queryAudit(client, auditFilters()),
       ]);
       auditHasMore = auditLogs.length === 100;
     } catch (cause) {
@@ -205,10 +210,11 @@
     creatingOrganization = true;
     error = '';
     try {
-      const organization = await client.createOrganization({
-        name: organizationName,
-        slug: organizationSlug,
-      });
+      const organization = await createOrganizationAction(
+        client,
+        organizationName,
+        organizationSlug,
+      );
       organizations = [...organizations, organization];
       organizationId = organization.id;
       client.setOrganization(organization.id);
@@ -235,7 +241,7 @@
     loading = true;
     error = '';
     try {
-      auditLogs = await client.auditLogs(auditFilters());
+      auditLogs = await queryAudit(client, auditFilters());
       auditHasMore = auditLogs.length === 100;
     } catch (cause) {
       error = messageOf(cause);
@@ -247,7 +253,7 @@
     if (!client || !auditLogs.length) return;
     auditLoadingMore = true;
     try {
-      const rows = await client.auditLogs(auditFilters(auditLogs.at(-1)));
+      const rows = await queryAudit(client, auditFilters(auditLogs.at(-1)));
       const existing = new Set(auditLogs.map((item) => item.id));
       auditLogs = [...auditLogs, ...rows.filter((item) => !existing.has(item.id))];
       auditHasMore = rows.length === 100;
@@ -337,10 +343,7 @@
     selectedResource = resource;
     detailLoading = true;
     try {
-      [resourceDrifts, reconciliations] = await Promise.all([
-        client.drifts(resource.id),
-        client.reconciliations(resource.id),
-      ]);
+      [resourceDrifts, reconciliations] = await loadResourceDetails(client, resource.id);
     } catch (cause) {
       error = messageOf(cause);
     } finally {
@@ -370,7 +373,7 @@
     if (!client || !selectedResource) return;
     actionBusy = task.id;
     try {
-      await client.approveReconciliation(selectedResource.id, task.id);
+      await approveReconciliation(client, selectedResource.id, task);
       notice = 'Reconciliation approved.';
       await openResource(selectedResource);
     } catch (cause) {
@@ -396,7 +399,7 @@
     if (!client) return;
     actionBusy = 'audit-export';
     try {
-      await client.downloadAudit(auditFilters());
+      await exportAuditAction(client, auditFilters());
       notice = 'Sanitized audit export generated.';
     } catch (cause) {
       error = messageOf(cause);
