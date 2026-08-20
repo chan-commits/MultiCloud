@@ -45,23 +45,29 @@
 </script>
 
 <div
-  class="modal-backdrop"
+  class="fixed inset-0 z-50 grid place-items-center bg-[#020508cc] p-5 backdrop-blur-[8px]"
   role="presentation"
   onclick={(event) => event.target === event.currentTarget && onClose()}
 >
   <form
-    class="modal"
+    class="flex max-h-[90vh] w-[min(540px,100%)] flex-col gap-[18px] overflow-auto border border-[#23404e] bg-[#0a1119] p-[25px] shadow-[0_25px_100px_#000]"
     onsubmit={(event) => {
       event.preventDefault();
       submit();
     }}
   >
-    <div class="modal-head">
+    <div class="flex items-start justify-between border-b border-[#192a36] pb-[17px]">
       <div>
-        <p class="kicker">NEW CONNECTION</p>
-        <h2>Connect provider</h2>
+        <p class="m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-[var(--cyan)]">
+          NEW CONNECTION
+        </p>
+        <h2 class="m-0 text-[30px] tracking-[-0.035em] text-[#f2f8ff]">Connect provider</h2>
       </div>
-      <button type="button" onclick={onClose}>×</button>
+      <button
+        class="border-0 bg-transparent text-[22px] text-[#6c8292]"
+        type="button"
+        onclick={onClose}>×</button
+      >
     </div>
     <label
       >Provider<select bind:value={providerKind}
@@ -123,9 +129,13 @@
           required
         /></label
       >{/if}
-    <div class="modal-actions">
-      <button type="button" onclick={onClose}>Cancel</button><button
-        class="primary"
+    <div class="flex justify-end gap-[9px] pt-2">
+      <button
+        class="flex-1 border border-[#293c49] bg-[#0b141d] p-[9px] text-[10px] font-bold text-[#8ea4b3]"
+        type="button"
+        onclick={onClose}>Cancel</button
+      ><button
+        class="flex-1 rounded-[5px] border border-[#20dce6] bg-gradient-to-br from-[#18cbd5] to-[#0796a7] px-[17px] py-3 font-extrabold text-[#001114] shadow-[0_0_28px_#15d7e221]"
         disabled={saving}>{saving ? 'Encrypting…' : 'Encrypt & connect'}</button
       >
     </div>

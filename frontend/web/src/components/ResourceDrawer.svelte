@@ -24,42 +24,50 @@
 </script>
 
 <div
-  class="drawer-backdrop"
+  class="fixed inset-0 z-50 grid place-items-stretch justify-end bg-[#020508cc] backdrop-blur-[8px]"
   role="presentation"
   onclick={(event) => event.target === event.currentTarget && onClose()}
 >
-  <aside class="drawer">
-    <div class="modal-head">
+  <aside
+    class="h-full w-[min(580px,100%)] overflow-auto border-l border-[#24404d] bg-[#080f17] p-[25px] shadow-[-20px_0_80px_#000]"
+  >
+    <div class="flex items-start justify-between border-b border-[#192a36] pb-[17px]">
       <div>
-        <p class="kicker">RESOURCE DETAIL</p>
-        <h2>{resource.name}</h2>
+        <p class="m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-[var(--cyan)]">
+          RESOURCE DETAIL
+        </p>
+        <h2 class="m-0 text-[30px] tracking-[-0.035em] text-[#f2f8ff]">{resource.name}</h2>
       </div>
-      <button onclick={onClose}>×</button>
+      <button class="border-0 bg-transparent text-[22px] text-[#6c8292]" onclick={onClose}>×</button
+      >
     </div>
-    <div class="resource-identity">
+    <div class="flex items-center gap-[13px] py-5">
       <span class="provider-logo large"
         >{resource.resource_type === 'compute_instance' ? 'VM' : 'DN'}</span
       >
       <div>
         <span class="status {resource.lifecycle}">{resource.lifecycle}</span>
-        <p>{resource.resource_type.replaceAll('_', ' ')} · {resource.region ?? 'global'}</p>
+        <p class="m-[7px_0_0] text-[10px] capitalize text-[#667c8d]">
+          {resource.resource_type.replaceAll('_', ' ')} · {resource.region ?? 'global'}
+        </p>
       </div>
     </div>
-    {#if resource.resource_type === 'compute_instance'}<div class="action-strip">
+    {#if resource.resource_type === 'compute_instance'}<div class="mb-5 flex gap-2">
         {#each ['start', 'stop', 'reboot'] as action}<button
             onclick={() => onLifecycle(resource, action)}
             disabled={actionBusy === `${resource.id}:${action}`}
+            class="flex-1 border border-[#293c49] bg-[#0b141d] p-[9px] text-[10px] font-bold text-[#8ea4b3]"
             >{action === 'start' ? '▶' : action === 'stop' ? '■' : '↻'} {action}</button
           >{/each}
       </div>{/if}
-    <section class="drawer-section">
+    <section class="mb-3 border border-[#192b37] bg-[#0a131c] p-4">
       <div class="panel-head">
         <h3>Observed state</h3>
         <span class="beta">v{resource.observed_state?.version ?? 0}</span>
       </div>
       <pre>{JSON.stringify(resource.observed_state?.state ?? resource.attributes, null, 2)}</pre>
     </section>
-    <section class="drawer-section">
+    <section class="mb-3 border border-[#192b37] bg-[#0a131c] p-4">
       <div class="panel-head">
         <h3>Configuration drift</h3>
         <span>{drifts.length}</span>
@@ -81,7 +89,7 @@
           </div>
         </div>{/if}
     </section>
-    <section class="drawer-section">
+    <section class="mb-3 border border-[#192b37] bg-[#0a131c] p-4">
       <div class="panel-head">
         <h3>Reconciliation</h3>
         <span>{reconciliations.length}</span>
