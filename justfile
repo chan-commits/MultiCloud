@@ -5,7 +5,10 @@ default:
 
 bootstrap:
     cargo fetch
-    npm --prefix frontend/web install
+    npm --prefix frontend/web ci
+
+build *args:
+    ./build.sh {{args}}
 
 dev-api:
     cargo run -p multicloud -- serve

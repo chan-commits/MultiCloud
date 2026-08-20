@@ -64,6 +64,20 @@ just recover-access admin@example.com
 just check
 ```
 
+建立 Debug 产物（包含前置依赖安装、格式/静态检查、测试、前端构建与单一 Rust binary）：
+
+```bash
+just build
+```
+
+生产 Release 构建：
+
+```bash
+./build.sh --release
+```
+
+产物分别位于 `target/debug/multicloud` 或 `target/release/multicloud`，前端产物位于 `frontend/web/dist/`。
+
 所有常用命令可通过 `just --list` 查看。
 
 ## 当前进度
