@@ -37,6 +37,7 @@ doc/                  需求、架构、Schema、流程与开发路线
 cp .env.example .env
 just infra-up
 just migrate up
+just admin-init
 ```
 
 安装依赖及启动应用：
@@ -45,6 +46,14 @@ just migrate up
 just bootstrap
 just dev-api
 just dev-web
+```
+
+首次安装通过服务器上的交互式管理命令建立首位管理员及 Organization；密码不会出现在 shell history 或 process list。若管理员无法登入，可在服务器终端执行：
+
+```bash
+just recover-access
+# 或指定用户；多 Organization 时会要求选择目标租户
+just recover-access admin@example.com
 ```
 
 执行完整检查：

@@ -1,6 +1,7 @@
 [workspace]
 resolver = "3"
 members = [
+    "apps/admin",
     "apps/agent",
     "apps/api",
     "apps/scheduler",
@@ -30,6 +31,8 @@ aes-gcm = "0.10.3"
 async-trait = "0.1.92"
 axum = "0.8.9"
 argon2 = "0.5.3"
+clap = { version = "4.5.54", features = ["derive"] }
+dialoguer = "0.12.0"
 base64 = "0.22.1"
 config = "0.15.25"
 redis = { version = "1.6.0", features = ["tokio-comp"] }

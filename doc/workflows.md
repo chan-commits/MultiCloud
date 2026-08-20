@@ -1,5 +1,16 @@
 # 核心流程
 
+## 0. 首次初始化與管理權限恢復
+
+1. 完成 database migration 後，在 Control Plane 主機的交互式終端執行 `just admin-init`。
+2. CLI 原子建立首位 active User、Organization、active membership、system roles 與 Owner binding。
+3. Password 僅由隱藏輸入讀取，不接受 command-line password，也不寫入 log；資料庫只保存 Argon2 hash。
+4. 無法登入時執行 `just recover-access [email]`；使用者未指定時由 CLI 列出可恢復帳號。
+5. 多租戶帳號必須明確選擇 Organization；沒有 membership 時必須提供 Organization UUID 並再次確認，不會跨租戶自動授權。
+6. 恢復會重設 password、啟用 User/membership、確保 Owner binding，並撤銷該使用者所有既有 session。
+7. 初始化與恢復均透過 transactional outbox 產生 security audit event；任何 event payload 均不包含 password/hash。
+8. 這些能力只存在於本機 CLI，不提供 HTTP recovery endpoint。
+
 ## 1. 登入與租戶切換
 
 1. 使用者完成身份驗證，系統建立 session/token。

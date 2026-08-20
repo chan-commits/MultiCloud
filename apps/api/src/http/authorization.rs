@@ -8,7 +8,7 @@ use axum::{
     extract::{Path, State},
     routing::{delete, get, post},
 };
-use multicloud_authorization::{PermissionKey, permissions as permission_keys};
+use multicloud_authorization::{PermissionKey, permissions as permission_keys, system_role_specs};
 use multicloud_operation::EventEnvelope;
 use multicloud_persistence::entities::{
     organization_memberships, permissions, role_bindings, role_permissions, roles,
@@ -109,88 +109,6 @@ async fn load_permission_keys(
         .collect()
 }
 
-type SystemRoleSpec = (
-    &'static str,
-    &'static str,
-    &'static str,
-    &'static [&'static str],
-);
-
-fn system_role_specs() -> [SystemRoleSpec; 4] {
-    [
-        (
-            "owner",
-            "Owner",
-            "Full organization access",
-            &[
-                permission_keys::ORGANIZATION_READ,
-                permission_keys::ORGANIZATION_UPDATE,
-                permission_keys::MEMBER_READ,
-                permission_keys::MEMBER_MANAGE,
-                permission_keys::INVITATION_MANAGE,
-                permission_keys::ROLE_READ,
-                permission_keys::ROLE_MANAGE,
-                permission_keys::BINDING_MANAGE,
-                permission_keys::OPERATION_READ,
-                permission_keys::OPERATION_CANCEL,
-                permission_keys::PROVIDER_ACCOUNT_READ,
-                permission_keys::PROVIDER_ACCOUNT_MANAGE,
-                permission_keys::PROVIDER_CONNECTION_TEST,
-                permission_keys::RESOURCE_READ,
-                permission_keys::RESOURCE_MANAGE,
-                permission_keys::RESOURCE_SYNC,
-                permission_keys::RECONCILIATION_MANAGE,
-            ],
-        ),
-        (
-            "admin",
-            "Admin",
-            "Organization administration access",
-            &[
-                permission_keys::ORGANIZATION_READ,
-                permission_keys::ORGANIZATION_UPDATE,
-                permission_keys::MEMBER_READ,
-                permission_keys::MEMBER_MANAGE,
-                permission_keys::INVITATION_MANAGE,
-                permission_keys::ROLE_READ,
-                permission_keys::ROLE_MANAGE,
-                permission_keys::BINDING_MANAGE,
-                permission_keys::OPERATION_READ,
-                permission_keys::OPERATION_CANCEL,
-                permission_keys::PROVIDER_ACCOUNT_READ,
-                permission_keys::PROVIDER_ACCOUNT_MANAGE,
-                permission_keys::PROVIDER_CONNECTION_TEST,
-                permission_keys::RESOURCE_READ,
-                permission_keys::RESOURCE_MANAGE,
-                permission_keys::RESOURCE_SYNC,
-                permission_keys::RECONCILIATION_MANAGE,
-            ],
-        ),
-        (
-            "member",
-            "Member",
-            "Standard organization access",
-            &[
-                permission_keys::ORGANIZATION_READ,
-                permission_keys::MEMBER_READ,
-                permission_keys::OPERATION_READ,
-                permission_keys::PROVIDER_ACCOUNT_READ,
-                permission_keys::RESOURCE_READ,
-            ],
-        ),
-        (
-            "viewer",
-            "Viewer",
-            "Read-only organization access",
-            &[
-                permission_keys::ORGANIZATION_READ,
-                permission_keys::PROVIDER_ACCOUNT_READ,
-                permission_keys::RESOURCE_READ,
-            ],
-        ),
-    ]
-}
-
 pub async fn bootstrap_organization_roles(
     transaction: &DatabaseTransaction,
     organization_id: Uuid,
@@ -206,17 +124,17 @@ pub async fn bootstrap_organization_roles(
         .collect();
     let now = OffsetDateTime::now_utc();
     let mut owner_role_id = None;
-    for (key, name, description, granted_permissions) in system_role_specs() {
+    for spec in system_role_specs() {
         let role_id = Uuid::now_v7();
-        if key == "owner" {
+        if spec.key == "owner" {
             owner_role_id = Some(role_id);
         }
         roles::ActiveModel {
             id: Set(role_id),
             organization_id: Set(organization_id),
-            key: Set(key.to_owned()),
-            name: Set(name.to_owned()),
-            description: Set(description.to_owned()),
+            key: Set(spec.key.to_owned()),
+            name: Set(spec.name.to_owned()),
+            description: Set(spec.description.to_owned()),
             is_system: Set(true),
             created_at: Set(now),
             updated_at: Set(now),
@@ -224,7 +142,7 @@ pub async fn bootstrap_organization_roles(
         .insert(transaction)
         .await
         .map_err(super::error::internal)?;
-        for permission_key in granted_permissions {
+        for permission_key in spec.permission_keys {
             let permission_id = permission_by_key
                 .get(permission_key)
                 .copied()

@@ -60,6 +60,75 @@ pub mod permissions {
     ];
 }
 
+pub struct SystemRoleSpec {
+    pub key: &'static str,
+    pub name: &'static str,
+    pub description: &'static str,
+    pub permission_keys: &'static [&'static str],
+}
+
+#[must_use]
+pub fn system_role_specs() -> [SystemRoleSpec; 4] {
+    use permissions as permission;
+    const OWNER_ADMIN: &[&str] = &[
+        permission::ORGANIZATION_READ,
+        permission::ORGANIZATION_UPDATE,
+        permission::MEMBER_READ,
+        permission::MEMBER_MANAGE,
+        permission::INVITATION_MANAGE,
+        permission::ROLE_READ,
+        permission::ROLE_MANAGE,
+        permission::BINDING_MANAGE,
+        permission::OPERATION_READ,
+        permission::OPERATION_CANCEL,
+        permission::PROVIDER_ACCOUNT_READ,
+        permission::PROVIDER_ACCOUNT_MANAGE,
+        permission::PROVIDER_CONNECTION_TEST,
+        permission::RESOURCE_READ,
+        permission::RESOURCE_MANAGE,
+        permission::RESOURCE_SYNC,
+        permission::RECONCILIATION_MANAGE,
+        permission::AUDIT_READ,
+        permission::AUDIT_EXPORT,
+    ];
+    [
+        SystemRoleSpec {
+            key: "owner",
+            name: "Owner",
+            description: "Full organization access",
+            permission_keys: OWNER_ADMIN,
+        },
+        SystemRoleSpec {
+            key: "admin",
+            name: "Admin",
+            description: "Organization administration access",
+            permission_keys: OWNER_ADMIN,
+        },
+        SystemRoleSpec {
+            key: "member",
+            name: "Member",
+            description: "Standard organization access",
+            permission_keys: &[
+                permission::ORGANIZATION_READ,
+                permission::MEMBER_READ,
+                permission::OPERATION_READ,
+                permission::PROVIDER_ACCOUNT_READ,
+                permission::RESOURCE_READ,
+            ],
+        },
+        SystemRoleSpec {
+            key: "viewer",
+            name: "Viewer",
+            description: "Read-only organization access",
+            permission_keys: &[
+                permission::ORGANIZATION_READ,
+                permission::PROVIDER_ACCOUNT_READ,
+                permission::RESOURCE_READ,
+            ],
+        },
+    ]
+}
+
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct PermissionKey(String);

@@ -28,6 +28,12 @@ infra-down:
 migrate *args:
     cargo run -p multicloud-migrations -- {{args}}
 
+admin-init *args:
+    cargo run -p multicloud-admin -- init {{args}}
+
+recover-access *args:
+    cargo run -p multicloud-admin -- recover-access {{args}}
+
 fmt:
     cargo fmt --all
 
