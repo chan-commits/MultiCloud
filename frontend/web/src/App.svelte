@@ -605,7 +605,11 @@
                 class="mb-[18px] flex items-start justify-between border-b border-[#192a36] pb-3"
               >
                 <div>
-                  <p class="kicker">OPERATION TELEMETRY</p>
+                  <p
+                    class="m-0 mb-[5px] text-[8px] font-extrabold tracking-[0.2em] text-[var(--cyan)]"
+                  >
+                    OPERATION TELEMETRY
+                  </p>
                   <h3 class="m-0 text-[14px] text-[#c5d6df]">Execution stream</h3>
                 </div>
                 <button
@@ -635,7 +639,11 @@
                 class="mb-[18px] flex items-start justify-between border-b border-[#192a36] pb-3"
               >
                 <div>
-                  <p class="kicker">PROVIDER FABRIC</p>
+                  <p
+                    class="m-0 mb-[5px] text-[8px] font-extrabold tracking-[0.2em] text-[var(--cyan)]"
+                  >
+                    PROVIDER FABRIC
+                  </p>
                   <h3 class="m-0 text-[14px] text-[#c5d6df]">Connection status</h3>
                 </div>
               </div>
@@ -665,7 +673,11 @@
                 class="mb-[18px] flex items-start justify-between border-b border-[#192a36] pb-3"
               >
                 <div>
-                  <p class="kicker">RECENT ACTIVITY</p>
+                  <p
+                    class="m-0 mb-[5px] text-[8px] font-extrabold tracking-[0.2em] text-[var(--cyan)]"
+                  >
+                    RECENT ACTIVITY
+                  </p>
                   <h3 class="m-0 text-[14px] text-[#c5d6df]">Operation ledger</h3>
                 </div>
               </div>
@@ -709,7 +721,11 @@
                 class="mb-[18px] flex items-start justify-between border-b border-[#192a36] pb-3"
               >
                 <div>
-                  <p class="kicker">COST SIGNAL</p>
+                  <p
+                    class="m-0 mb-[5px] text-[8px] font-extrabold tracking-[0.2em] text-[var(--cyan)]"
+                  >
+                    COST SIGNAL
+                  </p>
                   <h3 class="m-0 text-[14px] text-[#c5d6df]">Cloud spend</h3>
                 </div>
                 <span
@@ -739,12 +755,17 @@
             class="mb-7 flex items-end justify-between max-[760px]:flex-col max-[760px]:items-start max-[760px]:gap-5"
           >
             <div>
-              <p class="eyebrow">ADAPTER REGISTRY</p>
+              <p
+                class="m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-[var(--cyan)]"
+              >
+                ADAPTER REGISTRY
+              </p>
               <h2>Provider Fabric</h2>
               <p>Encrypted credentials, capability discovery, and controlled synchronization.</p>
             </div>
-            <button class="primary" onclick={() => (providerDialog = true)}
-              >＋ Connect provider</button
+            <button
+              class="rounded-[5px] border border-[#20dce6] bg-gradient-to-br from-[#18cbd5] to-[#0796a7] px-[17px] py-3 font-extrabold text-[#001114] shadow-[0_0_28px_#15d7e221]"
+              onclick={() => (providerDialog = true)}>＋ Connect provider</button
             >
           </section>
           <section
@@ -822,8 +843,9 @@
                 <p class="max-w-[430px] text-[12px]">
                   Connect Cloudflare, Vultr, or OVH to discover your first resources.
                 </p>
-                <button class="primary mt-[14px]" onclick={() => (providerDialog = true)}
-                  >Connect provider</button
+                <button
+                  class="mt-[14px] rounded-[5px] border border-[#20dce6] bg-gradient-to-br from-[#18cbd5] to-[#0796a7] px-[17px] py-3 font-extrabold text-[#001114] shadow-[0_0_28px_#15d7e221]"
+                  onclick={() => (providerDialog = true)}>Connect provider</button
                 >
               </section>{/each}
           </section>

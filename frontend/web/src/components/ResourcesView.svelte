@@ -16,7 +16,9 @@
   class="mb-7 flex items-end justify-between max-[760px]:flex-col max-[760px]:items-start max-[760px]:gap-5"
 >
   <div>
-    <p class="eyebrow">CANONICAL INVENTORY</p>
+    <p class="m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-[var(--cyan)]">
+      CANONICAL INVENTORY
+    </p>
     <h2>Resource Matrix</h2>
     <p>Provider-neutral assets with normalized state and drift visibility.</p>
   </div>
