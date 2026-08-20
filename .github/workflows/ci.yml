@@ -16,10 +16,21 @@ jobs:
         with:
           toolchain: 1.97.1
           components: rustfmt, clippy
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/web/package-lock.json
+      - name: Build embedded frontend assets
+        run: |
+          npm ci
+          npm run build
+        working-directory: frontend/web
       - uses: Swatinem/rust-cache@v2
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace --all-targets --all-features -- -D warnings
       - run: cargo test --workspace
+      - run: cargo build -p multicloud
 
   frontend:
     runs-on: ubuntu-latest
@@ -34,5 +45,6 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/web/package-lock.json
       - run: npm ci
+      - run: npm run format:check
       - run: npm run check
       - run: npm run build
