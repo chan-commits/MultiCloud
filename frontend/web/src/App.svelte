@@ -727,7 +727,9 @@
             </article>
           </section>
         {:else if view === 'providers'}
-          <section class="page-intro">
+          <section
+            class="mb-7 flex items-end justify-between max-[760px]:flex-col max-[760px]:items-start max-[760px]:gap-5"
+          >
             <div>
               <p class="eyebrow">ADAPTER REGISTRY</p>
               <h2>Provider Fabric</h2>
@@ -737,51 +739,64 @@
               >＋ Connect provider</button
             >
           </section>
-          <section class="provider-grid">
-            {#each providers as provider}<article class="provider-card">
-                <div class="provider-card-top">
+          <section
+            class="grid grid-cols-3 gap-[14px] max-[1100px]:grid-cols-2 max-[760px]:grid-cols-1"
+          >
+            {#each providers as provider}<article
+                class="border border-[#1b2e3b] bg-gradient-to-br from-[#0d1721] to-[#090f16] p-5"
+              >
+                <div class="flex items-center gap-3 border-b border-[#182733] pb-[18px]">
                   <span class="provider-logo large {provider.provider_kind}"
                     >{provider.provider_kind.slice(0, 2).toUpperCase()}</span
                   >
-                  <div>
-                    <p>{provider.provider_kind.toUpperCase()}</p>
-                    <h3>{provider.name}</h3>
+                  <div class="flex-1">
+                    <p class="m-0 mb-1 text-[8px] tracking-[0.14em] text-[#526b7d]">
+                      {provider.provider_kind.toUpperCase()}
+                    </p>
+                    <h3 class="m-0 text-[15px] text-[#dce8ef]">{provider.name}</h3>
                   </div>
                   <span class="status {provider.status}">{provider.status}</span>
                 </div>
-                <div class="provider-data">
+                <div class="grid grid-cols-2 gap-[18px] py-5">
                   <div>
-                    <small>CAPABILITIES</small>
-                    <p>
+                    <small class="text-[8px] tracking-[0.12em] text-[#4f6677]">CAPABILITIES</small>
+                    <p class="m-[5px_0_0] text-[10px] capitalize text-[#9db0bf]">
                       {provider.capabilities.length
                         ? provider.capabilities.join(' · ')
                         : 'Awaiting discovery'}
                     </p>
                   </div>
                   <div>
-                    <small>LAST VERIFIED</small>
-                    <p>{relativeDate(provider.last_validated_at)}</p>
+                    <small class="text-[8px] tracking-[0.12em] text-[#4f6677]">LAST VERIFIED</small>
+                    <p class="m-[5px_0_0] text-[10px] capitalize text-[#9db0bf]">
+                      {relativeDate(provider.last_validated_at)}
+                    </p>
                   </div>
                   <div>
-                    <small>CREDENTIAL</small>
-                    <p>{provider.credential_masked_identifier ?? 'Encrypted'}</p>
+                    <small class="text-[8px] tracking-[0.12em] text-[#4f6677]">CREDENTIAL</small>
+                    <p class="m-[5px_0_0] text-[10px] capitalize text-[#9db0bf]">
+                      {provider.credential_masked_identifier ?? 'Encrypted'}
+                    </p>
                   </div>
                   <div>
-                    <small>RISK</small>
-                    <p class:high-risk={provider.credential_risk_level === 'high'}>
+                    <small class="text-[8px] tracking-[0.12em] text-[#4f6677]">RISK</small>
+                    <p
+                      class={`m-[5px_0_0] text-[10px] capitalize ${provider.credential_risk_level === 'high' ? 'text-[#ffb35f]' : 'text-[#9db0bf]'}`}
+                    >
                       {provider.credential_risk_level ?? 'restricted'}
                     </p>
                   </div>
                 </div>
-                {#if provider.last_error_code}<p class="inline-warning">
+                {#if provider.last_error_code}<p class="bg-[#2a1710] p-2 text-[9px] text-[#ff9b65]">
                     ⚠ {provider.last_error_code}
                   </p>{/if}
-                <div class="card-actions">
+                <div class="flex gap-2">
                   <button
+                    class="flex-1 rounded-[4px] border border-[#293c49] bg-[#0b141d] p-[9px] text-[10px] font-bold text-[#8ea4b3]"
                     onclick={() => testConnection(provider)}
                     disabled={actionBusy === provider.id}>Test connection</button
                   ><button
-                    class="accent"
+                    class="flex-1 rounded-[4px] border border-[#17616a] bg-[#0c282d] p-[9px] text-[10px] font-bold text-[#60e5eb]"
                     onclick={() => syncProvider(provider)}
                     disabled={provider.status !== 'active' || actionBusy === provider.id}
                     >{actionBusy === provider.id ? 'Working…' : 'Sync inventory'}</button
