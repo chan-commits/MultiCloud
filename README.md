@@ -48,7 +48,7 @@ just run
 just dev-web
 ```
 
-生产部署只需 `multicloud` 一个可执行文件；默认 `serve` 会在同一进程启动 API、Worker 与 Scheduler。`worker`、`scheduler` 和 `agent` 子命令用于隔离调试或特殊部署。首次安装通过服务器上的交互式管理命令建立首位管理员及 Organization；密码不会出现在 shell history 或 process list。若管理员无法登入，可在服务器终端执行：
+生产部署只需 `multicloud` 一个可执行文件；前端 `dist` 会在编译时嵌入 binary，运行时不需要独立的静态文件服务器。默认 `serve` 会在同一进程启动 API、Worker 与 Scheduler。`worker`、`scheduler` 和 `agent` 子命令用于隔离调试或特殊部署。首次安装通过服务器上的交互式管理命令建立首位管理员及 Organization；密码不会出现在 shell history 或 process list。若管理员无法登入，可在服务器终端执行：
 
 ```bash
 just recover-access

@@ -41,14 +41,16 @@ npm --prefix frontend/web ci
 printf '%s\n' '==> Checking Rust formatting'
 cargo fmt --all -- --check
 
+printf '%s\n' '==> Building frontend assets for embedding'
+npm --prefix frontend/web run build
+
 printf '%s\n' '==> Running Rust lint and tests'
 cargo clippy --workspace --all-targets --all-features -- -D warnings
 cargo test --workspace
 
-printf '%s\n' '==> Checking and building frontend'
+printf '%s\n' '==> Checking frontend'
 npm --prefix frontend/web run format:check
 npm --prefix frontend/web run check
-npm --prefix frontend/web run build
 
 printf '==> Building the single multicloud %s binary\n' "$BUILD_PROFILE"
 cargo build "${CARGO_BUILD_ARGS[@]}" -p multicloud

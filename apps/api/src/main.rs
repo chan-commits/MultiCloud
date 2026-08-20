@@ -1,5 +1,6 @@
 use anyhow::Context;
 mod http;
+mod web;
 
 use axum::{Router, routing::get};
 use multicloud_configuration::Settings;
@@ -61,6 +62,7 @@ pub async fn run() -> anyhow::Result<()> {
     let app = Router::new()
         .route("/health", get(health))
         .nest("/api/v1", http::router())
+        .fallback(web::serve)
         .with_state(state);
     let listener = TcpListener::bind(address).await?;
     tracing::info!(%address, environment = settings.environment, "API listening");

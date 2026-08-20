@@ -51,7 +51,10 @@ test:
     cargo test --workspace
     npm --prefix frontend/web run check
 
-check: lint test
+check:
+    npm --prefix frontend/web run build
+    cargo clippy --workspace --all-targets --all-features -- -D warnings
+    cargo test --workspace
     cargo fmt --all -- --check
     npm --prefix frontend/web run format:check
-    npm --prefix frontend/web run build
+    npm --prefix frontend/web run check
