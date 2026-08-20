@@ -6,13 +6,17 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "check": "svelte-check --tsgo --tsconfig ./tsconfig.json"
+    "check": "svelte-check --tsgo --tsconfig ./tsconfig.json",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "7.3.0",
     "@tailwindcss/vite": "4.3.3",
     "@tsconfig/svelte": "5.0.8",
     "@typescript/native": "npm:typescript@7.0.2",
+    "prettier": "3.9.6",
+    "prettier-plugin-svelte": "4.1.1",
     "svelte": "5.56.9",
     "svelte-check": "4.7.6",
     "tailwindcss": "4.3.3",

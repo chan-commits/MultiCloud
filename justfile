@@ -36,6 +36,7 @@ recover-access *args:
 
 fmt:
     cargo fmt --all
+    npm --prefix frontend/web run format
 
 lint:
     cargo clippy --workspace --all-targets --all-features -- -D warnings
@@ -44,5 +45,7 @@ test:
     cargo test --workspace
     npm --prefix frontend/web run check
 
-check: fmt lint test
+check: lint test
+    cargo fmt --all -- --check
+    npm --prefix frontend/web run format:check
     npm --prefix frontend/web run build

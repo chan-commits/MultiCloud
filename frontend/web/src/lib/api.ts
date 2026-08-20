@@ -27,27 +27,74 @@ export type Resource = {
   external_id: string | null;
 };
 export type Operation = {
-  id: string; operation_type: string; target_type: string; target_id: string | null;
-  status: string; progress: number; error_code: string | null; error_message: string | null; created_at: string;
+  id: string;
+  operation_type: string;
+  target_type: string;
+  target_id: string | null;
+  status: string;
+  progress: number;
+  error_code: string | null;
+  error_message: string | null;
+  created_at: string;
 };
-export type Drift = { id: string; fingerprint: string; status: string; differences: Record<string, unknown>; detected_at: string };
-export type Reconciliation = { id: string; drift_id: string; policy: string; status: string; desired_version: number; operation_id: string | null };
+export type Drift = {
+  id: string;
+  fingerprint: string;
+  status: string;
+  differences: Record<string, unknown>;
+  detected_at: string;
+};
+export type Reconciliation = {
+  id: string;
+  drift_id: string;
+  policy: string;
+  status: string;
+  desired_version: number;
+  operation_id: string | null;
+};
 export type AuditLog = {
-  id: string; source_event_id: string; actor_type: string; actor_id: string | null;
-  action: string; target_type: string; target_id: string; outcome: string; severity: string;
-  trace_id: string | null; changes: Record<string, unknown>; metadata: Record<string, unknown>; occurred_at: string;
+  id: string;
+  source_event_id: string;
+  actor_type: string;
+  actor_id: string | null;
+  action: string;
+  target_type: string;
+  target_id: string;
+  outcome: string;
+  severity: string;
+  trace_id: string | null;
+  changes: Record<string, unknown>;
+  metadata: Record<string, unknown>;
+  occurred_at: string;
 };
-export type AuditFilters = { action?: string; target_type?: string; outcome?: string; occurred_before?: string; occurred_before_id?: string; limit?: number };
+export type AuditFilters = {
+  action?: string;
+  target_type?: string;
+  outcome?: string;
+  occurred_before?: string;
+  occurred_before_id?: string;
+  limit?: number;
+};
 
 const API_ROOT = '/api/v1';
 
 export class ApiError extends Error {
-  constructor(message: string, public readonly status: number) { super(message); }
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message);
+  }
 }
 
 export class ApiClient {
-  constructor(private token: string, private organizationId = '') {}
-  setOrganization(id: string) { this.organizationId = id; }
+  constructor(
+    private token: string,
+    private organizationId = '',
+  ) {}
+  setOrganization(id: string) {
+    this.organizationId = id;
+  }
 
   private async request<T>(path: string, init: RequestInit = {}): Promise<T> {
     const headers = new Headers(init.headers);
@@ -60,21 +107,36 @@ export class ApiClient {
       try {
         const body = (await response.json()) as { error?: string; message?: string };
         message = body.message ?? body.error ?? message;
-      } catch { /* Preserve the useful HTTP status for non-JSON upstream errors. */ }
+      } catch {
+        /* Preserve the useful HTTP status for non-JSON upstream errors. */
+      }
       throw new ApiError(message, response.status);
     }
     if (response.status === 204) return undefined as T;
     return (await response.json()) as T;
   }
 
-  organizations() { return this.request<Organization[]>('/organizations/'); }
-  logout() { return this.request<void>('/auth/logout', { method: 'POST' }); }
-  createOrganization(payload: { name: string; slug: string }) {
-    return this.request<Organization>('/organizations/', { method: 'POST', body: JSON.stringify(payload) });
+  organizations() {
+    return this.request<Organization[]>('/organizations/');
   }
-  providers() { return this.request<ProviderAccount[]>('/providers/'); }
-  resources() { return this.request<Resource[]>('/resources/'); }
-  operations() { return this.request<Operation[]>('/operations/'); }
+  logout() {
+    return this.request<void>('/auth/logout', { method: 'POST' });
+  }
+  createOrganization(payload: { name: string; slug: string }) {
+    return this.request<Organization>('/organizations/', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+  providers() {
+    return this.request<ProviderAccount[]>('/providers/');
+  }
+  resources() {
+    return this.request<Resource[]>('/resources/');
+  }
+  operations() {
+    return this.request<Operation[]>('/operations/');
+  }
   auditLogs(filters: AuditFilters = {}) {
     const query = new URLSearchParams();
     for (const [key, value] of Object.entries(filters)) if (value) query.set(key, String(value));
@@ -87,50 +149,93 @@ export class ApiClient {
     const query = new URLSearchParams();
     for (const [key, value] of Object.entries(filters)) if (value) query.set(key, String(value));
     const response = await fetch(`${API_ROOT}/audit-logs/export?${query}`, { headers });
-    if (!response.ok) throw new ApiError(`Audit export failed (${response.status})`, response.status);
+    if (!response.ok)
+      throw new ApiError(`Audit export failed (${response.status})`, response.status);
     const url = URL.createObjectURL(await response.blob());
     const anchor = document.createElement('a');
-    anchor.href = url; anchor.download = 'multicloud-audit.csv'; anchor.click();
+    anchor.href = url;
+    anchor.download = 'multicloud-audit.csv';
+    anchor.click();
     URL.revokeObjectURL(url);
   }
   createProvider(payload: Record<string, unknown>) {
-    return this.request<ProviderAccount>('/providers/', { method: 'POST', body: JSON.stringify(payload) });
+    return this.request<ProviderAccount>('/providers/', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
   }
   testProvider(id: string) {
-    return this.request<{ valid: boolean; capabilities: string[]; error_code: string | null }>(`/providers/${id}/connection-test`, { method: 'POST' });
+    return this.request<{ valid: boolean; capabilities: string[]; error_code: string | null }>(
+      `/providers/${id}/connection-test`,
+      { method: 'POST' },
+    );
   }
   syncProvider(id: string, resourceType: string, parentExternalId: string | null = null) {
     return this.request<{ operation_id: string; status: string }>(`/providers/${id}/sync`, {
-      method: 'POST', body: JSON.stringify({ resource_type: resourceType, parent_external_id: parentExternalId, cursor: null, idempotency_key: crypto.randomUUID() })
+      method: 'POST',
+      body: JSON.stringify({
+        resource_type: resourceType,
+        parent_external_id: parentExternalId,
+        cursor: null,
+        idempotency_key: crypto.randomUUID(),
+      }),
     });
   }
   runProviderOperation(providerId: string, action: string, externalId: string) {
-    return this.request<{ operation_id: string; status: string }>(`/providers/${providerId}/operations`, {
-      method: 'POST', body: JSON.stringify({ action, resource_type: 'compute_instance', external_id: externalId, parameters: {}, idempotency_key: crypto.randomUUID() })
-    });
+    return this.request<{ operation_id: string; status: string }>(
+      `/providers/${providerId}/operations`,
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          action,
+          resource_type: 'compute_instance',
+          external_id: externalId,
+          parameters: {},
+          idempotency_key: crypto.randomUUID(),
+        }),
+      },
+    );
   }
-  cancelOperation(id: string) { return this.request<Operation>(`/operations/${id}/cancel`, { method: 'POST' }); }
-  drifts(resourceId: string) { return this.request<Drift[]>(`/resources/${resourceId}/drifts`); }
-  reconciliations(resourceId: string) { return this.request<Reconciliation[]>(`/resources/${resourceId}/reconciliations`); }
+  cancelOperation(id: string) {
+    return this.request<Operation>(`/operations/${id}/cancel`, { method: 'POST' });
+  }
+  drifts(resourceId: string) {
+    return this.request<Drift[]>(`/resources/${resourceId}/drifts`);
+  }
+  reconciliations(resourceId: string) {
+    return this.request<Reconciliation[]>(`/resources/${resourceId}/reconciliations`);
+  }
   approveReconciliation(resourceId: string, taskId: string) {
-    return this.request<Reconciliation>(`/resources/${resourceId}/reconciliations/${taskId}/approve`, { method: 'POST' });
+    return this.request<Reconciliation>(
+      `/resources/${resourceId}/reconciliations/${taskId}/approve`,
+      { method: 'POST' },
+    );
   }
 }
 
 export async function login(email: string, password: string) {
-  const response = await fetch(`${API_ROOT}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+  const response = await fetch(`${API_ROOT}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
   if (!response.ok) throw new ApiError('Email or password is incorrect', response.status);
   return (await response.json()) as { access_token: string; expires_at: string };
 }
 
 export async function register(email: string, password: string, displayName: string) {
   const response = await fetch(`${API_ROOT}/auth/register`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password, display_name: displayName })
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, display_name: displayName }),
   });
   if (!response.ok) {
     let message = `Registration failed (${response.status})`;
-    try { message = ((await response.json()) as { message?: string }).message ?? message; } catch { /* use status */ }
+    try {
+      message = ((await response.json()) as { message?: string }).message ?? message;
+    } catch {
+      /* use status */
+    }
     throw new ApiError(message, response.status);
   }
 }
