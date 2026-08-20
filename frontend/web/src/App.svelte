@@ -30,6 +30,12 @@
   import { messageOf, relativeDate, shortId } from './lib/format';
   import { navigation, type View } from './lib/navigation';
   import {
+    activeResourcesOf,
+    driftedResourcesOf,
+    failedOperationsOf,
+    runningOperationsOf,
+  } from './lib/app-state.svelte';
+  import {
     clearSession,
     persistOrganization,
     persistSession,
@@ -70,19 +76,10 @@
   let client = $state<ApiClient | null>(null);
 
   let activeOrganization = $derived(organizations.find((item) => item.id === organizationId));
-  let activeResources = $derived(resources.filter((item) => item.lifecycle === 'active'));
-  let driftedResources = $derived(
-    resources.filter(
-      (item) =>
-        item.desired_state &&
-        item.observed_state &&
-        JSON.stringify(item.desired_state.state) !== JSON.stringify(item.observed_state.state),
-    ),
-  );
-  let runningOperations = $derived(
-    operations.filter((item) => ['queued', 'running', 'retrying'].includes(item.status)),
-  );
-  let failedOperations = $derived(operations.filter((item) => item.status === 'failed'));
+  let activeResources = $derived(activeResourcesOf(resources));
+  let driftedResources = $derived(driftedResourcesOf(resources));
+  let runningOperations = $derived(runningOperationsOf(operations));
+  let failedOperations = $derived(failedOperationsOf(operations));
 
   onMount(async () => {
     try {
