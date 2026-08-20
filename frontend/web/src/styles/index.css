@@ -1,10 +1,5 @@
 /* Global style entrypoint. Keep imports ordered from foundations to responsive overrides. */
 @import './base.css';
-@import './auth.css';
-@import './shell.css';
 @import './overview.css';
 @import './providers.css';
 @import './resources.css';
-@import './operations.css';
-@import './audit.css';
-@import './responsive.css';
