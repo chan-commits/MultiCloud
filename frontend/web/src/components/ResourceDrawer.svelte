@@ -61,51 +61,73 @@
           >{/each}
       </div>{/if}
     <section class="mb-3 border border-[#192b37] bg-[#0a131c] p-4">
-      <div class="panel-head">
-        <h3>Observed state</h3>
-        <span class="beta">v{resource.observed_state?.version ?? 0}</span>
+      <div class="mb-[18px] flex items-center justify-between">
+        <h3 class="m-0 text-[14px] text-[#dce7ee]">Observed state</h3>
+        <span
+          class="rounded-[3px] border border-[#2b4050] px-[6px] py-[3px] text-[8px] tracking-[0.12em] text-[#688397]"
+          >v{resource.observed_state?.version ?? 0}</span
+        >
       </div>
-      <pre>{JSON.stringify(resource.observed_state?.state ?? resource.attributes, null, 2)}</pre>
+      <pre
+        class="max-h-[260px] overflow-auto border border-[#14232d] bg-[#060b10] p-[13px] font-mono text-[10px] leading-[1.6] text-[#79b9bd]">{JSON.stringify(
+          resource.observed_state?.state ?? resource.attributes,
+          null,
+          2,
+        )}</pre>
     </section>
     <section class="mb-3 border border-[#192b37] bg-[#0a131c] p-4">
-      <div class="panel-head">
-        <h3>Configuration drift</h3>
+      <div class="mb-[18px] flex items-center justify-between">
+        <h3 class="m-0 text-[14px] text-[#dce7ee]">Configuration drift</h3>
         <span>{drifts.length}</span>
       </div>
-      {#if loading}<p class="muted">
+      {#if loading}<p class="text-[9px] text-[#587080]">
           Loading state analysis…
-        </p>{:else if drifts.length}{#each drifts as drift}<div class="drift-item">
+        </p>{:else if drifts.length}{#each drifts as drift}<div
+            class="flex items-center gap-3 border-t border-[#172631] py-[10px]"
+          >
             <span class="status {drift.status}">{drift.status}</span>
-            <div>
-              <strong>{Object.keys(drift.differences).length} managed differences</strong><small
+            <div class="flex-1">
+              <strong class="block text-[10px] text-[#b9c9d4]"
+                >{Object.keys(drift.differences).length} managed differences</strong
+              ><small class="block text-[9px] text-[#587080]"
                 >{relativeDate(drift.detected_at)}</small
               >
             </div>
-          </div>{/each}{:else}<div class="aligned-state">
-          <span>✓</span>
+          </div>{/each}{:else}<div
+          class="flex items-center gap-3 border-t border-[#172631] py-[10px]"
+        >
+          <span
+            class="grid h-7 w-7 place-items-center rounded-full border border-[#246347] text-[#47dfa4]"
+            >✓</span
+          >
           <div>
-            <strong>No drift detected</strong><small>Observed and desired fields are aligned.</small
+            <strong class="block text-[10px] text-[#b9c9d4]">No drift detected</strong><small
+              class="block text-[9px] text-[#587080]"
+              >Observed and desired fields are aligned.</small
             >
           </div>
         </div>{/if}
     </section>
     <section class="mb-3 border border-[#192b37] bg-[#0a131c] p-4">
-      <div class="panel-head">
-        <h3>Reconciliation</h3>
+      <div class="mb-[18px] flex items-center justify-between">
+        <h3 class="m-0 text-[14px] text-[#dce7ee]">Reconciliation</h3>
         <span>{reconciliations.length}</span>
       </div>
-      {#each reconciliations as task}<div class="task-item">
-          <div>
+      {#each reconciliations as task}<div
+          class="flex items-center gap-3 border-t border-[#172631] py-[10px]"
+        >
+          <div class="flex-1">
             <span class="status {task.status}">{task.status}</span><strong
+              class="ml-2 text-[10px] capitalize text-[#95a9b7]"
               >{task.policy.replaceAll('_', ' ')}</strong
             >
           </div>
           {#if task.status === 'pending' && task.policy === 'manual_approval'}<button
-              class="accent"
+              class="w-[90px] border border-[#17616a] bg-[#0c282d] p-[9px] text-[10px] font-bold text-[#60e5eb]"
               onclick={() => onApprove(task)}
               disabled={actionBusy === task.id}>Approve</button
             >{/if}
-        </div>{:else}<p class="muted">No reconciliation tasks.</p>{/each}
+        </div>{:else}<p class="text-[9px] text-[#587080]">No reconciliation tasks.</p>{/each}
     </section>
   </aside>
 </div>

@@ -6,28 +6,6 @@
   letter-spacing: 0.2em;
   margin: 0 0 14px;
 }
-.modal h2,
-.drawer h2 {
-  font-size: 30px;
-  letter-spacing: -0.035em;
-  margin: 0;
-  color: #f2f8ff;
-}
-.modal label {
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-  color: #9fb0c0;
-  font-size: 12px;
-  font-weight: 650;
-}
-.modal input,
-.modal select,
-.modal input:focus,
-.modal select:focus {
-  border-color: #1ab9c6;
-  box-shadow: 0 0 0 3px #16d9e311;
-}
 .primary {
   border: 1px solid #20dce6;
   background: linear-gradient(135deg, #18cbd5, #0796a7);

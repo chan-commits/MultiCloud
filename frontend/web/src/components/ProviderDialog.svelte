@@ -83,14 +83,22 @@
         required
       /></label
     >
-    {#if providerKind === 'cloudflare'}<div class="credential-choice">
-        <button type="button" class:active={!useGlobalKey} onclick={() => (useGlobalKey = false)}
+    {#if providerKind === 'cloudflare'}<div class="grid grid-cols-2 gap-2 max-[760px]:grid-cols-1">
+        <button
+          class={`border p-3 text-left ${!useGlobalKey ? 'border-[#1ea9b3] bg-[#0c2930]' : 'border-[#273a47] bg-[#0b151e]'} text-[#91a5b4]`}
+          type="button"
+          onclick={() => (useGlobalKey = false)}
           ><strong>API Token</strong><small>✓ Recommended · Restricted scope</small></button
-        ><button type="button" class:risk={useGlobalKey} onclick={() => (useGlobalKey = true)}
+        ><button
+          class={`border p-3 text-left ${useGlobalKey ? 'border-[#8f5428] bg-[#2a190f]' : 'border-[#273a47] bg-[#0b151e]'} text-[#91a5b4]`}
+          type="button"
+          onclick={() => (useGlobalKey = true)}
           ><strong>Global API Key</strong><small>⚠ Legacy · Full account access</small></button
         >
       </div>
-      {#if useGlobalKey}<div class="risk-banner">
+      {#if useGlobalKey}<div
+          class="flex flex-col gap-[3px] border border-[#764421] bg-[#26170f] p-[11px] text-[10px] text-[#e7a166]"
+        >
           <strong>High-risk credential</strong><span
             >Use a scoped API Token whenever possible. This action is security-audited.</span
           >
@@ -110,7 +118,7 @@
           >Use a dedicated token with minimum Compute permissions.</small
         ></label
       >
-    {:else}<div class="info-banner">
+    {:else}<div class="border border-[#1c5862] bg-[#0d242a] p-[11px] text-[10px] text-[#68ccd3]">
         OVHcloud signs each request with three encrypted credential components.
       </div>
       <label>Application Key<input bind:value={applicationKey} autocomplete="off" required /></label

@@ -707,7 +707,10 @@
                   <p class="kicker">COST SIGNAL</p>
                   <h3 class="m-0 text-[14px] text-[#c5d6df]">Cloud spend</h3>
                 </div>
-                <span class="beta">PHASE 9</span>
+                <span
+                  class="rounded-[3px] border border-[#2b4050] px-[6px] py-[3px] text-[8px] tracking-[0.12em] text-[#688397]"
+                  >PHASE 9</span
+                >
               </div>
               <div>
                 <span class="text-[38px] text-[#37505e]">—</span>
