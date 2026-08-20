@@ -25,6 +25,16 @@ edition = "2024"
 license = "MIT"
 rust-version = "1.97"
 
+[profile.release]
+lto = true
+panic = "abort"
+codegen-units = 1
+strip = true
+
+[profile.release-no-lto]
+inherits = "release"
+lto = false
+
 [workspace.dependencies]
 anyhow = "1.0.100"
 aes-gcm = "0.10.3"
