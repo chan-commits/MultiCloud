@@ -78,7 +78,7 @@ just build
 
 产物分别位于 `target/debug/multicloud` 或 `target/release/multicloud`，前端产物位于 `frontend/web/dist/`。
 
-`main` 分支通过 CI 后会保存 30 天的 Debug 单二进制 Artifact，以 commit SHA 命名。正式版本使用语义化 `v*` tag 触发 Release build，并发布 Linux x86_64 压缩包与 SHA-256 校验文件：
+`main` 分支通过 CI 后会保存 30 天的 Release 单二进制 Artifact，以 commit SHA 命名。打开对应的 GitHub Actions CI run，可从顶部 Summary 的 **Download** 链接或页面底部 **Artifacts** 区域下载。正式版本使用语义化 `v*` tag 发布长期保存的 GitHub Release，并附带 Linux x86_64 压缩包与 SHA-256 校验文件：
 
 ```bash
 git tag -a v0.1.0 -m "v0.1.0"

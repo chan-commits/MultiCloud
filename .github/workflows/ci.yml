@@ -34,21 +34,29 @@ jobs:
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace --all-targets --all-features -- -D warnings
       - run: cargo test --workspace
-      - run: cargo build -p multicloud
-      - name: Package debug binary
+      - run: cargo build --release -p multicloud
+      - name: Package release binary
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           mkdir -p artifacts
-          tar -C target/debug -czf "artifacts/multicloud-debug-${GITHUB_SHA}.tar.gz" multicloud
-          sha256sum "artifacts/multicloud-debug-${GITHUB_SHA}.tar.gz" > "artifacts/multicloud-debug-${GITHUB_SHA}.tar.gz.sha256"
-      - name: Upload debug artifact
+          tar -C target/release -czf "artifacts/multicloud-${GITHUB_SHA}-linux-x86_64.tar.gz" multicloud
+          sha256sum "artifacts/multicloud-${GITHUB_SHA}-linux-x86_64.tar.gz" > "artifacts/multicloud-${GITHUB_SHA}-linux-x86_64.tar.gz.sha256"
+      - name: Upload release artifact
+        id: upload-release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
-          name: multicloud-debug-${{ github.sha }}
+          name: multicloud-${{ github.sha }}-linux-x86_64
           path: artifacts/
           retention-days: 30
+          compression-level: 0
           if-no-files-found: error
+      - name: Add download link to summary
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          echo "## Release build" >> "$GITHUB_STEP_SUMMARY"
+          echo "[Download multicloud-${GITHUB_SHA}-linux-x86_64](${{ steps.upload-release.outputs.artifact-url }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "Artifact retention: 30 days." >> "$GITHUB_STEP_SUMMARY"
 
   frontend:
     runs-on: ubuntu-latest
