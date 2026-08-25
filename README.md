@@ -5,7 +5,7 @@ MultiCloud 是以 Rust 构建的多租户云端管理控制平台。平台以 Or
 ## 技术栈
 
 - Backend：Rust、Axum、Tokio、SeaORM、PostgreSQL、Redis、WebSocket
-- Frontend：Svelte、TypeScript、Vite、TailwindCSS
+- Frontend：SvelteKit、Svelte 5、TypeScript、Vite、TailwindCSS
 - Tooling：`just`、Podman/Docker Compose、GitHub Actions
 
 ## 架构原则
@@ -24,7 +24,7 @@ MultiCloud 是以 Rust 构建的多租户云端管理控制平台。平台以 Or
 apps/                 單一 multicloud 執行檔與可重用 runtime crates
 crates/               Domain 与 Infrastructure crates
 migrations/           SeaORM migrations
-frontend/web/         Svelte Web Application
+frontend/web/         SvelteKit static SPA（編譯後嵌入 Rust binary）
 config/               分层配置
 doc/                  需求、架构、Schema、流程与开发路线
 ```

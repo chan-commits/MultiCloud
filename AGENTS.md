@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-MultiCloud is a Rust workspace with an Axum API and background services. `apps/multicloud` produces the single deployable `multicloud` binary; runtime modules live in the neighboring `apps/*` library crates, and reusable domain/infrastructure modules live in `crates/`. Database migrations are in `migrations/`. The Svelte 5/Vite/Tailwind frontend is under `frontend/web/src`, with UI components in `components/` and browser/API helpers in `lib/`. Architecture notes belong in `doc/`.
+MultiCloud is a Rust workspace with an Axum API and background services. `apps/multicloud` produces the single deployable `multicloud` binary; runtime modules live in the neighboring `apps/*` library crates, and reusable domain/infrastructure modules live in `crates/`. Database migrations are in `migrations/`. The SvelteKit static frontend is under `frontend/web/src`, with routes in `routes/`, UI components in `components/`, and browser/API helpers in `lib/`. Its `dist/` output is embedded into the Rust binary. Architecture notes belong in `doc/`.
 
 ## Build, Test, and Development Commands
 

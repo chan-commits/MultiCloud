@@ -8,3 +8,15 @@ export const navigation: NavigationItem[] = [
   { id: 'operations', label: 'Operation Stream', caption: 'Execution trace', icon: '↯' },
   { id: 'audit', label: 'Audit Stream', caption: 'Immutable trail', icon: '≋' },
 ];
+
+export function isView(value: string | undefined): value is View {
+  return navigation.some((item) => item.id === value);
+}
+
+export function viewFromRoute(value: string | undefined): View {
+  return isView(value) ? value : 'overview';
+}
+
+export function viewPath(view: View): string {
+  return view === 'overview' ? '/' : `/${view}`;
+}

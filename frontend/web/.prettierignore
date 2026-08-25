@@ -1,4 +1,5 @@
 node_modules/
 dist/
 .svelte-check/
+.svelte-kit/
 package-lock.json

@@ -10,7 +10,7 @@
 - `worker`：Provider 同步與操作、帳務計算、通知、Outbox 消費與失敗重試。
 - `scheduler`：週期同步、帳單週期、SLA 與 Agent 健康檢查。
 - `agent`：部署於 VPS，負責 heartbeat、inventory 與受限命令執行。
-- `web`：Svelte SPA，透過 REST 與 WebSocket 使用 Control Plane。
+- `web`：SvelteKit static SPA，以檔案路由與持久 layout 組織 UI，透過 REST 與 WebSocket 使用 Control Plane；建置產物嵌入單一 Rust binary。
 
 ## 基礎設施責任
 

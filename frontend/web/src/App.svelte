@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
   import AuthScreen from './components/AuthScreen.svelte';
   import AppHeader from './components/AppHeader.svelte';
   import AppSidebar from './components/AppSidebar.svelte';
@@ -28,7 +29,7 @@
     type Resource,
   } from './lib/api';
   import { messageOf, relativeDate, shortId } from './lib/format';
-  import { navigation, type View } from './lib/navigation';
+  import { navigation, viewPath, type View } from './lib/navigation';
   import {
     approveReconciliation,
     cancelOperation,
@@ -55,6 +56,8 @@
     readSession,
   } from './lib/session';
 
+  let { view }: { view: View } = $props();
+
   let token = $state(''),
     loginError = $state(''),
     error = $state(''),
@@ -74,7 +77,6 @@
     resources = $state<Resource[]>([]),
     operations = $state<Operation[]>([]),
     auditLogs = $state<AuditLog[]>([]);
-  let view = $state<View>('overview');
   let actionBusy = $state('');
   let selectedResource = $state<Resource | null>(null),
     resourceDrifts = $state<Drift[]>([]),
@@ -186,6 +188,10 @@
     client.setOrganization(organizationId);
     selectedResource = null;
     await refreshAll();
+  }
+  function navigate(nextView: View) {
+    mobileNav = false;
+    void goto(viewPath(nextView));
   }
   async function refreshAll() {
     if (!client || !organizationId) return;
@@ -432,10 +438,7 @@
       {view}
       {mobileNav}
       organizationName={activeOrganization?.name ?? ''}
-      onNavigate={(nextView) => {
-        view = nextView;
-        mobileNav = false;
-      }}
+      onNavigate={navigate}
       onLogout={logout}
     />
     <main class="min-w-0 [grid-column:2] max-[760px]:[grid-column:auto]">
@@ -478,8 +481,8 @@
             {driftedResources}
             {relativeDate}
             {shortId}
-            onOpenOperations={() => (view = 'operations')}
-            onOpenProviders={() => (view = 'providers')}
+            onOpenOperations={() => navigate('operations')}
+            onOpenProviders={() => navigate('providers')}
           />
         {:else if view === 'providers'}
           <ProvidersView

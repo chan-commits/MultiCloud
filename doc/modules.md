@@ -45,4 +45,4 @@ Platform Admin 與 Organization RBAC 分離：只有 CLI 初始化的 Platform A
 
 ## Web UI 邊界
 
-`App.svelte` 只保留 session、tenant selection、跨頁資料協調與 view routing。具備獨立狀態或表單生命週期的 UI 拆成 `components/`；目前已拆出 authentication、Organization onboarding、sidebar/header、Resources、Operations、Audit、Provider dialog 與 Resource drawer。Overview 仍保留在根頁面，因為它直接組合跨模組摘要 metrics，後續可在增加資料契約後再獨立成 view。
+SvelteKit 負責 URL routing、layout 與未來的頁面級資料邊界；`App.svelte` 暫時保留 session、tenant selection 與跨頁資料協調。具備獨立狀態或表單生命週期的 UI 位於 `components/`，目前包含 authentication、Organization onboarding、sidebar/header、Overview、Providers、Resources、Operations、Audit、Provider dialog 與 Resource drawer。後續 Ticket、Chat、Agent 與 Billing 應直接建立 route module，不再擴充手寫 view router。

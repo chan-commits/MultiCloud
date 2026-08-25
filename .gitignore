@@ -10,5 +10,6 @@ debug
 /frontend/web/node_modules
 /frontend/web/dist
 /frontend/web/.svelte-check
+/frontend/web/.svelte-kit
 *.log
 .DS_Store
