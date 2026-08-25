@@ -129,7 +129,7 @@ fn outcome_for(event_type: &str) -> &'static str {
         "denied"
     } else if event_type.ends_with(".cancelled") {
         "cancelled"
-    } else if event_type.ends_with(".requested") || event_type.ends_with(".created") {
+    } else if event_type.ends_with(".requested") {
         "attempted"
     } else {
         "succeeded"
@@ -163,5 +163,13 @@ mod tests {
         assert_eq!(redacted["nested"]["applicationSecret"], "[REDACTED]");
         assert_eq!(redacted["nested"]["safe"], "visible");
         assert_eq!(redacted["items"][0]["Authorization"], "[REDACTED]");
+    }
+
+    #[test]
+    fn event_outcomes_preserve_completed_creation_semantics() {
+        assert_eq!(outcome_for("provider.account.created"), "succeeded");
+        assert_eq!(outcome_for("provider.operation.requested"), "attempted");
+        assert_eq!(outcome_for("authorization.access.denied"), "denied");
+        assert_eq!(outcome_for("provider.operation.failed"), "failed");
     }
 }

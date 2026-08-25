@@ -61,11 +61,12 @@ impl MigrationTrait for Migration {
 
             INSERT INTO permissions (id, key, description) VALUES
                 ('10000000-0000-7000-8000-000000000018', 'audit.log.read', 'Read tenant audit logs'),
-                ('10000000-0000-7000-8000-000000000019', 'audit.log.export', 'Export tenant audit logs');
+                ('10000000-0000-7000-8000-000000000019', 'audit.log.export', 'Export tenant audit logs'),
+                ('10000000-0000-7000-8000-000000000020', 'audit.retention.manage', 'Manage tenant audit retention');
             INSERT INTO role_permissions (role_id, permission_id, organization_id)
             SELECT role.id, permission.id, role.organization_id
             FROM roles AS role
-            JOIN permissions AS permission ON permission.key IN ('audit.log.read', 'audit.log.export')
+            JOIN permissions AS permission ON permission.key IN ('audit.log.read', 'audit.log.export', 'audit.retention.manage')
             WHERE role.key IN ('owner', 'admin')
             UNION ALL
             SELECT role.id, permission.id, role.organization_id
@@ -93,9 +94,9 @@ impl MigrationTrait for Migration {
             .execute_unprepared(
                 r"
             DELETE FROM role_permissions WHERE permission_id IN (
-                SELECT id FROM permissions WHERE key IN ('audit.log.read', 'audit.log.export')
+                SELECT id FROM permissions WHERE key IN ('audit.log.read', 'audit.log.export', 'audit.retention.manage')
             );
-            DELETE FROM permissions WHERE key IN ('audit.log.read', 'audit.log.export');
+            DELETE FROM permissions WHERE key IN ('audit.log.read', 'audit.log.export', 'audit.retention.manage');
             DROP TABLE IF EXISTS audit_retention_policies;
             DROP TABLE IF EXISTS audit_logs CASCADE;
             DROP FUNCTION IF EXISTS app.reject_audit_mutation();

@@ -88,8 +88,8 @@ just build
 - Phase 3：Operation、transactional outbox、inbox idempotency 与 Worker retry 已完成
 - Phase 4：Provider abstraction、加密 credential、Fake 与 Cloudflare adapter 已完成
 - Phase 5：Resource Management 与 Real Provider Integration 已完成（Provider backend、Resource/Operation/Drift 与 Command Center UI）
-- Phase 6：append-only Audit Log、递归脱敏、查询/CSV 导出、分区/retention 基础与 Audit Stream UI 已完成
-- 后续阶段：Audit、Ticket/Chat、Agent、Billing
+- Phase 6：append-only Audit Log、递归脱敏、查询/CSV 导出、分区/retention policy 与 Audit Stream UI 已完成
+- 后续阶段：Ticket/Chat、Agent、Billing
 
 详细规划见 [开发顺序](doc/development-roadmap.md)，系统设计入口见 [设计文件索引](doc/README.md)。
 

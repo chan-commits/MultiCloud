@@ -18,12 +18,14 @@ Phase 6 將既有 transactional outbox Domain Event 投影成 tenant-scoped、ap
 
 - `GET /api/v1/audit-logs/`：依 action、target type、outcome、actor 篩選，以 `occurred_before + occurred_before_id` 穩定複合 cursor 分頁，單頁最多 200 筆。
 - `GET /api/v1/audit-logs/export`：輸出最多 10,000 筆 sanitized CSV，並防止 spreadsheet formula injection。
+- `GET /api/v1/audit-logs/retention`：讀取 Organization policy；未自訂時回傳 365/7 天預設值。
+- `PUT /api/v1/audit-logs/retention`：Owner/Admin 以獨立 `audit.retention.manage` 權限更新 policy，並保存 before/after Audit Event。
 - 查詢與匯出本身都建立 Audit Event，避免 Audit access 成為不可見的管理行為。
 - Export 不包含完整 metadata，只包含時間、action、outcome、severity、actor、target 與 trace ID。
 
 ## Retention 基礎
 
-`audit_retention_policies` 保存每個 Organization 的 log/export retention。Audit table 已具備月分區與 tenant/time indexes；後續 maintenance job 必須先建立未來 partition，再依 policy detach/archive/drop 過期 partition。初期預設保留 365 天，禁止低於 90 天。
+`audit_retention_policies` 保存每個 Organization 的 log/export retention，並透過 tenant-scoped API 管理。Audit table 已具備月分區與 tenant/time indexes；後續 maintenance job 必須先建立未來 partition，再依 policy detach/archive/drop 過期 partition。初期預設保留 365 天，禁止低於 90 天。
 
 ## UI
 

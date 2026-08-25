@@ -70,7 +70,7 @@ Outbox 採 at-least-once delivery，Redis Pub/Sub 僅負責即時 fan-out；cons
 
 - `audit_logs`：organization、actor、action、target、outcome、request/trace ID、client metadata、sanitized before/after、occurred time。
 - 表為 append-only 且由 trigger 拒絕 update/delete；按 `occurred_at` range partition。
-- `audit_retention_policies`：organization、log/export retention days、更新者與時間；預設 log retention 365 天。
+- `audit_retention_policies`：organization、log/export retention days、更新者與時間；預設 log retention 365 天，以 `audit.retention.manage` 獨立授權。
 
 ## Billing
 

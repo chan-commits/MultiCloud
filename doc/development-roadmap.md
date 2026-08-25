@@ -104,7 +104,7 @@ Provider abstraction 原則：
 
 ## Phase 6：Audit Log
 
-完成 event-to-audit pipeline、敏感欄位遮罩、query/export、partition 與 retention 基礎。
+完成 event-to-audit pipeline、敏感欄位遮罩、query/export、partition 與 tenant-scoped retention policy API。
 
 完成條件：身份、RBAC、Provider、Asset 的安全及管理操作都有完整軌跡。
 

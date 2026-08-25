@@ -24,6 +24,7 @@ pub mod permissions {
     pub const RECONCILIATION_MANAGE: &str = "resource.reconciliation.manage";
     pub const AUDIT_READ: &str = "audit.log.read";
     pub const AUDIT_EXPORT: &str = "audit.log.export";
+    pub const AUDIT_RETENTION_MANAGE: &str = "audit.retention.manage";
 
     pub const ALL: &[(&str, &str)] = &[
         (ORGANIZATION_READ, "Read organization details"),
@@ -57,6 +58,7 @@ pub mod permissions {
         ),
         (AUDIT_READ, "Read tenant audit logs"),
         (AUDIT_EXPORT, "Export tenant audit logs"),
+        (AUDIT_RETENTION_MANAGE, "Manage tenant audit retention"),
     ];
 }
 
@@ -90,6 +92,7 @@ pub fn system_role_specs() -> [SystemRoleSpec; 4] {
         permission::RECONCILIATION_MANAGE,
         permission::AUDIT_READ,
         permission::AUDIT_EXPORT,
+        permission::AUDIT_RETENTION_MANAGE,
     ];
     [
         SystemRoleSpec {

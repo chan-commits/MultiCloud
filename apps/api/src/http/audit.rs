@@ -8,8 +8,14 @@ use axum::{
 };
 use multicloud_authorization::permissions;
 use multicloud_operation::EventEnvelope;
-use multicloud_persistence::{entities::audit_logs, reliable_events::enqueue_event};
-use sea_orm::{ColumnTrait, Condition, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
+use multicloud_persistence::{
+    entities::{audit_logs, audit_retention_policies},
+    reliable_events::enqueue_event,
+};
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, Condition, EntityTrait, QueryFilter, QueryOrder, QuerySelect,
+    Set,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use time::OffsetDateTime;
@@ -19,7 +25,11 @@ pub fn router() -> Router<AppState> {
     Router::new()
         .route("/", get(list))
         .route("/export", get(export))
+        .route("/retention", get(get_retention).put(update_retention))
 }
+
+const DEFAULT_RETENTION_DAYS: i32 = 365;
+const DEFAULT_EXPORT_RETENTION_DAYS: i32 = 7;
 
 #[derive(Clone, Deserialize, Serialize)]
 struct AuditQuery {
@@ -49,6 +59,118 @@ struct AuditResponse {
     metadata: Value,
     #[serde(with = "time::serde::rfc3339")]
     occurred_at: OffsetDateTime,
+}
+
+#[derive(Deserialize)]
+struct UpdateRetentionRequest {
+    retention_days: i32,
+    export_retention_days: i32,
+}
+
+#[derive(Serialize)]
+struct RetentionResponse {
+    retention_days: i32,
+    export_retention_days: i32,
+    #[serde(with = "time::serde::rfc3339::option")]
+    updated_at: Option<OffsetDateTime>,
+}
+
+async fn get_retention(
+    context: TenantContext,
+    State(state): State<AppState>,
+) -> Result<Json<RetentionResponse>, ApiError> {
+    let transaction =
+        super::authorization::authorize_transaction(&state, &context, permissions::AUDIT_READ)
+            .await?;
+    let policy = audit_retention_policies::Entity::find_by_id(context.organization_id)
+        .one(&transaction)
+        .await
+        .map_err(super::error::internal)?;
+    enqueue_event(
+        &transaction,
+        retention_event(&context, "audit.retention.read", None, None),
+    )
+    .await
+    .map_err(super::error::internal)?;
+    transaction.commit().await.map_err(super::error::internal)?;
+    Ok(Json(policy.map_or(
+        RetentionResponse {
+            retention_days: DEFAULT_RETENTION_DAYS,
+            export_retention_days: DEFAULT_EXPORT_RETENTION_DAYS,
+            updated_at: None,
+        },
+        |policy| RetentionResponse {
+            retention_days: policy.retention_days,
+            export_retention_days: policy.export_retention_days,
+            updated_at: Some(policy.updated_at),
+        },
+    )))
+}
+
+async fn update_retention(
+    context: TenantContext,
+    State(state): State<AppState>,
+    Json(request): Json<UpdateRetentionRequest>,
+) -> Result<Json<RetentionResponse>, ApiError> {
+    validate_retention(&request)?;
+    let transaction = super::authorization::authorize_transaction(
+        &state,
+        &context,
+        permissions::AUDIT_RETENTION_MANAGE,
+    )
+    .await?;
+    let previous = audit_retention_policies::Entity::find_by_id(context.organization_id)
+        .one(&transaction)
+        .await
+        .map_err(super::error::internal)?;
+    let before = serde_json::json!({
+        "retention_days": previous.as_ref().map_or(DEFAULT_RETENTION_DAYS, |value| value.retention_days),
+        "export_retention_days": previous.as_ref().map_or(DEFAULT_EXPORT_RETENTION_DAYS, |value| value.export_retention_days),
+    });
+    let now = OffsetDateTime::now_utc();
+    if let Some(policy) = previous {
+        let mut active: audit_retention_policies::ActiveModel = policy.into();
+        active.retention_days = Set(request.retention_days);
+        active.export_retention_days = Set(request.export_retention_days);
+        active.updated_by = Set(Some(context.user_id));
+        active.updated_at = Set(now);
+        active
+            .update(&transaction)
+            .await
+            .map_err(super::error::internal)?;
+    } else {
+        audit_retention_policies::ActiveModel {
+            organization_id: Set(context.organization_id),
+            retention_days: Set(request.retention_days),
+            export_retention_days: Set(request.export_retention_days),
+            updated_by: Set(Some(context.user_id)),
+            updated_at: Set(now),
+        }
+        .insert(&transaction)
+        .await
+        .map_err(super::error::internal)?;
+    }
+    let after = serde_json::json!({
+        "retention_days": request.retention_days,
+        "export_retention_days": request.export_retention_days,
+    });
+    enqueue_event(
+        &transaction,
+        retention_event(
+            &context,
+            "audit.retention.updated",
+            Some(&before),
+            Some(&after),
+        ),
+    )
+    .await
+    .map_err(super::error::internal)?;
+    transaction.commit().await.map_err(super::error::internal)?;
+    Ok(Json(RetentionResponse {
+        retention_days: request.retention_days,
+        export_retention_days: request.export_retention_days,
+        updated_at: Some(now),
+    }))
 }
 
 async fn list(
@@ -195,6 +317,20 @@ fn validate_query(query: &AuditQuery) -> Result<(), ApiError> {
     Ok(())
 }
 
+fn validate_retention(request: &UpdateRetentionRequest) -> Result<(), ApiError> {
+    if !(90..=3_650).contains(&request.retention_days) {
+        return Err(ApiError::BadRequest(
+            "audit retention days must be between 90 and 3650",
+        ));
+    }
+    if !(1..=30).contains(&request.export_retention_days) {
+        return Err(ApiError::BadRequest(
+            "audit export retention days must be between 1 and 30",
+        ));
+    }
+    Ok(())
+}
+
 fn csv_field(value: &str) -> String {
     let safe = if value.starts_with(['=', '+', '-', '@']) {
         format!("'{value}")
@@ -229,6 +365,31 @@ fn audit_access_event(
         trace_id: None,
         occurred_at: OffsetDateTime::now_utc(),
     })
+}
+
+fn retention_event(
+    context: &TenantContext,
+    event_type: &str,
+    before: Option<&Value>,
+    after: Option<&Value>,
+) -> EventEnvelope {
+    EventEnvelope {
+        id: multicloud_shared_kernel::EventId::new(),
+        organization_id: multicloud_shared_kernel::OrganizationId::from_uuid(
+            context.organization_id,
+        ),
+        aggregate_type: "audit_retention_policy".to_owned(),
+        aggregate_id: context.organization_id.to_string(),
+        event_type: event_type.to_owned(),
+        event_version: 1,
+        payload: serde_json::json!({
+            "requested_by": context.user_id,
+            "before": before,
+            "after": after,
+        }),
+        trace_id: None,
+        occurred_at: OffsetDateTime::now_utc(),
+    }
 }
 
 impl From<audit_logs::Model> for AuditResponse {
@@ -276,5 +437,30 @@ mod tests {
             validate_query(&query),
             Err(ApiError::BadRequest(_))
         ));
+    }
+
+    #[test]
+    fn retention_policy_bounds_match_database_constraints() {
+        assert!(
+            validate_retention(&UpdateRetentionRequest {
+                retention_days: 90,
+                export_retention_days: 1,
+            })
+            .is_ok()
+        );
+        assert!(
+            validate_retention(&UpdateRetentionRequest {
+                retention_days: 89,
+                export_retention_days: 7,
+            })
+            .is_err()
+        );
+        assert!(
+            validate_retention(&UpdateRetentionRequest {
+                retention_days: 365,
+                export_retention_days: 31,
+            })
+            .is_err()
+        );
     }
 }
