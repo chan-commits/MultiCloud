@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.98.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/web/package-lock.json
+      - name: Build embedded frontend assets
+        run: |
+          npm ci
+          npm run format:check
+          npm run check
+          npm run build
+        working-directory: frontend/web
+      - uses: Swatinem/rust-cache@v2
+      - name: Verify Rust workspace
+        run: |
+          cargo fmt --all -- --check
+          cargo clippy --workspace --all-targets --all-features -- -D warnings
+          cargo test --workspace
+      - name: Build release binary
+        run: cargo build --release -p multicloud
+      - name: Package release binary
+        run: |
+          archive="multicloud-${GITHUB_REF_NAME}-linux-x86_64.tar.gz"
+          tar -C target/release -czf "$archive" multicloud
+          sha256sum "$archive" > "$archive.sha256"
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          archive="multicloud-${GITHUB_REF_NAME}-linux-x86_64.tar.gz"
+          if ! gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes --title "$GITHUB_REF_NAME"
+          fi
+          gh release upload "$GITHUB_REF_NAME" "$archive" "$archive.sha256" --clobber
