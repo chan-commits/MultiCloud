@@ -1,18 +1,13 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, setContext, type Snippet } from 'svelte';
   import { goto } from '$app/navigation';
   import AuthScreen from './components/AuthScreen.svelte';
   import AppHeader from './components/AppHeader.svelte';
   import AppSidebar from './components/AppSidebar.svelte';
   import AppAlerts from './components/AppAlerts.svelte';
-  import OverviewView from './components/OverviewView.svelte';
-  import ProvidersView from './components/ProvidersView.svelte';
   import OrganizationOnboarding from './components/OrganizationOnboarding.svelte';
-  import AuditView from './components/AuditView.svelte';
-  import OperationsView from './components/OperationsView.svelte';
   import ProviderDialog from './components/ProviderDialog.svelte';
   import ResourceDrawer from './components/ResourceDrawer.svelte';
-  import ResourcesView from './components/ResourcesView.svelte';
   import {
     ApiClient,
     ApiError,
@@ -28,7 +23,8 @@
     type Reconciliation,
     type Resource,
   } from './lib/api';
-  import { messageOf, relativeDate, shortId } from './lib/format';
+  import { messageOf, relativeDate } from './lib/format';
+  import { CONTROL_PLANE_CONTEXT, type ControlPlaneContext } from './lib/control-plane-context';
   import { navigation, viewPath, type View } from './lib/navigation';
   import {
     approveReconciliation,
@@ -56,7 +52,7 @@
     readSession,
   } from './lib/session';
 
-  let { view }: { view: View } = $props();
+  let { view, children }: { view: View; children: Snippet } = $props();
 
   let token = $state(''),
     loginError = $state(''),
@@ -94,6 +90,59 @@
   let driftedResources = $derived(driftedResourcesOf(resources));
   let runningOperations = $derived(runningOperationsOf(operations));
   let failedOperations = $derived(failedOperationsOf(operations));
+
+  const controlPlane: ControlPlaneContext = {
+    get providers() {
+      return providers;
+    },
+    get resources() {
+      return resources;
+    },
+    get operations() {
+      return operations;
+    },
+    get auditLogs() {
+      return auditLogs;
+    },
+    get activeResources() {
+      return activeResources;
+    },
+    get driftedResources() {
+      return driftedResources;
+    },
+    get runningOperations() {
+      return runningOperations;
+    },
+    get failedOperations() {
+      return failedOperations;
+    },
+    get actionBusy() {
+      return actionBusy;
+    },
+    get auditAction() {
+      return auditAction;
+    },
+    get auditOutcome() {
+      return auditOutcome;
+    },
+    get auditLoadingMore() {
+      return auditLoadingMore;
+    },
+    get auditHasMore() {
+      return auditHasMore;
+    },
+    openProviderDialog: () => (providerDialog = true),
+    testConnection,
+    syncProvider,
+    openResource,
+    cancel,
+    setAuditAction: (value) => (auditAction = value),
+    setAuditOutcome: (value) => (auditOutcome = value),
+    applyAuditFilters,
+    loadMoreAudit,
+    exportAudit,
+  };
+  setContext(CONTROL_PLANE_CONTEXT, controlPlane);
 
   onMount(async () => {
     try {
@@ -470,49 +519,8 @@
             creating={creatingOrganization}
             onCreate={createOrganization}
           />
-        {:else if view === 'overview'}
-          <OverviewView
-            {activeResources}
-            {providers}
-            {resources}
-            {operations}
-            {runningOperations}
-            {failedOperations}
-            {driftedResources}
-            {relativeDate}
-            {shortId}
-            onOpenOperations={() => navigate('operations')}
-            onOpenProviders={() => navigate('providers')}
-          />
-        {:else if view === 'providers'}
-          <ProvidersView
-            {providers}
-            {actionBusy}
-            {relativeDate}
-            onOpenDialog={() => (providerDialog = true)}
-            onTestConnection={testConnection}
-            onSyncProvider={syncProvider}
-          />
-        {:else if view === 'resources'}
-          <ResourcesView {resources} onOpenResource={openResource} {shortId} />
-        {:else if view === 'operations'}
-          <OperationsView {operations} {actionBusy} onCancel={cancel} {relativeDate} {shortId} />
         {:else}
-          <AuditView
-            {auditLogs}
-            {auditAction}
-            {auditOutcome}
-            {auditLoadingMore}
-            {auditHasMore}
-            {actionBusy}
-            onActionChange={(value) => (auditAction = value)}
-            onOutcomeChange={(value) => (auditOutcome = value)}
-            onApplyFilters={applyAuditFilters}
-            onLoadMore={loadMoreAudit}
-            onExport={exportAudit}
-            {relativeDate}
-            {shortId}
-          />
+          {@render children()}
         {/if}
       </div>
     </main>
