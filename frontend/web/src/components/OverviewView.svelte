@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Operation, ProviderAccount, Resource } from '../lib/api';
   import { providerLogoClass, statusClass } from '../lib/ui';
+  import { t } from '$lib/i18n.svelte';
 
   let {
     activeResources,
@@ -34,13 +35,15 @@
 >
   <div>
     <p class="m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-brand-cyan">
-      LIVE INFRASTRUCTURE POSTURE
+      {t('LIVE INFRASTRUCTURE POSTURE')}
     </p>
     <h2 class="m-0 text-[34px] tracking-[-0.045em] text-[#edf6fb]">
-      Your cloud estate,<br /><span class="text-[#65e8ed]">resolved in real time.</span>
+      {t('Your cloud estate,')}<br /><span class="text-[#65e8ed]"
+        >{t('resolved in real time.')}</span
+      >
     </h2>
     <p class="max-w-[500px] text-[12px] leading-[1.7] text-[#78909f]">
-      Unified visibility across every connected provider and canonical resource.
+      {t('Unified visibility across every connected provider and canonical resource.')}
     </p>
   </div>
   <div
@@ -50,7 +53,8 @@
       class="absolute inset-[10px] rounded-full border border-dashed border-[#2ebac5] opacity-60"
     ></div>
     <strong class="text-[31px] text-[#d9fbff]">{activeResources.length}</strong><small
-      class="absolute bottom-[28px] text-[8px] tracking-[0.15em] text-[#69cdd3]">ACTIVE</small
+      class="absolute bottom-[28px] text-[8px] tracking-[0.15em] text-[#69cdd3]"
+      >{t('ACTIVE')}</small
     >
   </div>
 </section>
@@ -61,7 +65,7 @@
     <div
       class="flex items-center justify-between text-[9px] font-extrabold tracking-[0.13em] text-[#6c8292]"
     >
-      <span>CONNECTED PROVIDERS</span><i class="text-[18px] not-italic text-[#24dbe3]">⌁</i>
+      <span>{t('CONNECTED PROVIDERS')}</span><i class="text-[18px] not-italic text-[#24dbe3]">⌁</i>
     </div>
     <strong class="mt-4 block text-[30px] text-[#dcecf4]"
       >{providers.filter((item) => item.status === 'active').length}<small>
@@ -69,38 +73,41 @@
       ></strong
     >
     <p class="text-[10px] text-[#718798]">
-      <span class="text-[#3fe4a2]">●</span> Capability registry online
+      <span class="text-[#3fe4a2]">●</span>
+      {t('Capability registry online')}
     </p>
   </article>
   <article class="border border-[#1b2e3b] bg-gradient-to-br from-[#0d1721] to-[#090f16] p-[18px]">
     <div
       class="flex items-center justify-between text-[9px] font-extrabold tracking-[0.13em] text-[#6c8292]"
     >
-      <span>MANAGED RESOURCES</span><i class="text-[18px] not-italic text-[#a48bff]">◇</i>
+      <span>{t('MANAGED RESOURCES')}</span><i class="text-[18px] not-italic text-[#a48bff]">◇</i>
     </div>
     <strong class="mt-4 block text-[30px] text-[#dcecf4]">{resources.length}</strong>
-    <p class="text-[10px] text-[#718798]">{activeResources.length} currently active</p>
+    <p class="text-[10px] text-[#718798]">
+      {t('{count} currently active', { count: activeResources.length })}
+    </p>
   </article>
   <article class="border border-[#1b2e3b] bg-gradient-to-br from-[#0d1721] to-[#090f16] p-[18px]">
     <div
       class="flex items-center justify-between text-[9px] font-extrabold tracking-[0.13em] text-[#6c8292]"
     >
-      <span>ACTIVE OPERATIONS</span><i class="text-[18px] not-italic text-[#ffc064]">↯</i>
+      <span>{t('ACTIVE OPERATIONS')}</span><i class="text-[18px] not-italic text-[#ffc064]">↯</i>
     </div>
     <strong class="mt-4 block text-[30px] text-[#dcecf4]">{runningOperations.length}</strong>
     <p class="text-[10px] text-[#718798]">
-      {failedOperations.length} failures in recent history
+      {t('{count} failures in recent history', { count: failedOperations.length })}
     </p>
   </article>
   <article class="border border-[#1b2e3b] bg-gradient-to-br from-[#0d1721] to-[#090f16] p-[18px]">
     <div
       class="flex items-center justify-between text-[9px] font-extrabold tracking-[0.13em] text-[#6c8292]"
     >
-      <span>CONFIGURATION DRIFT</span><i class="text-[18px] not-italic text-[#ff718b]">∆</i>
+      <span>{t('CONFIGURATION DRIFT')}</span><i class="text-[18px] not-italic text-[#ff718b]">∆</i>
     </div>
     <strong class="mt-4 block text-[30px] text-[#dcecf4]">{driftedResources.length}</strong>
     <p class="text-[10px] text-[#718798]">
-      {driftedResources.length ? 'Review required' : 'Desired state aligned'}
+      {t(driftedResources.length ? 'Review required' : 'Desired state aligned')}
     </p>
   </article>
 </section>
@@ -109,13 +116,13 @@
     <div class="mb-[18px] flex items-start justify-between border-b border-[#192a36] pb-3">
       <div>
         <p class="m-0 mb-[5px] text-[8px] font-extrabold tracking-[0.2em] text-brand-cyan">
-          OPERATION TELEMETRY
+          {t('OPERATION TELEMETRY')}
         </p>
-        <h3 class="m-0 text-[14px] text-[#c5d6df]">Execution stream</h3>
+        <h3 class="m-0 text-[14px] text-[#c5d6df]">{t('Execution stream')}</h3>
       </div>
       <button
         class="border-0 bg-transparent p-1 text-[11px] text-[#6f8799] hover:text-brand-cyan"
-        onclick={() => onOpenOperations()}>View all →</button
+        onclick={() => onOpenOperations()}>{t('View all')} →</button
       >
     </div>
     <div class="relative h-[195px] overflow-hidden">
@@ -131,7 +138,7 @@
           d="M0 145 C70 130 90 135 150 105 S250 135 315 80 S420 115 485 55 S590 90 650 38 S750 55 800 20"
         /></svg
       ><span class="absolute bottom-0 right-1 text-[8px] text-[#425968]"
-        >Time-series telemetry connects in Observability phase</span
+        >{t('Time-series telemetry connects in Observability phase')}</span
       >
     </div>
   </article>
@@ -139,9 +146,9 @@
     <div class="mb-[18px] flex items-start justify-between border-b border-[#192a36] pb-3">
       <div>
         <p class="m-0 mb-[5px] text-[8px] font-extrabold tracking-[0.2em] text-brand-cyan">
-          PROVIDER FABRIC
+          {t('Provider Fabric').toUpperCase()}
         </p>
-        <h3 class="m-0 text-[14px] text-[#c5d6df]">Connection status</h3>
+        <h3 class="m-0 text-[14px] text-[#c5d6df]">{t('Connection status')}</h3>
       </div>
     </div>
     <div class="flex flex-col gap-2">
@@ -158,7 +165,7 @@
             class={`h-[6px] w-[6px] rounded-full ${provider.status === 'active' ? 'bg-[#3de6a1] shadow-[0_0_9px_#3de6a1]' : 'bg-[#77404a]'}`}
           ></i></button
         >{:else}<div class="p-[30px] text-center text-[11px] text-[#526a7a]">
-          Connect a provider to activate the fabric.
+          {t('Connect a provider to activate the fabric.')}
         </div>{/each}
     </div>
   </article>
@@ -166,9 +173,9 @@
     <div class="mb-[18px] flex items-start justify-between border-b border-[#192a36] pb-3">
       <div>
         <p class="m-0 mb-[5px] text-[8px] font-extrabold tracking-[0.2em] text-brand-cyan">
-          RECENT ACTIVITY
+          {t('RECENT ACTIVITY')}
         </p>
-        <h3 class="m-0 text-[14px] text-[#c5d6df]">Operation ledger</h3>
+        <h3 class="m-0 text-[14px] text-[#c5d6df]">{t('Operation ledger')}</h3>
       </div>
     </div>
     <div
@@ -176,7 +183,10 @@
     >
       <table>
         <thead
-          ><tr><th>Operation</th><th>Target</th><th>Status</th><th>Progress</th><th>Created</th></tr
+          ><tr
+            ><th>{t('Operation')}</th><th>{t('Target')}</th><th>{t('Status')}</th><th
+              >{t('Progress')}</th
+            ><th>{t('Created')}</th></tr
           ></thead
         ><tbody
           >{#each operations.slice(0, 5) as operation}<tr
@@ -184,7 +194,7 @@
                 ><strong>{operation.operation_type}</strong><small>{shortId(operation.id)}</small
                 ></td
               ><td>{operation.target_type}</td><td
-                ><span class={statusClass(operation.status)}>{operation.status}</span></td
+                ><span class={statusClass(operation.status)}>{t(operation.status)}</span></td
               ><td
                 ><div class="relative h-[3px] w-[100px] bg-[#1b2934]">
                   <i
@@ -195,7 +205,7 @@
               ><td>{relativeDate(operation.created_at)}</td></tr
             >{:else}<tr
               ><td colspan="5" class="p-[30px] text-center text-[11px] text-[#526a7a]"
-                >No operations recorded yet.</td
+                >{t('No operations recorded yet.')}</td
               ></tr
             >{/each}</tbody
         >
@@ -206,9 +216,9 @@
     <div class="mb-[18px] flex items-start justify-between border-b border-[#192a36] pb-3">
       <div>
         <p class="m-0 mb-[5px] text-[8px] font-extrabold tracking-[0.2em] text-brand-cyan">
-          COST SIGNAL
+          {t('COST SIGNAL')}
         </p>
-        <h3 class="m-0 text-[14px] text-[#c5d6df]">Cloud spend</h3>
+        <h3 class="m-0 text-[14px] text-[#c5d6df]">{t('Cloud spend')}</h3>
       </div>
       <span
         class="rounded-[3px] border border-[#2b4050] px-[6px] py-[3px] text-[8px] tracking-[0.12em] text-[#688397]"
@@ -218,7 +228,7 @@
     <div>
       <span class="text-[38px] text-[#37505e]">—</span>
       <p class="text-[11px] leading-[1.5] text-[#5c7181]">
-        Billing telemetry is reserved for the Billing bounded context.
+        {t('Billing telemetry is reserved for the Billing bounded context.')}
       </p>
       <div class="flex h-[75px] items-end gap-[7px] opacity-30">
         <i class="h-[30%] flex-1 bg-gradient-to-b from-[#1dbec7] to-[#143541]"></i><i

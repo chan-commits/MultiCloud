@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Drift, Reconciliation, Resource } from '../lib/api';
   import { providerLogoClass, statusClass } from '../lib/ui';
+  import { t } from '$lib/i18n.svelte';
   let {
     resource,
     drifts,
@@ -35,7 +36,7 @@
     <div class="flex items-start justify-between border-b border-[#192a36] pb-[17px]">
       <div>
         <p class="m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-brand-cyan">
-          RESOURCE DETAIL
+          {t('RESOURCE DETAIL')}
         </p>
         <h2 class="m-0 text-[30px] tracking-[-0.035em] text-[#f2f8ff]">{resource.name}</h2>
       </div>
@@ -50,7 +51,7 @@
         )}>{resource.resource_type === 'compute_instance' ? 'VM' : 'DN'}</span
       >
       <div>
-        <span class={statusClass(resource.lifecycle)}>{resource.lifecycle}</span>
+        <span class={statusClass(resource.lifecycle)}>{t(resource.lifecycle)}</span>
         <p class="m-[7px_0_0] text-[10px] capitalize text-[#667c8d]">
           {resource.resource_type.replaceAll('_', ' ')} · {resource.region ?? 'global'}
         </p>
@@ -61,12 +62,12 @@
             onclick={() => onLifecycle(resource, action)}
             disabled={actionBusy === `${resource.id}:${action}`}
             class="flex-1 border border-[#293c49] bg-[#0b141d] p-[9px] text-[10px] font-bold text-[#8ea4b3]"
-            >{action === 'start' ? '▶' : action === 'stop' ? '■' : '↻'} {action}</button
+            >{action === 'start' ? '▶' : action === 'stop' ? '■' : '↻'} {t(action)}</button
           >{/each}
       </div>{/if}
     <section class="mb-3 border border-[#192b37] bg-[#0a131c] p-4">
       <div class="mb-[18px] flex items-center justify-between">
-        <h3 class="m-0 text-[14px] text-[#dce7ee]">Observed state</h3>
+        <h3 class="m-0 text-[14px] text-[#dce7ee]">{t('Observed state')}</h3>
         <span
           class="rounded-[3px] border border-[#2b4050] px-[6px] py-[3px] text-[8px] tracking-[0.12em] text-[#688397]"
           >v{resource.observed_state?.version ?? 0}</span
@@ -81,18 +82,20 @@
     </section>
     <section class="mb-3 border border-[#192b37] bg-[#0a131c] p-4">
       <div class="mb-[18px] flex items-center justify-between">
-        <h3 class="m-0 text-[14px] text-[#dce7ee]">Configuration drift</h3>
+        <h3 class="m-0 text-[14px] text-[#dce7ee]">{t('Configuration drift')}</h3>
         <span>{drifts.length}</span>
       </div>
       {#if loading}<p class="text-[9px] text-[#587080]">
-          Loading state analysis…
+          {t('Loading state analysis…')}
         </p>{:else if drifts.length}{#each drifts as drift}<div
             class="flex items-center gap-3 border-t border-[#172631] py-[10px]"
           >
-            <span class={statusClass(drift.status)}>{drift.status}</span>
+            <span class={statusClass(drift.status)}>{t(drift.status)}</span>
             <div class="flex-1">
               <strong class="block text-[10px] text-[#b9c9d4]"
-                >{Object.keys(drift.differences).length} managed differences</strong
+                >{t('{count} managed differences', {
+                  count: Object.keys(drift.differences).length,
+                })}</strong
               ><small class="block text-[9px] text-[#587080]"
                 >{relativeDate(drift.detected_at)}</small
               >
@@ -105,23 +108,23 @@
             >✓</span
           >
           <div>
-            <strong class="block text-[10px] text-[#b9c9d4]">No drift detected</strong><small
+            <strong class="block text-[10px] text-[#b9c9d4]">{t('No drift detected')}</strong><small
               class="block text-[9px] text-[#587080]"
-              >Observed and desired fields are aligned.</small
+              >{t('Observed and desired fields are aligned.')}</small
             >
           </div>
         </div>{/if}
     </section>
     <section class="mb-3 border border-[#192b37] bg-[#0a131c] p-4">
       <div class="mb-[18px] flex items-center justify-between">
-        <h3 class="m-0 text-[14px] text-[#dce7ee]">Reconciliation</h3>
+        <h3 class="m-0 text-[14px] text-[#dce7ee]">{t('Reconciliation')}</h3>
         <span>{reconciliations.length}</span>
       </div>
       {#each reconciliations as task}<div
           class="flex items-center gap-3 border-t border-[#172631] py-[10px]"
         >
           <div class="flex-1">
-            <span class={statusClass(task.status)}>{task.status}</span><strong
+            <span class={statusClass(task.status)}>{t(task.status)}</span><strong
               class="ml-2 text-[10px] capitalize text-[#95a9b7]"
               >{task.policy.replaceAll('_', ' ')}</strong
             >
@@ -129,9 +132,9 @@
           {#if task.status === 'pending' && task.policy === 'manual_approval'}<button
               class="w-[90px] border border-[#17616a] bg-[#0c282d] p-[9px] text-[10px] font-bold text-[#60e5eb]"
               onclick={() => onApprove(task)}
-              disabled={actionBusy === task.id}>Approve</button
+              disabled={actionBusy === task.id}>{t('Approve')}</button
             >{/if}
-        </div>{:else}<p class="text-[9px] text-[#587080]">No reconciliation tasks.</p>{/each}
+        </div>{:else}<p class="text-[9px] text-[#587080]">{t('No reconciliation tasks.')}</p>{/each}
     </section>
   </aside>
 </div>

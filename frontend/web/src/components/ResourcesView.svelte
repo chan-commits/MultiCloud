@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Resource } from '../lib/api';
   import { statusClass } from '../lib/ui';
+  import { t } from '$lib/i18n.svelte';
   let {
     resources,
     onOpenResource,
@@ -17,17 +18,17 @@
 >
   <div>
     <p class="m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-brand-cyan">
-      CANONICAL INVENTORY
+      {t('CANONICAL INVENTORY')}
     </p>
-    <h2>Resource Matrix</h2>
-    <p>Provider-neutral assets with normalized state and drift visibility.</p>
+    <h2>{t('Resource Matrix')}</h2>
+    <p>{t('Provider-neutral assets with normalized state and drift visibility.')}</p>
   </div>
   <div class="flex border border-[#20323f] bg-[#091018] p-[3px]">
     <button class="bg-[#103039] px-[11px] py-[7px] text-[9px] text-[#60e4eb]"
-      >All {resources.length}</button
+      >{t('All')} {resources.length}</button
     ><button class="border-0 bg-transparent px-[11px] py-[7px] text-[9px] text-[#63798a]"
-      >Compute {resources.filter((item) => item.resource_type === 'compute_instance')
-        .length}</button
+      >{t('Compute')}
+      {resources.filter((item) => item.resource_type === 'compute_instance').length}</button
     ><button class="border-0 bg-transparent px-[11px] py-[7px] text-[9px] text-[#63798a]"
       >DNS {resources.filter((item) => item.resource_type.startsWith('dns_')).length}</button
     >
@@ -40,8 +41,9 @@
     <table>
       <thead
         ><tr
-          ><th>Resource</th><th>Type</th><th>Region</th><th>Lifecycle</th><th>Observed</th><th
-          ></th></tr
+          ><th>{t('Resource')}</th><th>{t('Type')}</th><th>{t('Region')}</th><th
+            >{t('Lifecycle')}</th
+          ><th>{t('Observed')}</th><th></th></tr
         ></thead
       ><tbody>
         {#each resources as resource}<tr>
@@ -60,21 +62,21 @@
             <td>{resource.resource_type.replaceAll('_', ' ')}</td><td
               >{resource.region ?? 'global'}</td
             >
-            <td><span class={statusClass(resource.lifecycle)}>{resource.lifecycle}</span></td><td
+            <td><span class={statusClass(resource.lifecycle)}>{t(resource.lifecycle)}</span></td><td
               >v{resource.observed_state?.version ?? 0}</td
             >
             <td
               ><button
                 class="border-0 bg-transparent text-[9px] text-[#43ced7]"
-                onclick={() => onOpenResource(resource)}>Inspect →</button
+                onclick={() => onOpenResource(resource)}>{t('Inspect')} →</button
               ></td
             >
           </tr>{:else}<tr
             ><td colspan="6"
               ><div class="flex flex-col items-center gap-[6px] p-[50px] text-[#536979]">
                 <span class="text-[25px] text-[#2caeb7]">◇</span><strong class="text-[#8498a7]"
-                  >No resources discovered</strong
-                ><small>Run inventory sync from Provider Fabric.</small>
+                  >{t('No resources discovered')}</strong
+                ><small>{t('Run inventory sync from Provider Fabric.')}</small>
               </div></td
             ></tr
           >{/each}

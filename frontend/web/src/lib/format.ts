@@ -1,14 +1,18 @@
+import { i18n, t } from '$lib/i18n.svelte';
+
 export function messageOf(cause: unknown): string {
-  return cause instanceof Error ? cause.message : 'An unexpected error occurred';
+  return cause instanceof Error ? t(cause.message) : t('An unexpected error occurred');
 }
 
 export function relativeDate(value: string | null): string {
-  if (!value) return 'Never';
+  if (!value) return t('Never');
   const seconds = Math.floor((Date.now() - new Date(value).getTime()) / 1000);
-  if (seconds < 60) return 'Just now';
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(new Date(value));
+  if (seconds < 60) return t('Just now');
+  if (seconds < 3600) return t('{count}m ago', { count: Math.floor(seconds / 60) });
+  if (seconds < 86400) return t('{count}h ago', { count: Math.floor(seconds / 3600) });
+  return new Intl.DateTimeFormat(i18n.locale, { month: 'short', day: 'numeric' }).format(
+    new Date(value),
+  );
 }
 
 export function shortId(value: string): string {

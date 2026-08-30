@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Operation } from '../lib/api';
   import { statusClass } from '../lib/ui';
+  import { t } from '$lib/i18n.svelte';
   let {
     operations,
     actionBusy,
@@ -21,16 +22,17 @@
 >
   <div>
     <p class="m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-brand-cyan">
-      RELIABLE EXECUTION
+      {t('RELIABLE EXECUTION')}
     </p>
-    <h2>Operation Stream</h2>
-    <p>Idempotent commands, retry state, and immutable execution history.</p>
+    <h2>{t('Operation Stream')}</h2>
+    <p>{t('Idempotent commands, retry state, and immutable execution history.')}</p>
   </div>
   <div
     class="flex items-center gap-2 border border-[#1b4b3b] bg-[#0b211a] px-[10px] py-[7px] text-[8px] font-extrabold tracking-[0.12em] text-[#50dca4]
     "
   >
-    <i class="h-[7px] w-[7px] rounded-full bg-[#3ff1a7] shadow-[0_0_12px_#3ff1a7]"></i> LIVE QUEUE
+    <i class="h-[7px] w-[7px] rounded-full bg-[#3ff1a7] shadow-[0_0_12px_#3ff1a7]"></i>
+    {t('LIVE QUEUE')}
   </div>
 </section>
 <section class="overflow-hidden border border-line bg-panel p-0">
@@ -40,8 +42,9 @@
     <table>
       <thead
         ><tr
-          ><th>ID / Type</th><th>Target</th><th>Status</th><th>Progress</th><th>Created</th><th
-          ></th></tr
+          ><th>{t('ID / Type')}</th><th>{t('Target')}</th><th>{t('Status')}</th><th
+            >{t('Progress')}</th
+          ><th>{t('Created')}</th><th></th></tr
         ></thead
       ><tbody>
         {#each operations as operation}<tr>
@@ -54,7 +57,7 @@
               ></td
             >
             <td
-              ><span class={statusClass(operation.status)}>{operation.status}</span
+              ><span class={statusClass(operation.status)}>{t(operation.status)}</span
               >{#if operation.error_code}<small class="text-[#fb6d86]">{operation.error_code}</small
                 >{/if}</td
             >
@@ -75,12 +78,12 @@
               >{#if operation.status === 'queued'}<button
                   class="border-0 bg-transparent text-[9px] text-[#ff718b]"
                   onclick={() => onCancel(operation)}
-                  disabled={actionBusy === operation.id}>Cancel</button
+                  disabled={actionBusy === operation.id}>{t('Cancel')}</button
                 >{/if}</td
             >
           </tr>{:else}<tr
             ><td colspan="6" class="p-[30px] text-center text-[11px] text-[#526a7a]"
-              >Operation history is empty.</td
+              >{t('Operation history is empty.')}</td
             ></tr
           >{/each}
       </tbody>

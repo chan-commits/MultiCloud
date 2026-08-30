@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n.svelte';
   type View = 'overview' | 'providers' | 'resources' | 'operations' | 'audit';
   type NavigationItem = { id: View; label: string; caption: string; icon: string };
   let {
@@ -42,21 +43,21 @@
     <div class="min-w-0">
       <small
         class="mb-[3px] block overflow-hidden text-ellipsis whitespace-nowrap text-[8px] tracking-[0.13em] text-[#526b7c]"
-        >ACTIVE ORGANIZATION</small
+        >{t('ACTIVE ORGANIZATION')}</small
       ><strong
         class="block overflow-hidden text-ellipsis whitespace-nowrap text-[12px] text-[#cedae4]"
-        >{organizationName || 'Select tenant'}</strong
+        >{organizationName || t('Select tenant')}</strong
       >
     </div>
   </div>
-  <nav class="flex flex-col gap-[5px]" aria-label="Primary navigation">
+  <nav class="flex flex-col gap-[5px]" aria-label={t('Primary navigation')}>
     {#each navigation as item}<button
         class={`flex items-center gap-3 rounded-[5px] border border-transparent bg-transparent p-[11px] text-left ${view === item.id ? 'border-[#17404c] bg-gradient-to-r from-[#0d2d36] to-[#0a151e] text-[#e3fbff] shadow-[inset_2px_0_var(--color-brand-cyan)]' : 'text-[#6d8294]'}`}
         onclick={() => onNavigate(item.id)}
       >
         <span class="w-6 text-center text-[17px] text-[#41cdd5]">{item.icon}</span><span
-          ><strong class="block text-[12px]">{item.label}</strong><small
-            class="mt-[2px] block text-[9px] text-[#53697a]">{item.caption}</small
+          ><strong class="block text-[12px]">{t(item.label)}</strong><small
+            class="mt-[2px] block text-[9px] text-[#53697a]">{t(item.caption)}</small
           ></span
         >
       </button>{/each}
@@ -64,14 +65,14 @@
   <div class="mt-auto border-t border-[#14212c] px-[9px] pb-0 pt-[18px]">
     <div class="mb-[14px] flex items-center gap-[10px]">
       <i class="h-[7px] w-[7px] rounded-full bg-[#3ff1a7] shadow-[0_0_12px_#3ff1a7]"></i><span
-        ><strong class="block text-[10px] text-[#b7c7d4]">Control plane</strong><small
-          class="block text-[9px] text-[#526979]">All systems nominal</small
+        ><strong class="block text-[10px] text-[#b7c7d4]">{t('Control plane')}</strong><small
+          class="block text-[9px] text-[#526979]">{t('All systems nominal')}</small
         ></span
       >
     </div>
     <button
       class="border-0 bg-transparent p-1 text-[11px] text-[#6f8799] hover:text-brand-cyan"
-      onclick={onLogout}>Sign out</button
+      onclick={onLogout}>{t('Sign out')}</button
     >
   </div>
 </aside>

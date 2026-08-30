@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n.svelte';
   let {
     creating,
     onCreate,
@@ -19,9 +20,9 @@
   >
     ◎
   </div>
-  <h2 class="mb-1 text-[#c7d5df]">Create your organization</h2>
+  <h2 class="mb-1 text-[#c7d5df]">{t('Create your organization')}</h2>
   <p class="max-w-[430px] text-[12px]">
-    Your account is ready. Establish an isolated tenant workspace to continue.
+    {t('Your account is ready. Establish an isolated tenant workspace to continue.')}
   </p>
   <form
     class="mt-[15px] grid w-[min(420px,90%)] gap-[13px] text-left"
@@ -31,7 +32,7 @@
     }}
   >
     <label class="flex flex-col gap-[6px] text-[9px] tracking-[0.08em] text-[#71899a]"
-      >Organization name<input
+      >{t('Organization name')}<input
         class="rounded-[4px] border border-[#203140] bg-[#09111a] p-[11px] text-[#eaf6ff]"
         bind:value={name}
         maxlength="160"
@@ -40,7 +41,7 @@
       /></label
     >
     <label class="flex flex-col gap-[6px] text-[9px] tracking-[0.08em] text-[#71899a]"
-      >Organization slug<input
+      >{t('Organization slug')}<input
         class="rounded-[4px] border border-[#203140] bg-[#09111a] p-[11px] text-[#eaf6ff]"
         bind:value={slug}
         minlength="3"
@@ -52,7 +53,7 @@
     >
     <button
       class="justify-self-start rounded-[5px] border border-[#20dce6] bg-gradient-to-br from-[#18cbd5] to-[#0796a7] px-[17px] py-3 font-extrabold text-[#001114] shadow-[0_0_28px_#15d7e221]"
-      disabled={creating}>{creating ? 'Creating…' : 'Create workspace'}</button
+      disabled={creating}>{t(creating ? 'Creating…' : 'Create workspace')}</button
     >
   </form>
 </section>

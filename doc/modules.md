@@ -46,3 +46,5 @@ Platform Admin 與 Organization RBAC 分離：只有 CLI 初始化的 Platform A
 ## Web UI 邊界
 
 SvelteKit 負責 URL routing、持久 root layout 與頁面級 UI 邊界；Overview、Providers、Resources、Operations、Audit 均為獨立 route module。`App.svelte` 只組合 authentication、tenant-aware shell、跨頁協調與全域 overlay，透過 typed control-plane context 向 route 暴露共享狀態和操作。具備獨立狀態或表單生命週期的 UI 位於 `components/`。後續 Ticket、Chat、Agent 與 Billing 必須直接建立 route module，不再擴充手寫 view router。
+
+UI 文案透過 `lib/i18n.svelte.ts` 管理 English、簡體中文與繁體中文；首次載入依 `navigator.languages` 選擇，未命中支援語系時回退 English，使用者選擇保存於 `localStorage`。新增頁面不得直接散落可見文案，應使用翻譯鍵並同步補齊兩種中文訊息。

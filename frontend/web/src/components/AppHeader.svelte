@@ -1,5 +1,7 @@
 <script lang="ts">
   import type { Organization } from '../lib/api';
+  import LanguageSelect from './LanguageSelect.svelte';
+  import { t } from '$lib/i18n.svelte';
   type View = 'overview' | 'providers' | 'resources' | 'operations' | 'audit';
   let {
     view,
@@ -35,7 +37,7 @@
 >
   <button
     class="hidden h-9 w-9 rounded-[5px] border border-[#1b2b38] bg-[#0b131c] text-[#8ba0b0] max-[760px]:block"
-    aria-label="Toggle navigation"
+    aria-label={t('Toggle navigation')}
     onclick={onMenu}>☰</button
   >
   <div>
@@ -43,7 +45,7 @@
       CONTROL PLANE / <span class="text-[#19bac5]">{view.toUpperCase()}</span>
     </p>
     <h1 class="m-[4px_0_0] text-[20px] tracking-[-0.025em] text-[#e8f2f9]">
-      {navigation.find((item) => item.id === view)?.label}
+      {t(navigation.find((item) => item.id === view)?.label ?? '')}
     </h1>
   </div>
   <div class="flex items-center gap-[10px]">
@@ -51,14 +53,15 @@
         class={`flex items-center gap-[7px] rounded-[5px] border px-[10px] py-[9px] text-[9px] ${registrationEnabled ? 'border-[#205846] bg-[#0d211a] text-[#54d7a1]' : 'border-[#49313a] bg-[#1b1117] text-[#aa7c88]'}`}
         onclick={onToggleRegistration}
         disabled={registrationBusy || !organizationId}
-        title="Platform-wide public registration"
+        title={t('Platform-wide public registration')}
         ><i
           class={`h-[6px] w-[6px] rounded-full ${registrationEnabled ? 'bg-[#3de6a1] shadow-[0_0_8px_#3de6a1]' : 'bg-[#ad5367]'}`}
-        ></i>{registrationEnabled ? 'Registration on' : 'Registration off'}</button
+        ></i>{t(registrationEnabled ? 'Registration on' : 'Registration off')}</button
       >{/if}
+    <LanguageSelect compact />
     <select
       class="max-w-[190px] rounded-[6px] border border-[#203140] bg-[#09111a] px-[11px] py-[9px] pr-8 text-[11px] text-[#eaf6ff] outline-none"
-      aria-label="Organization"
+      aria-label={t('Organization')}
       value={organizationId}
       onchange={onOrganizationChange}
       >{#each organizations as organization}<option value={organization.id}
@@ -67,7 +70,7 @@
     >
     <button
       class="h-9 w-9 rounded-[5px] border border-[#1b2b38] bg-[#0b131c] text-[#8ba0b0]"
-      aria-label="Refresh data"
+      aria-label={t('Refresh data')}
       onclick={onRefresh}
       disabled={loading}>↻</button
     >

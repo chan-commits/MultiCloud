@@ -8,6 +8,8 @@ MultiCloud 是以 Rust 构建的多租户云端管理控制平台。平台以 Or
 - Frontend：SvelteKit、Svelte 5、TypeScript、Vite、TailwindCSS
 - Tooling：`just`、Podman/Docker Compose、GitHub Actions
 
+Web UI 支持 English、简体中文和繁體中文。首次访问按浏览器系统语言选择中文变体，未匹配时回退 English；用户手动选择后会保存在浏览器本地。
+
 ## 架构原则
 
 - Domain Driven Design 与 bounded context

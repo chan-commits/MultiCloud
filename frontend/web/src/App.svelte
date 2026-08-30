@@ -25,6 +25,7 @@
   } from './lib/api';
   import { messageOf, relativeDate } from './lib/format';
   import { CONTROL_PLANE_CONTEXT, type ControlPlaneContext } from './lib/control-plane-context';
+  import { initializeLocale, t } from './lib/i18n.svelte';
   import { navigation, viewPath, type View } from './lib/navigation';
   import {
     approveReconciliation,
@@ -145,12 +146,13 @@
   setContext(CONTROL_PLANE_CONTEXT, controlPlane);
 
   onMount(async () => {
+    initializeLocale();
     try {
       const settings = await registrationSettings();
       registrationEnabled = settings.registration_enabled;
       platformInitialized = settings.initialized;
     } catch {
-      loginError = 'Could not load platform registration status.';
+      loginError = t('Could not load platform registration status.');
     }
     const session = readSession();
     if (!session) return;
@@ -274,7 +276,7 @@
       organizationId = organization.id;
       client.setOrganization(organization.id);
       persistOrganization(organization.id);
-      notice = 'Organization workspace created.';
+      notice = t('Organization workspace created.');
       await refreshAll();
     } catch (cause) {
       error = messageOf(cause);
@@ -341,7 +343,9 @@
     try {
       const settings = await client.updateRegistration(!registrationEnabled);
       registrationEnabled = settings.registration_enabled;
-      notice = `Public registration ${registrationEnabled ? 'enabled' : 'disabled'}.`;
+      notice = t(
+        registrationEnabled ? 'Public registration enabled.' : 'Public registration disabled.',
+      );
     } catch (cause) {
       error = messageOf(cause);
     } finally {
@@ -356,7 +360,7 @@
     try {
       await client.createProvider(payload);
       providerDialog = false;
-      notice = 'Provider account encrypted and ready for validation.';
+      notice = t('Provider account encrypted and ready for validation.');
       await refreshAll();
     } catch (cause) {
       error = messageOf(cause);
@@ -371,8 +375,8 @@
     try {
       const result = await providerTest(client, provider);
       notice = result.valid
-        ? `${provider.name} connection verified.`
-        : `${provider.name} validation failed.`;
+        ? t('{name} connection verified.', { name: provider.name })
+        : t('{name} validation failed.', { name: provider.name });
       await refreshAll();
     } catch (cause) {
       error = messageOf(cause);
@@ -385,7 +389,7 @@
     actionBusy = provider.id;
     try {
       await providerSync(client, provider);
-      notice = `${provider.name} inventory sync queued.`;
+      notice = t('{name} inventory sync queued.', { name: provider.name });
       await refreshAll();
     } catch (cause) {
       error = messageOf(cause);
@@ -410,13 +414,16 @@
     const provider = resourceProvider(providers, resource),
       externalId = resource.external_id ?? '';
     if (!provider || !externalId) {
-      error = 'This resource does not expose an operable provider mapping yet.';
+      error = t('This resource does not expose an operable provider mapping yet.');
       return;
     }
     actionBusy = `${resource.id}:${action}`;
     try {
       await resourceOperation(client, provider, resource, action);
-      notice = `${action} operation queued for ${resource.name}.`;
+      notice = t('{action} operation queued for {name}.', {
+        action: t(action),
+        name: resource.name,
+      });
       await refreshAll();
     } catch (cause) {
       error = messageOf(cause);
@@ -429,7 +436,7 @@
     actionBusy = task.id;
     try {
       await approveReconciliation(client, selectedResource.id, task);
-      notice = 'Reconciliation approved.';
+      notice = t('Reconciliation approved.');
       await openResource(selectedResource);
     } catch (cause) {
       error = messageOf(cause);
@@ -442,7 +449,7 @@
     actionBusy = operation.id;
     try {
       await cancelOperation(client, operation);
-      notice = 'Queued operation cancelled.';
+      notice = t('Queued operation cancelled.');
       await refreshAll();
     } catch (cause) {
       error = messageOf(cause);
@@ -455,7 +462,7 @@
     actionBusy = 'audit-export';
     try {
       await exportAuditAction(client, auditFilters());
-      notice = 'Sanitized audit export generated.';
+      notice = t('Sanitized audit export generated.');
     } catch (cause) {
       error = messageOf(cause);
     } finally {
@@ -465,7 +472,7 @@
 </script>
 
 <svelte:head
-  ><title>MultiCloud · Command Center</title><meta
+  ><title>MultiCloud · {t('Command Center')}</title><meta
     name="description"
     content="Multi-tenant cloud operations control plane"
   /></svelte:head

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import LanguageSelect from './LanguageSelect.svelte';
+  import { t } from '$lib/i18n.svelte';
   let {
     registrationEnabled,
     platformInitialized,
@@ -52,21 +54,21 @@
     <p
       class="relative z-[1] m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-brand-cyan"
     >
-      MULTI-TENANT CONTROL PLANE
+      {t('MULTI-TENANT CONTROL PLANE')}
     </p>
     <h1
       class="relative z-[1] m-0 max-w-[850px] text-[clamp(42px,5vw,78px)] leading-[1.03] tracking-[-0.055em] text-[#f1f8ff]"
     >
-      Operate every cloud<br />from one command layer.
+      {t('Operate every cloud')}<br />{t('from one command layer.')}
     </h1>
     <p class="relative z-[1] max-w-[570px] text-[17px] leading-[1.7] text-[#8499aa]">
-      Provider-neutral infrastructure, deterministic operations, and tenant-safe control.
+      {t('Provider-neutral infrastructure, deterministic operations, and tenant-safe control.')}
     </p>
     <div
       class="relative z-[1] mt-[60px] flex items-center gap-3 font-mono text-[10px] font-bold tracking-[0.18em] text-[#5d7989]"
     >
-      <span class="h-[7px] w-[7px] rounded-full bg-[#3ff1a7] shadow-[0_0_12px_#3ff1a7]"></span> CONTROL
-      FABRIC ONLINE
+      <span class="h-[7px] w-[7px] rounded-full bg-[#3ff1a7] shadow-[0_0_12px_#3ff1a7]"></span>
+      {t('CONTROL FABRIC ONLINE')}
     </div>
   </section>
   <section
@@ -80,30 +82,32 @@
       }}
     >
       <div
-        class="mb-[54px] flex items-center gap-[11px] text-[18px] font-[750] text-[#eff8ff]
-        "
+        class="mb-[54px] flex items-center justify-between gap-[11px] text-[18px] font-[750] text-[#eff8ff]"
       >
-        <span
-          class="grid h-[30px] w-[30px] rotate-45 place-items-center border border-brand-cyan text-[14px] text-brand-cyan"
-          >M</span
-        ><span>MultiCloud</span>
+        <div class="flex items-center gap-[11px]">
+          <span
+            class="grid h-[30px] w-[30px] rotate-45 place-items-center border border-brand-cyan text-[14px] text-brand-cyan"
+            >M</span
+          ><span>MultiCloud</span>
+        </div>
+        <LanguageSelect compact />
       </div>
       <div>
         <p class="m-0 mb-[14px] text-[11px] font-extrabold tracking-[0.2em] text-brand-cyan">
-          SECURE ACCESS
+          {t('SECURE ACCESS')}
         </p>
         <h2 class="m-0 text-[30px] tracking-[-0.035em] text-[#f2f8ff]">
-          {mode === 'login' ? 'Welcome back' : 'Create account'}
+          {t(mode === 'login' ? 'Welcome back' : 'Create account')}
         </h2>
         <p class="m-[8px_0_0] text-muted">
           {mode === 'login'
-            ? 'Authenticate to enter your organization workspace.'
-            : 'Join the control plane and create your tenant workspace.'}
+            ? t('Authenticate to enter your organization workspace.')
+            : t('Join the control plane and create your tenant workspace.')}
         </p>
       </div>
       {#if mode === 'register'}<label
           class="flex flex-col gap-[9px] text-[12px] font-semibold text-[#9fb0c0]"
-          >Display name<input
+          >{t('Display name')}<input
             class="rounded-[6px] border border-[#203140] bg-[#09111a] p-[13px_14px] text-[#eaf6ff] outline-none transition focus:border-[#1ab9c6] focus:shadow-[0_0_0_3px_#16d9e311]"
             bind:value={displayName}
             autocomplete="name"
@@ -112,7 +116,7 @@
           /></label
         >{/if}
       <label class="flex flex-col gap-[9px] text-[12px] font-semibold text-[#9fb0c0]"
-        >Email address<input
+        >{t('Email address')}<input
           class="rounded-[6px] border border-[#203140] bg-[#09111a] p-[13px_14px] text-[#eaf6ff] outline-none transition focus:border-[#1ab9c6] focus:shadow-[0_0_0_3px_#16d9e311]"
           bind:value={email}
           type="email"
@@ -122,7 +126,7 @@
         /></label
       >
       <label class="flex flex-col gap-[9px] text-[12px] font-semibold text-[#9fb0c0]"
-        >Password<input
+        >{t('Password')}<input
           class="rounded-[6px] border border-[#203140] bg-[#09111a] p-[13px_14px] text-[#eaf6ff] outline-none transition focus:border-[#1ab9c6] focus:shadow-[0_0_0_3px_#16d9e311]"
           bind:value={password}
           type="password"
@@ -141,26 +145,26 @@
         class="flex w-full justify-between rounded-[5px] border border-[#20dce6] bg-gradient-to-br from-[#18cbd5] to-[#0796a7] px-[18px] py-[14px] font-extrabold text-[#001114] shadow-[0_0_28px_#15d7e221]"
         disabled={authenticating}
         >{authenticating
-          ? 'Working…'
+          ? t('Working…')
           : mode === 'login'
-            ? 'Enter Command Center'
-            : 'Create account'}<span>→</span></button
+            ? t('Enter Command Center')
+            : t('Create account')}<span>→</span></button
       >
       {#if registrationEnabled}<button
           class="border-0 bg-transparent text-[11px] text-[#53cbd2]"
           type="button"
           onclick={() => (mode = mode === 'login' ? 'register' : 'login')}
           >{mode === 'login'
-            ? 'New user? Create an account'
-            : 'Already registered? Sign in'}</button
+            ? t('New user? Create an account')
+            : t('Already registered? Sign in')}</button
         >{:else}<p class="m-[-10px_0_0] text-center text-[10px] text-[#a1747d]">
-          Public registration is currently closed.
+          {t('Public registration is currently closed.')}
         </p>{/if}
       <p class="m-0 text-center text-[11px] text-[#526879]">
         <span class="text-[#20bfc9]">◆</span>
         {platformInitialized
-          ? 'Platform access policy is enforced by the control plane.'
-          : 'The first platform administrator must be initialized locally by CLI.'}
+          ? t('Platform access policy is enforced by the control plane.')
+          : t('The first platform administrator must be initialized locally by CLI.')}
       </p>
     </form>
   </section>
