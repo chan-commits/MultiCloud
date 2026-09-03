@@ -10,7 +10,7 @@ use multicloud_operation::EventEnvelope;
 use multicloud_persistence::entities::{
     organization_invitations, organization_memberships, role_bindings, roles, users,
 };
-use rand::RngCore;
+use rand::Rng;
 use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter, Set, TransactionTrait};
 use serde::{Deserialize, Serialize};
 use time::{Duration, OffsetDateTime};

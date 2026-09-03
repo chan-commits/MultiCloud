@@ -13,7 +13,7 @@ use multicloud_persistence::{
     },
     reliable_events::enqueue_event,
 };
-use rand::RngCore;
+use rand::Rng;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseConnection, DatabaseTransaction,
     DbBackend, EntityTrait, QueryFilter, QueryOrder, Set, Statement, TransactionTrait,
