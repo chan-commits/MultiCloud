@@ -32,7 +32,7 @@ infra-down:
     podman compose down
 
 migrate *args:
-    cargo run -p multicloud-migrations -- {{args}}
+    cargo run -p multicloud -- migrate {{args}}
 
 admin-init *args:
     cargo run -p multicloud -- init {{args}}

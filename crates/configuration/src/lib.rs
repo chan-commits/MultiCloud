@@ -75,7 +75,9 @@ impl Settings {
     pub fn load(root: impl AsRef<Path>) -> Result<Self, SettingsError> {
         let root = root.as_ref();
         let settings = Config::builder()
-            .add_source(File::from(root.join("config/default.toml")))
+            // Release deployments may consist of only the embedded binary. In that
+            // case every setting is supplied through the process environment.
+            .add_source(File::from(root.join("config/default.toml")).required(false))
             .add_source(
                 Environment::with_prefix("MULTICLOUD")
                     .prefix_separator("__")

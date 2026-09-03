@@ -2,16 +2,17 @@
 
 ## 0. 首次初始化與管理權限恢復
 
-1. 完成 database migration 後，在 Control Plane 主機的交互式終端執行 `just admin-init`（由單一 `multicloud` binary 的 `init` 子命令執行）。
-2. CLI 原子建立首位 active User、Organization、active membership、system roles 與 Owner binding。
-3. Password 僅由隱藏輸入讀取，不接受 command-line password，也不寫入 log；資料庫只保存 Argon2 hash。
-4. 無法登入時執行 `just recover-access [email]`；使用者未指定時由 CLI 列出可恢復帳號。
-5. 多租戶帳號必須明確選擇 Organization；沒有 membership 時必須提供 Organization UUID 並再次確認，不會跨租戶自動授權。
-6. 恢復會重設 password、啟用 User/membership、確保 Owner binding，並撤銷該使用者所有既有 session。
-7. 初始化與恢復均透過 transactional outbox 產生 security audit event；任何 event payload 均不包含 password/hash。
-8. 這些能力只存在於本機 CLI，不提供 HTTP recovery endpoint。
-9. 公開 Web 註冊預設關閉；首位 Platform Admin 初始化並登入後，可在 Web 明確開啟或再次關閉。普通使用者註冊後可在 Web 建立自己的 Organization，並成為該租戶 Owner。
-10. 註冊政策是 platform scope，Organization Owner/Admin 無權修改；每次切換均產生 tenant-visible security audit event。
+1. 系統管理員建立 PostgreSQL role 與空 database，再由單一 binary 執行 `multicloud migrate up` 建立或升級 schema。
+2. 完成 database migration 後，在 Control Plane 主機的交互式終端執行 `just admin-init`（由單一 `multicloud` binary 的 `init` 子命令執行）。
+3. CLI 原子建立首位 active User、Organization、active membership、system roles 與 Owner binding。
+4. Password 僅由隱藏輸入讀取，不接受 command-line password，也不寫入 log；資料庫只保存 Argon2 hash。
+5. 無法登入時執行 `just recover-access [email]`；使用者未指定時由 CLI 列出可恢復帳號。
+6. 多租戶帳號必須明確選擇 Organization；沒有 membership 時必須提供 Organization UUID 並再次確認，不會跨租戶自動授權。
+7. 恢復會重設 password、啟用 User/membership、確保 Owner binding，並撤銷該使用者所有既有 session。
+8. 初始化與恢復均透過 transactional outbox 產生 security audit event；任何 event payload 均不包含 password/hash。
+9. 這些能力只存在於本機 CLI，不提供 HTTP recovery endpoint。
+10. 公開 Web 註冊預設關閉；首位 Platform Admin 初始化並登入後，可在 Web 明確開啟或再次關閉。普通使用者註冊後可在 Web 建立自己的 Organization，並成為該租戶 Owner。
+11. 註冊政策是 platform scope，Organization Owner/Admin 無權修改；每次切換均產生 tenant-visible security audit event。
 
 ## 1. 登入與租戶切換
 

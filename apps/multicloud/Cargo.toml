@@ -19,6 +19,7 @@ multicloud-api = { path = "../api" }
 multicloud-configuration = { path = "../../crates/configuration" }
 multicloud-identity = { path = "../../crates/identity" }
 multicloud-messaging = { path = "../../crates/messaging" }
+multicloud-migrations = { path = "../../migrations" }
 multicloud-observability = { path = "../../crates/observability" }
 multicloud-operation = { path = "../../crates/operation" }
 multicloud-organization = { path = "../../crates/organization" }
@@ -31,6 +32,7 @@ multicloud-worker = { path = "../worker" }
 rand.workspace = true
 redis.workspace = true
 sea-orm.workspace = true
+sea-orm-migration.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true

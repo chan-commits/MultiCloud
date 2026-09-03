@@ -42,3 +42,7 @@ Identity onboarding 採兩層邊界：首位平台管理員只能透過本機單
 - 本地 migration 實際建立 partition、RLS 與 append-only trigger。
 - Worker E2E 使用含假 token/consumer key 的 Domain Event，投影結果為 `[REDACTED]`，非敏感欄位保留。
 - 對 Audit row 執行 `UPDATE` 由 database trigger 拒絕。
+
+## 完成狀態
+
+Phase 6 已完成：event projection、append-only protection、recursive redaction、tenant/RBAC query、sanitized CSV export、月分區基礎、retention policy API 與 Audit Stream UI 均已落地。依每個租戶 policy 自動 archive/drop 舊分區、備份復原與 production maintenance orchestration 屬於 Phase 11 Production Hardening，不納入本階段 runtime scope。
