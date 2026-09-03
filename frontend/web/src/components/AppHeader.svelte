@@ -11,11 +11,14 @@
     isPlatformAdmin,
     registrationEnabled,
     registrationBusy,
+    logLevel,
+    logLevelBusy,
     loading,
     onMenu,
     onOrganizationChange,
     onRefresh,
     onToggleRegistration,
+    onLogLevelChange,
   }: {
     view: View;
     navigation: { id: View; label: string; caption: string; icon: string }[];
@@ -24,11 +27,14 @@
     isPlatformAdmin: boolean;
     registrationEnabled: boolean;
     registrationBusy: boolean;
+    logLevel: 'error' | 'warn' | 'info' | 'debug' | 'trace';
+    logLevelBusy: boolean;
     loading: boolean;
     onMenu: () => void;
     onOrganizationChange: (event: Event) => void;
     onRefresh: () => Promise<void>;
     onToggleRegistration: () => Promise<void>;
+    onLogLevelChange: (event: Event) => Promise<void>;
   } = $props();
 </script>
 
@@ -58,6 +64,21 @@
           class={`h-[6px] w-[6px] rounded-full ${registrationEnabled ? 'bg-[#3de6a1] shadow-[0_0_8px_#3de6a1]' : 'bg-[#ad5367]'}`}
         ></i>{t(registrationEnabled ? 'Registration on' : 'Registration off')}</button
       >{/if}
+    {#if isPlatformAdmin}<label class="flex items-center gap-2 text-[9px] text-muted">
+        <span class="max-[980px]:hidden">{t('Log level')}</span>
+        <select
+          class="rounded-[5px] border border-line bg-panel px-[8px] py-[9px] text-[9px] uppercase text-[#eaf6ff] outline-none"
+          value={logLevel}
+          disabled={logLevelBusy || !organizationId}
+          aria-label={t('Runtime log level')}
+          title={t('Changes take effect immediately and persist across restarts.')}
+          onchange={onLogLevelChange}
+        >
+          {#each ['error', 'warn', 'info', 'debug', 'trace'] as level}
+            <option value={level}>{level}</option>
+          {/each}
+        </select>
+      </label>{/if}
     <LanguageSelect compact />
     <select
       class="max-w-[190px] rounded-[6px] border border-[#203140] bg-[#09111a] px-[11px] py-[9px] pr-8 text-[11px] text-[#eaf6ff] outline-none"

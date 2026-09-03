@@ -62,6 +62,8 @@ just recover-access admin@example.com
 
 公开注册默认关闭。首位 Platform Admin 初始化并登录后，可从 Web 顶部控制栏开启；开启期间普通使用者可在登录页注册账号，并在首次登入后建立自己的 Organization。Organization Owner/Admin 无权修改平台注册策略。
 
+Platform Admin 也可在 Web 顶栏动态调整 application log level；设置持久化到数据库并立即生效。日志正文仍写往 stdout/journald，磁盘容量由宿主机或容器日志后端控制，详见部署指南。
+
 执行完整检查：
 
 ```bash

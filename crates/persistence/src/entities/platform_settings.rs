@@ -6,6 +6,7 @@ pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: i16,
     pub registration_enabled: bool,
+    pub log_level: String,
     pub updated_by: Option<Uuid>,
     pub updated_at: TimeDateTimeWithTimeZone,
 }

@@ -55,6 +55,8 @@ RUST_LOG=info,multicloud=info
 
 若数据库密码含 `@`、`:`、`/` 等 URL 保留字符，必须先进行 percent-encoding。
 
+`RUST_LOG` 是连接数据库前的启动级别。迁移完成后，Platform Admin 可在 Web 顶栏选择 `error`、`warn`、`info`、`debug` 或 `trace`；选择会保存至 `platform_settings` 并立即 reload，无需重启。数据库只保存级别设置，application log 内容仍输出至 stdout/journald，不占用 PostgreSQL 空间。
+
 生成 key、保护配置，并完成首次初始化：
 
 ```bash
@@ -99,6 +101,17 @@ journalctl -u multicloud -f
 ```
 
 服务应以非 root 专用用户运行，并在前方配置 TLS reverse proxy。Redis 只监听本机或私有网络，PostgreSQL 与 Redis 都应纳入备份和监控。
+
+Application log 的磁盘上限由日志后端管理。使用 journald 时，在 `/etc/systemd/journald.conf.d/limit.conf` 设置全局容量，例如：
+
+```ini
+[Journal]
+SystemMaxUse=1G
+SystemKeepFree=2G
+MaxFileSec=7day
+```
+
+修改后执行 `sudo systemctl restart systemd-journald`。该限制影响整台主机的 journal，而非仅 MultiCloud。Audit Log 是另一类保存在 PostgreSQL 的不可变业务记录，由 Web 中的 tenant retention policy 与后续分区归档流程管理，不应按 application log 上限直接删除。
 
 ## 故障恢复
 

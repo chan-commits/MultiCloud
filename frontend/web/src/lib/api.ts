@@ -76,6 +76,7 @@ export type AuditFilters = {
   limit?: number;
 };
 export type RegistrationSettings = { initialized: boolean; registration_enabled: boolean };
+export type LoggingSettings = { log_level: 'error' | 'warn' | 'info' | 'debug' | 'trace' };
 
 const API_ROOT = '/api/v1';
 
@@ -127,6 +128,15 @@ export class ApiClient {
     return this.request<RegistrationSettings>('/auth/registration-settings', {
       method: 'PUT',
       body: JSON.stringify({ registration_enabled: registrationEnabled }),
+    });
+  }
+  loggingSettings() {
+    return this.request<LoggingSettings>('/platform/settings/logging');
+  }
+  updateLogLevel(logLevel: LoggingSettings['log_level']) {
+    return this.request<LoggingSettings>('/platform/settings/logging', {
+      method: 'PUT',
+      body: JSON.stringify({ log_level: logLevel }),
     });
   }
   createOrganization(payload: { name: string; slug: string }) {

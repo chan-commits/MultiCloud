@@ -2170,6 +2170,7 @@ dependencies = [
 name = "multicloud-observability"
 version = "0.1.0"
 dependencies = [
+ "thiserror",
  "tracing",
  "tracing-subscriber",
 ]

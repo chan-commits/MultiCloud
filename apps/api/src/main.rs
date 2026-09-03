@@ -4,6 +4,8 @@ mod web;
 
 use axum::{Router, routing::get};
 use multicloud_configuration::Settings;
+use multicloud_persistence::entities::platform_settings;
+use sea_orm::EntityTrait;
 use serde::Serialize;
 use std::sync::Arc;
 use std::{net::SocketAddr, path::PathBuf};
@@ -34,6 +36,13 @@ pub async fn run() -> anyhow::Result<()> {
         multicloud_persistence::connect(&settings.database.url, settings.database.max_connections)
             .await
             .context("could not connect to database")?;
+    let runtime_settings = platform_settings::Entity::find_by_id(1_i16)
+        .one(&database)
+        .await
+        .context("could not load runtime platform settings; run migrations first")?
+        .context("runtime platform settings are missing; run migrations first")?;
+    multicloud_observability::set_log_level(&runtime_settings.log_level)
+        .context("stored runtime log level is invalid")?;
     let cipher = multicloud_provider::EnvelopeCipher::from_base64(
         &settings.provider.credential_master_key,
         settings.provider.credential_key_version,

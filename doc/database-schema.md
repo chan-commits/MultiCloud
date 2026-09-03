@@ -13,7 +13,7 @@
 ## Identity、Organization、RBAC
 
 - `users`：email、display name、status、password hash、verification timestamps，以及只由本機初始化授予的 `is_platform_admin`。
-- `platform_settings`：singleton 平台安全設定；目前保存預設關閉的公開註冊開關及最後更新者。
+- `platform_settings`：singleton 平台設定；保存預設關閉的公開註冊開關、可動態 reload 的 application log level 及最後更新者。
 - `user_identities`：user、identity provider、provider subject、metadata。
 - `sessions`：refresh token hash、expiry、revocation、client metadata。
 - `api_tokens`：user、organization、token hash、scopes、expiry、last used。

@@ -6,6 +6,11 @@ const storageKey = 'multicloud.locale';
 
 const zhCN: Record<string, string> = {
   Language: '语言',
+  'Log level': '日志级别',
+  'Runtime log level': '运行时日志级别',
+  'Changes take effect immediately and persist across restarts.':
+    '修改会立即生效，并在重启后继续保留。',
+  'Runtime log level updated to {level}.': '运行时日志级别已更新为 {level}。',
   'Uses your browser language by default; unsupported languages use English.':
     '默认使用浏览器语言；不支持的语言将使用英文。',
   'Command Center': '控制中心',
@@ -234,6 +239,11 @@ const zhCN: Record<string, string> = {
 const zhTW: Record<string, string> = {
   ...zhCN,
   Language: '語言',
+  'Log level': '日誌級別',
+  'Runtime log level': '執行時日誌級別',
+  'Changes take effect immediately and persist across restarts.':
+    '變更會立即生效，並在重新啟動後繼續保留。',
+  'Runtime log level updated to {level}.': '執行時日誌級別已更新為 {level}。',
   'Uses your browser language by default; unsupported languages use English.':
     '預設使用瀏覽器語言；不支援的語言將使用英文。',
   'Command Center': '控制中心',

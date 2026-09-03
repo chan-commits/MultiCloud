@@ -17,6 +17,7 @@
     type AuditFilters,
     type AuditLog,
     type Drift,
+    type LoggingSettings,
     type Operation,
     type Organization,
     type ProviderAccount,
@@ -63,6 +64,8 @@
     platformInitialized = $state(false),
     isPlatformAdmin = $state(false),
     registrationBusy = $state(false);
+  let logLevel = $state<LoggingSettings['log_level']>('info'),
+    logLevelBusy = $state(false);
   let loading = $state(false),
     authenticating = $state(false),
     mobileNav = $state(false),
@@ -221,6 +224,7 @@
         : (organizations[0]?.id ?? '');
       if (organizationId) {
         client.setOrganization(organizationId);
+        if (isPlatformAdmin) logLevel = (await client.loggingSettings()).log_level;
         await refreshAll();
       }
     } catch (cause) {
@@ -350,6 +354,24 @@
       error = messageOf(cause);
     } finally {
       registrationBusy = false;
+    }
+  }
+
+  async function changeLogLevel(event: Event) {
+    if (!client || !organizationId || !isPlatformAdmin) return;
+    const target = event.currentTarget;
+    if (!(target instanceof HTMLSelectElement)) return;
+    const nextLevel = target.value as LoggingSettings['log_level'];
+    logLevelBusy = true;
+    try {
+      const settings = await client.updateLogLevel(nextLevel);
+      logLevel = settings.log_level;
+      notice = t('Runtime log level updated to {level}.', { level: logLevel.toUpperCase() });
+    } catch (cause) {
+      target.value = logLevel;
+      error = messageOf(cause);
+    } finally {
+      logLevelBusy = false;
     }
   }
 
@@ -506,11 +528,14 @@
         {isPlatformAdmin}
         {registrationEnabled}
         {registrationBusy}
+        {logLevel}
+        {logLevelBusy}
         {loading}
         onMenu={() => (mobileNav = !mobileNav)}
         onOrganizationChange={changeOrganization}
         onRefresh={refreshAll}
         onToggleRegistration={toggleRegistration}
+        onLogLevelChange={changeLogLevel}
       />
       <AppAlerts
         {error}
