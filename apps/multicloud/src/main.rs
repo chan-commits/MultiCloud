@@ -14,7 +14,11 @@ async fn main() -> anyhow::Result<()> {
         Some("scheduler") => multicloud_scheduler::run().await,
         Some("agent") => multicloud_agent::run().await,
         Some("migrate") => migrate().await,
-        Some("init" | "recover-access") => multicloud_admin::run().await,
+        Some("init") => {
+            migrate_up().await?;
+            multicloud_admin::run().await
+        }
+        Some("recover-access") => multicloud_admin::run().await,
         Some(command) => anyhow::bail!(
             "unknown command '{command}'; use serve, migrate, worker, scheduler, agent, init, or recover-access"
         ),
@@ -28,15 +32,19 @@ fn print_help() {
 }
 
 async fn migrate() -> anyhow::Result<()> {
-    use anyhow::Context;
-    use sea_orm_migration::MigratorTrait;
-
     match std::env::args().nth(2).as_deref() {
         None | Some("up") => {}
         Some(argument) => {
             anyhow::bail!("unsupported migrate argument '{argument}'; use migrate up")
         }
     }
+
+    migrate_up().await
+}
+
+async fn migrate_up() -> anyhow::Result<()> {
+    use anyhow::Context;
+    use sea_orm_migration::MigratorTrait;
 
     let root = std::env::current_dir().context("could not determine current directory")?;
     let settings = multicloud_configuration::Settings::load(root)

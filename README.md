@@ -38,7 +38,6 @@ doc/                  需求、架构、Schema、流程与开发路线
 ```bash
 cp .env.example .env
 just infra-up
-just migrate up
 just admin-init
 ```
 
@@ -50,7 +49,7 @@ just run
 just dev-web
 ```
 
-Podman Compose、Docker Compose 兼容方式，以及不使用容器的 PostgreSQL/Redis 本机部署、建库、migration 和首次初始化步骤见 [部署指南](doc/deployment.md)。应用不会使用 PostgreSQL 超级用户自动建库；系统管理员只需建立 role 与空 database，`multicloud migrate up` 会建立和升级全部表结构。
+Podman Compose、Docker Compose 兼容方式，以及不使用容器的 PostgreSQL/Redis 本机部署、建库、migration 和首次初始化步骤见 [部署指南](doc/deployment.md)。应用不会使用 PostgreSQL 超级用户自动建库；系统管理员只需建立 role 与空 database。首次执行 `multicloud init` 会先应用 pending migrations，再交互建立管理员；后续升级可单独执行 `multicloud migrate up`。
 
 生产部署只需 `multicloud` 一个可执行文件；前端 `dist` 会在编译时嵌入 binary，运行时不需要独立的静态文件服务器。默认 `serve` 会在同一进程启动 API、Worker 与 Scheduler。`worker`、`scheduler` 和 `agent` 子命令用于隔离调试或特殊部署。首次安装通过服务器上的交互式管理命令建立首位管理员及 Organization；密码不会出现在 shell history 或 process list。若管理员无法登入，可在服务器终端执行：
 

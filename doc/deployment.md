@@ -13,7 +13,6 @@ openssl rand -base64 32
 podman compose up -d
 podman compose ps
 podman compose logs postgres redis
-just migrate up
 just admin-init
 just run
 ```
@@ -62,11 +61,22 @@ RUST_LOG=info,multicloud=info
 ```bash
 openssl rand -base64 32
 sudo chmod 600 /etc/multicloud.env
-sudo sh -c 'set -a; . /etc/multicloud.env; exec /usr/local/bin/multicloud migrate up'
 sudo sh -c 'set -a; . /etc/multicloud.env; exec /usr/local/bin/multicloud init'
 ```
 
-`init` 必须在交互式终端运行，只创建首位 Platform Admin 与第一个 Organization。后续普通用户由 Web 注册（默认关闭，由 Platform Admin 开启）。升级 binary 后先备份数据库，再重复执行 `multicloud migrate up`；migration 是增量且可重复调用的。
+`init` 会先自动应用 pending migrations，再在交互式终端创建首位 Platform Admin 与第一个 Organization。MultiCloud 使用规范化 email 作为唯一登录名，不另设容易混淆的 username；display name 只用于界面显示。密码使用隐藏输入与二次确认，不接受 command-line password 或环境变量，数据库只保存 Argon2 hash。
+
+可在自动化安装中预填非敏感字段，密码仍会安全地从 TTY 读取：
+
+```bash
+sudo sh -c 'set -a; . /etc/multicloud.env; exec /usr/local/bin/multicloud init \
+  --email admin@example.com \
+  --display-name Administrator \
+  --organization-slug primary \
+  --organization-name "Primary Organization"'
+```
+
+后续普通用户由 Web 注册（默认关闭，由 Platform Admin 开启）。升级 binary 后先备份数据库，再执行 `multicloud migrate up`；migration 是增量且可重复调用的。
 
 生产环境可创建专用用户，并写入 `/etc/systemd/system/multicloud.service`：
 

@@ -2,8 +2,8 @@
 
 ## 0. 首次初始化與管理權限恢復
 
-1. 系統管理員建立 PostgreSQL role 與空 database，再由單一 binary 執行 `multicloud migrate up` 建立或升級 schema。
-2. 完成 database migration 後，在 Control Plane 主機的交互式終端執行 `just admin-init`（由單一 `multicloud` binary 的 `init` 子命令執行）。
+1. 系統管理員建立 PostgreSQL role 與空 database；應用不取得 `CREATEDB` 或 superuser 權限。
+2. 在 Control Plane 主機的交互式終端執行 `just admin-init`；單一 binary 的 `init` 子命令會先套用 pending migrations，再進入初始化提示。
 3. CLI 原子建立首位 active User、Organization、active membership、system roles 與 Owner binding。
 4. Password 僅由隱藏輸入讀取，不接受 command-line password，也不寫入 log；資料庫只保存 Argon2 hash。
 5. 無法登入時執行 `just recover-access [email]`；使用者未指定時由 CLI 列出可恢復帳號。
