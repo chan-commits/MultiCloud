@@ -33,8 +33,25 @@ impl MigrationTrait for Migration {
                 CONSTRAINT audit_logs_severity_check CHECK (severity IN ('info', 'warning', 'critical'))
             ) PARTITION BY RANGE (occurred_at);
 
-            CREATE TABLE audit_logs_2026_08 PARTITION OF audit_logs
-                FOR VALUES FROM ('2026-08-01 00:00:00+00') TO ('2026-09-01 00:00:00+00');
+            DO $$
+            DECLARE
+                partition_start timestamptz;
+                partition_end timestamptz;
+                partition_name text;
+            BEGIN
+                FOR month_offset IN 0..1 LOOP
+                    partition_start := date_trunc('month', CURRENT_TIMESTAMP)
+                        + make_interval(months => month_offset);
+                    partition_end := partition_start + interval '1 month';
+                    partition_name := 'audit_logs_' || to_char(partition_start, 'YYYY_MM');
+                    EXECUTE format(
+                        'CREATE TABLE %I PARTITION OF audit_logs FOR VALUES FROM (%L) TO (%L)',
+                        partition_name,
+                        partition_start,
+                        partition_end
+                    );
+                END LOOP;
+            END $$;
             CREATE TABLE audit_logs_default PARTITION OF audit_logs DEFAULT;
             CREATE INDEX audit_logs_tenant_time_idx ON audit_logs (organization_id, occurred_at DESC);
             CREATE INDEX audit_logs_tenant_action_idx ON audit_logs (organization_id, action, occurred_at DESC);

@@ -4,7 +4,7 @@ Phase 6 將既有 transactional outbox Domain Event 投影成 tenant-scoped、ap
 
 ## 實作範圍
 
-- `audit_logs` 依 `occurred_at` range partition，建立當月 partition 與安全 default partition。
+- `audit_logs` 依 `occurred_at` range partition，migration 依執行時間建立當月與下月 partition，並保留安全 default partition。
 - database trigger 拒絕一般 `UPDATE`/`DELETE`，Audit record 只可追加。
 - RLS 以 `organization_id` 隔離；`audit.log.read` 與 `audit.log.export` 分離授權。
 - Worker 在 outbox transaction 內執行 idempotent projection，再進行 Redis fan-out；Redis 重試不會重複 Audit record。
@@ -25,7 +25,7 @@ Phase 6 將既有 transactional outbox Domain Event 投影成 tenant-scoped、ap
 
 ## Retention 基礎
 
-`audit_retention_policies` 保存每個 Organization 的 log/export retention，並透過 tenant-scoped API 管理。Audit table 已具備月分區與 tenant/time indexes；後續 maintenance job 必須先建立未來 partition，再依 policy detach/archive/drop 過期 partition。初期預設保留 365 天，禁止低於 90 天。
+`audit_retention_policies` 保存每個 Organization 的 log/export retention，並透過 tenant-scoped API 管理。Audit table 已具備當月/下月分區、default fallback 與 tenant/time indexes；後續 maintenance job 必須持續建立未來 partition，再依 policy detach/archive/drop 過期 partition。初期預設保留 365 天，禁止低於 90 天。
 
 ## UI
 
