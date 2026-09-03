@@ -57,10 +57,12 @@ Outbox 採 at-least-once delivery，Redis Pub/Sub 僅負責即時 fan-out；cons
 ## Ticket 與 Chat
 
 - `tickets`：organization、tenant-scoped number、subject、description、status、priority、requester、assignee、SLA deadlines、version。
+- `ticket_counters`：每个 Organization 的原子 ticket number allocator。
 - `ticket_comments`：ticket、author、body、visibility、timestamps。
 - `ticket_events`：ticket、event type、actor、data、time。
 - `attachments`：owner、object storage key、filename、content type、size、checksum、uploader。
 - `sla_policies`：organization、name、rules。
+- `notifications`：organization、recipient、notification type、sanitized payload、read/created time。
 - `conversations`：organization、type、subject、optional ticket、status、creator。
 - `conversation_participants`：conversation、participant type/id、role、join/leave time。
 - `chat_messages`：conversation、sender、client message ID、type、body、reply、metadata；client ID 用於去重。

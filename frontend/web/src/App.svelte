@@ -23,6 +23,8 @@
     type ProviderAccount,
     type Reconciliation,
     type Resource,
+    type Ticket,
+    type TicketComment,
   } from './lib/api';
   import { messageOf, relativeDate } from './lib/format';
   import { CONTROL_PLANE_CONTEXT, type ControlPlaneContext } from './lib/control-plane-context';
@@ -76,7 +78,10 @@
     providers = $state<ProviderAccount[]>([]),
     resources = $state<Resource[]>([]),
     operations = $state<Operation[]>([]),
-    auditLogs = $state<AuditLog[]>([]);
+    auditLogs = $state<AuditLog[]>([]),
+    tickets = $state<Ticket[]>([]),
+    ticketComments = $state<TicketComment[]>([]);
+  let selectedTicket = $state<Ticket | null>(null);
   let actionBusy = $state('');
   let selectedResource = $state<Resource | null>(null),
     resourceDrifts = $state<Drift[]>([]),
@@ -107,6 +112,15 @@
     },
     get auditLogs() {
       return auditLogs;
+    },
+    get tickets() {
+      return tickets;
+    },
+    get ticketComments() {
+      return ticketComments;
+    },
+    get selectedTicket() {
+      return selectedTicket;
     },
     get activeResources() {
       return activeResources;
@@ -145,6 +159,10 @@
     applyAuditFilters,
     loadMoreAudit,
     exportAudit,
+    createTicket,
+    selectTicket,
+    updateTicket,
+    addTicketComment,
   };
   setContext(CONTROL_PLANE_CONTEXT, controlPlane);
 
@@ -253,11 +271,12 @@
     loading = true;
     error = '';
     try {
-      [providers, resources, operations, auditLogs] = await Promise.all([
+      [providers, resources, operations, auditLogs, tickets] = await Promise.all([
         client.providers(),
         client.resources(),
         client.operations(),
         queryAudit(client, auditFilters()),
+        client.tickets(),
       ]);
       auditHasMore = auditLogs.length === 100;
     } catch (cause) {
@@ -339,6 +358,9 @@
     resources = [];
     operations = [];
     auditLogs = [];
+    tickets = [];
+    ticketComments = [];
+    selectedTicket = null;
   }
 
   async function toggleRegistration() {
@@ -485,6 +507,59 @@
     try {
       await exportAuditAction(client, auditFilters());
       notice = t('Sanitized audit export generated.');
+    } catch (cause) {
+      error = messageOf(cause);
+    } finally {
+      actionBusy = '';
+    }
+  }
+
+  async function createTicket(subject: string, description: string, priority: string) {
+    if (!client) return;
+    actionBusy = 'ticket-create';
+    try {
+      const ticket = await client.createTicket({ subject, description, priority });
+      tickets = [ticket, ...tickets];
+      notice = t('Ticket #{number} created.', { number: ticket.number });
+    } catch (cause) {
+      error = messageOf(cause);
+    } finally {
+      actionBusy = '';
+    }
+  }
+
+  async function selectTicket(ticket: Ticket) {
+    if (!client) return;
+    selectedTicket = ticket;
+    try {
+      ticketComments = await client.ticketComments(ticket.id);
+    } catch (cause) {
+      error = messageOf(cause);
+    }
+  }
+
+  async function updateTicket(ticket: Ticket, status: string) {
+    if (!client) return;
+    actionBusy = ticket.id;
+    try {
+      const updated = await client.updateTicket(ticket.id, { version: ticket.version, status });
+      tickets = tickets.map((item) => (item.id === updated.id ? updated : item));
+      selectedTicket = updated;
+      notice = t('Ticket status updated.');
+    } catch (cause) {
+      error = messageOf(cause);
+    } finally {
+      actionBusy = '';
+    }
+  }
+
+  async function addTicketComment(body: string) {
+    if (!client || !selectedTicket) return;
+    actionBusy = 'ticket-comment';
+    try {
+      const comment = await client.addTicketComment(selectedTicket.id, body);
+      ticketComments = [...ticketComments, comment];
+      notice = t('Comment added.');
     } catch (cause) {
       error = messageOf(cause);
     } finally {

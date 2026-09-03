@@ -1,11 +1,21 @@
 import { getContext } from 'svelte';
-import type { AuditLog, Operation, ProviderAccount, Resource } from '$lib/api';
+import type {
+  AuditLog,
+  Operation,
+  ProviderAccount,
+  Resource,
+  Ticket,
+  TicketComment,
+} from '$lib/api';
 
 export type ControlPlaneContext = {
   readonly providers: ProviderAccount[];
   readonly resources: Resource[];
   readonly operations: Operation[];
   readonly auditLogs: AuditLog[];
+  readonly tickets: Ticket[];
+  readonly ticketComments: TicketComment[];
+  readonly selectedTicket: Ticket | null;
   readonly activeResources: Resource[];
   readonly driftedResources: Resource[];
   readonly runningOperations: Operation[];
@@ -25,6 +35,10 @@ export type ControlPlaneContext = {
   applyAuditFilters(): Promise<void>;
   loadMoreAudit(): Promise<void>;
   exportAudit(): Promise<void>;
+  createTicket(subject: string, description: string, priority: string): Promise<void>;
+  selectTicket(ticket: Ticket): Promise<void>;
+  updateTicket(ticket: Ticket, status: string): Promise<void>;
+  addTicketComment(body: string): Promise<void>;
 };
 
 export const CONTROL_PLANE_CONTEXT = Symbol('control-plane');

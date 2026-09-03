@@ -5,6 +5,7 @@
 - Apps：`api`、`worker`、`scheduler`、`agent`。
 - Domain crates：`identity`、`organization`、`authorization`、`asset`、`provider`、`operation`、`ticket`、`chat`、`audit`、`billing`、`agent-control`、`notification`。
 - Infrastructure crates：`persistence`、`messaging`、`websocket`、`observability`、`configuration`。
+- Ticket bounded context：`crates/ticket` 保存 lifecycle/SLA 纯 Domain 规则，API 与 persistence adapter 分别位于 `apps/api` 和 `crates/persistence`。
 - `shared-kernel`：只放強型別 ID、Money、時間、分頁、correlation、idempotency 與 domain event 基礎型別。
 
 ## Bounded Context

@@ -101,7 +101,8 @@ git push origin v0.1.0
 - Phase 4：Provider abstraction、加密 credential、Fake 与 Cloudflare adapter 已完成
 - Phase 5：Resource Management 与 Real Provider Integration 已完成（Provider backend、Resource/Operation/Drift 与 Command Center UI）
 - Phase 6：append-only Audit Log、递归脱敏、查询/CSV 导出、分区/retention policy 与 Audit Stream UI 已完成
-- 后续阶段：Ticket/Chat、Agent、Billing
+- Phase 7：Ticket lifecycle、comment、attachment metadata、assignment、SLA、notification、RBAC 与 Support Desk UI 已完成
+- 后续阶段：Live Chat、Agent、Billing
 
 详细规划见 [开发顺序](doc/development-roadmap.md)，系统设计入口见 [设计文件索引](doc/README.md)。
 

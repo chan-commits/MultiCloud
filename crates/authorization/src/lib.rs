@@ -25,6 +25,11 @@ pub mod permissions {
     pub const AUDIT_READ: &str = "audit.log.read";
     pub const AUDIT_EXPORT: &str = "audit.log.export";
     pub const AUDIT_RETENTION_MANAGE: &str = "audit.retention.manage";
+    pub const TICKET_READ: &str = "ticket.ticket.read";
+    pub const TICKET_CREATE: &str = "ticket.ticket.create";
+    pub const TICKET_COMMENT: &str = "ticket.comment.create";
+    pub const TICKET_MANAGE: &str = "ticket.ticket.manage";
+    pub const TICKET_SLA_MANAGE: &str = "ticket.sla.manage";
 
     pub const ALL: &[(&str, &str)] = &[
         (ORGANIZATION_READ, "Read organization details"),
@@ -59,6 +64,11 @@ pub mod permissions {
         (AUDIT_READ, "Read tenant audit logs"),
         (AUDIT_EXPORT, "Export tenant audit logs"),
         (AUDIT_RETENTION_MANAGE, "Manage tenant audit retention"),
+        (TICKET_READ, "Read organization tickets"),
+        (TICKET_CREATE, "Create support tickets"),
+        (TICKET_COMMENT, "Comment on support tickets"),
+        (TICKET_MANAGE, "Assign and transition tickets"),
+        (TICKET_SLA_MANAGE, "Manage ticket SLA policies"),
     ];
 }
 
@@ -93,6 +103,11 @@ pub fn system_role_specs() -> [SystemRoleSpec; 4] {
         permission::AUDIT_READ,
         permission::AUDIT_EXPORT,
         permission::AUDIT_RETENTION_MANAGE,
+        permission::TICKET_READ,
+        permission::TICKET_CREATE,
+        permission::TICKET_COMMENT,
+        permission::TICKET_MANAGE,
+        permission::TICKET_SLA_MANAGE,
     ];
     [
         SystemRoleSpec {
@@ -117,6 +132,9 @@ pub fn system_role_specs() -> [SystemRoleSpec; 4] {
                 permission::OPERATION_READ,
                 permission::PROVIDER_ACCOUNT_READ,
                 permission::RESOURCE_READ,
+                permission::TICKET_READ,
+                permission::TICKET_CREATE,
+                permission::TICKET_COMMENT,
             ],
         },
         SystemRoleSpec {
@@ -127,6 +145,7 @@ pub fn system_role_specs() -> [SystemRoleSpec; 4] {
                 permission::ORGANIZATION_READ,
                 permission::PROVIDER_ACCOUNT_READ,
                 permission::RESOURCE_READ,
+                permission::TICKET_READ,
             ],
         },
     ]

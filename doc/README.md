@@ -16,6 +16,7 @@
 - [Phase 4 Provider Foundation](phase-4-provider-foundation.md)：Provider abstraction、加密 credential、Cloudflare 與 Fake adapter。
 - [Phase 5 Resource 與 Real Provider](phase-5-resource-provider-integration.md)：canonical Resource、Cloudflare DNS、Vultr/OVH VPS、Operation executor 與 Drift。
 - [Phase 6 Audit Log](phase-6-audit-log.md)：append-only audit projection、遮罩、query/export、partition 與 retention。
+- [Phase 7 Ticket](phase-7-ticket.md)：ticket lifecycle、comment、attachment metadata、assignment、SLA、notification 與 RBAC。
 - [部署指南](deployment.md)：Podman/Docker Compose、本机 PostgreSQL/Redis、migration、首次初始化与恢复。
 
 ## 文件狀態

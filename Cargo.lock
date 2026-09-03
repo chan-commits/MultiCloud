@@ -2107,6 +2107,7 @@ dependencies = [
  "multicloud-provider",
  "multicloud-resource",
  "multicloud-shared-kernel",
+ "multicloud-ticket",
  "multicloud-web-assets",
  "rand 0.10.2",
  "sea-orm",
@@ -2265,6 +2266,15 @@ dependencies = [
  "serde",
  "time",
  "uuid",
+]
+
+[[package]]
+name = "multicloud-ticket"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "thiserror",
+ "time",
 ]
 
 [[package]]

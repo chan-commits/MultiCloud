@@ -1,6 +1,6 @@
 <script lang="ts">
   import { t } from '$lib/i18n.svelte';
-  type View = 'overview' | 'providers' | 'resources' | 'operations' | 'audit';
+  type View = 'overview' | 'providers' | 'resources' | 'operations' | 'tickets' | 'audit';
   type NavigationItem = { id: View; label: string; caption: string; icon: string };
   let {
     navigation,

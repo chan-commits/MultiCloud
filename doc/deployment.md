@@ -27,6 +27,8 @@ curl --fail http://localhost:8080/health
 
 `compose.yaml` 使用标准 Compose 结构并显式引用 Docker Hub 镜像，兼容 Docker Compose。Docker 用户将 `podman compose` 换成 `docker compose` 即可；`just infra-up/down` 默认使用 Podman。Named volumes 保存持久数据，`compose down` 不会删除数据；不要在生产环境执行 `compose down -v`。
 
+首次创建 volume 时，初始化脚本会建立无 superuser、无 `CREATEDB`/`CREATEROLE` 权限的 `multicloud` 应用角色。官方 PostgreSQL 镜像中的 `POSTGRES_USER` 属于数据库管理员，应用不能直接使用它，否则会绕过 RLS。旧的开发 volume 若曾用 `multicloud` 作为 `POSTGRES_USER`，需在确认不保留本地数据后重建 volume，或由管理员手动执行 `ALTER ROLE multicloud NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT`。
+
 ## 本机服务部署（不使用容器）
 
 安装 PostgreSQL 17、Redis 8（较新的兼容版本亦可），并将下载的 `multicloud` 放在 `/usr/local/bin/`。以 PostgreSQL 管理员执行一次：
@@ -55,6 +57,8 @@ RUST_LOG=info,multicloud=info
 若数据库密码含 `@`、`:`、`/` 等 URL 保留字符，必须先进行 percent-encoding。
 
 `RUST_LOG` 是连接数据库前的启动级别。迁移完成后，Platform Admin 可在 Web 顶栏选择 `error`、`warn`、`info`、`debug` 或 `trace`；选择会保存至 `platform_settings` 并立即 reload，无需重启。数据库只保存级别设置，application log 内容仍输出至 stdout/journald，不占用 PostgreSQL 空间。
+
+## 首次初始化
 
 生成 key、保护配置，并完成首次初始化：
 

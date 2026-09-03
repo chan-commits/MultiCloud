@@ -9,6 +9,7 @@ mod platform;
 mod providers;
 mod resources;
 mod tenant;
+mod tickets;
 
 use axum::Router;
 use sea_orm::DatabaseConnection;
@@ -33,4 +34,5 @@ pub fn router() -> Router<AppState> {
         .nest("/resources", resources::router())
         .nest("/organizations", organizations::router())
         .nest("/tenant", tenant::router())
+        .nest("/tickets", tickets::router())
 }

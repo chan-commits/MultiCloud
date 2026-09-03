@@ -75,6 +75,31 @@ export type AuditFilters = {
   occurred_before_id?: string;
   limit?: number;
 };
+export type Ticket = {
+  id: string;
+  number: number;
+  subject: string;
+  description: string;
+  status: string;
+  priority: string;
+  requester_id: string;
+  assigned_to: string | null;
+  response_due_at: string | null;
+  resolution_due_at: string | null;
+  first_responded_at: string | null;
+  resolved_at: string | null;
+  version: number;
+  created_at: string;
+  updated_at: string;
+};
+export type TicketComment = {
+  id: string;
+  ticket_id: string;
+  author_id: string;
+  body: string;
+  visibility: string;
+  created_at: string;
+};
 export type RegistrationSettings = { initialized: boolean; registration_enabled: boolean };
 export type LoggingSettings = { log_level: 'error' | 'warn' | 'info' | 'debug' | 'trace' };
 
@@ -153,6 +178,30 @@ export class ApiClient {
   }
   operations() {
     return this.request<Operation[]>('/operations/');
+  }
+  tickets() {
+    return this.request<Ticket[]>('/tickets/');
+  }
+  createTicket(payload: { subject: string; description: string; priority: string }) {
+    return this.request<Ticket>('/tickets/', { method: 'POST', body: JSON.stringify(payload) });
+  }
+  updateTicket(
+    id: string,
+    payload: { version: number; status?: string; priority?: string; assigned_to?: string | null },
+  ) {
+    return this.request<Ticket>(`/tickets/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+  }
+  ticketComments(id: string) {
+    return this.request<TicketComment[]>(`/tickets/${id}/comments`);
+  }
+  addTicketComment(id: string, body: string, visibility = 'public') {
+    return this.request<TicketComment>(`/tickets/${id}/comments`, {
+      method: 'POST',
+      body: JSON.stringify({ body, visibility }),
+    });
   }
   auditLogs(filters: AuditFilters = {}) {
     const query = new URLSearchParams();
