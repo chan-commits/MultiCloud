@@ -47,7 +47,7 @@
     driftedResourcesOf,
     failedOperationsOf,
     runningOperationsOf,
-  } from './lib/app-state.svelte';
+  } from './lib/app-state';
   import {
     clearSession,
     persistOrganization,
