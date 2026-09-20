@@ -1,7 +1,7 @@
 <script lang="ts">
   import ProvidersView from '../../components/ProvidersView.svelte';
-  import { getControlPlane } from '$lib/control-plane-context';
-  import { relativeDate } from '$lib/format';
+  import { getControlPlane } from '#lib/control-plane-context';
+  import { relativeDate } from '#lib/format';
 
   const app = getControlPlane();
 </script>

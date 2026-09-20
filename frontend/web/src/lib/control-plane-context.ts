@@ -6,7 +6,7 @@ import type {
   Resource,
   Ticket,
   TicketComment,
-} from '$lib/api';
+} from '#lib/api';
 
 export type ControlPlaneContext = {
   readonly providers: ProviderAccount[];

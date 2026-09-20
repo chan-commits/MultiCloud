@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { i18n, setLocale, t, type Locale } from '$lib/i18n.svelte';
+  import { i18n, setLocale, t, type Locale } from '#lib/i18n.svelte';
 
   let { compact = false }: { compact?: boolean } = $props();
 </script>

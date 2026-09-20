@@ -1,8 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import OverviewView from '../components/OverviewView.svelte';
-  import { getControlPlane } from '$lib/control-plane-context';
-  import { relativeDate, shortId } from '$lib/format';
+  import { getControlPlane } from '#lib/control-plane-context';
+  import { relativeDate, shortId } from '#lib/format';
 
   const app = getControlPlane();
 </script>

@@ -1,6 +1,6 @@
 <script lang="ts">
   import LanguageSelect from './LanguageSelect.svelte';
-  import { t } from '$lib/i18n.svelte';
+  import { t } from '#lib/i18n.svelte';
   let {
     registrationEnabled,
     platformInitialized,

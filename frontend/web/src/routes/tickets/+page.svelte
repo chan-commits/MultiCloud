@@ -1,7 +1,7 @@
 <script lang="ts">
   import TicketsView from '../../components/TicketsView.svelte';
-  import { getControlPlane } from '$lib/control-plane-context';
-  import { relativeDate } from '$lib/format';
+  import { getControlPlane } from '#lib/control-plane-context';
+  import { relativeDate } from '#lib/format';
   const app = getControlPlane();
 </script>
 

@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Resource } from '../lib/api';
   import { statusClass } from '../lib/ui';
-  import { t } from '$lib/i18n.svelte';
+  import { t } from '#lib/i18n.svelte';
   let {
     resources,
     onOpenResource,

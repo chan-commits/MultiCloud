@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Operation } from '../lib/api';
   import { statusClass } from '../lib/ui';
-  import { t } from '$lib/i18n.svelte';
+  import { t } from '#lib/i18n.svelte';
   let {
     operations,
     actionBusy,

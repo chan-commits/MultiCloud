@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/state';
   import App from '../App.svelte';
-  import { viewFromRoute } from '$lib/navigation';
+  import { viewFromRoute } from '#lib/navigation';
   import '../styles/index.css';
 
   let { children } = $props();

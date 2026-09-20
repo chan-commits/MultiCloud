@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Drift, Reconciliation, Resource } from '../lib/api';
   import { providerLogoClass, statusClass } from '../lib/ui';
-  import { t } from '$lib/i18n.svelte';
+  import { t } from '#lib/i18n.svelte';
   let {
     resource,
     drifts,

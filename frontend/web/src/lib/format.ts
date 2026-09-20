@@ -1,4 +1,4 @@
-import { i18n, t } from '$lib/i18n.svelte';
+import { i18n, t } from '#lib/i18n.svelte';
 
 export function messageOf(cause: unknown): string {
   return cause instanceof Error ? t(cause.message) : t('An unexpected error occurred');

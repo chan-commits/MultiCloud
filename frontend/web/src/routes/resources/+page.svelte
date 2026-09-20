@@ -1,7 +1,7 @@
 <script lang="ts">
   import ResourcesView from '../../components/ResourcesView.svelte';
-  import { getControlPlane } from '$lib/control-plane-context';
-  import { shortId } from '$lib/format';
+  import { getControlPlane } from '#lib/control-plane-context';
+  import { shortId } from '#lib/format';
 
   const app = getControlPlane();
 </script>

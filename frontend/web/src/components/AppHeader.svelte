@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Organization } from '../lib/api';
   import LanguageSelect from './LanguageSelect.svelte';
-  import { t } from '$lib/i18n.svelte';
+  import { t } from '#lib/i18n.svelte';
   type View = 'overview' | 'providers' | 'resources' | 'operations' | 'tickets' | 'audit';
   let {
     view,
