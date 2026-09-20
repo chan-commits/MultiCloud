@@ -10,6 +10,7 @@ multicloud-operation = { path = "../operation" }
 multicloud-provider = { path = "../provider" }
 multicloud-resource = { path = "../resource" }
 multicloud-shared-kernel = { path = "../shared-kernel" }
+hex.workspace = true
 sea-orm.workspace = true
 serde_json.workspace = true
 sha2.workspace = true

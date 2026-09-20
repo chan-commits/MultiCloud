@@ -62,7 +62,10 @@ impl OvhAdapter {
             serialized_body,
             timestamp
         );
-        let signature = format!("$1${:x}", Sha1::digest(signature_source.as_bytes()));
+        let signature = format!(
+            "$1${}",
+            hex::encode(Sha1::digest(signature_source.as_bytes()))
+        );
         let mut request = self
             .client
             .request(method, target)

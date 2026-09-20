@@ -308,7 +308,7 @@ fn normalize_lifecycle(state: &serde_json::Value) -> &'static str {
 
 fn hash_json(value: &serde_json::Value) -> Result<String, DbErr> {
     let bytes = serde_json::to_vec(value).map_err(|error| DbErr::Custom(error.to_string()))?;
-    Ok(format!("{:x}", Sha256::digest(bytes)))
+    Ok(hex::encode(Sha256::digest(bytes)))
 }
 
 fn resource_event(

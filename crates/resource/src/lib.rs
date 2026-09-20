@@ -129,7 +129,7 @@ pub fn detect_drift(
     ]));
     let encoded =
         serde_json::to_vec(&fingerprint_payload).map_err(|_| ResourceError::Serialization)?;
-    let fingerprint = format!("{:x}", Sha256::digest(encoded));
+    let fingerprint = hex::encode(Sha256::digest(encoded));
     Ok(DriftEvaluation {
         status: if differences.is_empty() {
             DriftStatus::InSync

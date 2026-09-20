@@ -1,6 +1,6 @@
 use aes_gcm::{
     Aes256Gcm, Nonce,
-    aead::{Aead, KeyInit, OsRng, rand_core::RngCore},
+    aead::{Aead, Generate, KeyInit},
 };
 use base64::{Engine, engine::general_purpose::STANDARD};
 use thiserror::Error;
@@ -29,6 +29,8 @@ pub enum CryptoError {
     Encryption,
     #[error("credential decryption failed")]
     Decryption,
+    #[error("secure random number generation failed")]
+    Randomness,
     #[error("decrypted credential is not UTF-8")]
     InvalidPlaintext,
 }
@@ -51,18 +53,17 @@ impl EnvelopeCipher {
     ///
     /// # Errors
     ///
-    /// Returns [`CryptoError`] if cipher initialization or authenticated encryption fails.
+    /// Returns [`CryptoError`] if secure randomness, cipher initialization, or authenticated
+    /// encryption fails.
     pub fn encrypt(&self, plaintext: &str) -> Result<EncryptedCredential, CryptoError> {
         let cipher = Aes256Gcm::new_from_slice(&self.key).map_err(|_| CryptoError::InvalidKey)?;
-        let mut nonce = [0_u8; NONCE_LENGTH];
-        OsRng.fill_bytes(&mut nonce);
-        let nonce_value = Nonce::from(nonce);
+        let nonce_value = Nonce::try_generate().map_err(|_| CryptoError::Randomness)?;
         let ciphertext = cipher
             .encrypt(&nonce_value, plaintext.as_bytes())
             .map_err(|_| CryptoError::Encryption)?;
         Ok(EncryptedCredential {
             ciphertext,
-            nonce: nonce.to_vec(),
+            nonce: nonce_value.as_slice().to_vec(),
             key_version: self.key_version,
         })
     }
@@ -81,7 +82,7 @@ impl EnvelopeCipher {
             return Err(CryptoError::Decryption);
         }
         let cipher = Aes256Gcm::new_from_slice(&self.key).map_err(|_| CryptoError::InvalidKey)?;
-        let nonce: [u8; NONCE_LENGTH] = encrypted
+        let nonce: Nonce<_> = encrypted
             .nonce
             .as_slice()
             .try_into()

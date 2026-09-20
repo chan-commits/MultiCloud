@@ -1,5 +1,5 @@
 use anyhow::{Context, bail};
-use argon2::{Argon2, PasswordHasher, password_hash::SaltString};
+use argon2::{Argon2, PasswordHasher};
 use clap::{Parser, Subcommand};
 use dialoguer::{Confirm, Input, Password, Select, theme::ColorfulTheme};
 use multicloud_authorization::system_role_specs;
@@ -13,7 +13,6 @@ use multicloud_persistence::{
     },
     reliable_events::enqueue_event,
 };
-use rand::Rng;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, ConnectionTrait, DatabaseConnection, DatabaseTransaction,
     DbBackend, EntityTrait, QueryFilter, QueryOrder, Set, Statement, TransactionTrait,
@@ -497,12 +496,8 @@ fn prompt_password(prompt: &str, theme: &ColorfulTheme) -> anyhow::Result<String
     if password.chars().count() < 12 {
         bail!("password must contain at least 12 characters");
     }
-    let mut salt_bytes = [0_u8; 16];
-    rand::rng().fill_bytes(&mut salt_bytes);
-    let salt = SaltString::encode_b64(&salt_bytes)
-        .map_err(|error| anyhow::anyhow!("could not generate password salt: {error}"))?;
     Argon2::default()
-        .hash_password(password.as_bytes(), &salt)
+        .hash_password(password.as_bytes())
         .map(|hash| hash.to_string())
         .map_err(|error| anyhow::anyhow!("could not hash password: {error}"))
 }

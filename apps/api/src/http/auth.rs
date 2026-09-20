@@ -1,5 +1,5 @@
 use super::{AppState, error::ApiError};
-use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier, password_hash::SaltString};
+use argon2::{Argon2, PasswordHasher, PasswordVerifier, password_hash::phc::PasswordHash};
 use axum::{
     Json, Router,
     extract::State,
@@ -180,11 +180,8 @@ async fn register(
         return Err(ApiError::Conflict("email is already registered"));
     }
 
-    let mut salt_bytes = [0_u8; 16];
-    rand::rng().fill_bytes(&mut salt_bytes);
-    let salt = SaltString::encode_b64(&salt_bytes).map_err(super::error::internal)?;
     let password_hash = Argon2::default()
-        .hash_password(request.password.as_bytes(), &salt)
+        .hash_password(request.password.as_bytes())
         .map_err(super::error::internal)?
         .to_string();
     let id = Uuid::now_v7();

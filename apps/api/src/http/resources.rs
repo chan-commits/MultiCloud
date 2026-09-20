@@ -361,7 +361,7 @@ fn reconciliation_response(task: reconciliation_tasks::Model) -> ReconciliationR
 
 fn hash_json(value: &Value) -> Result<String, ApiError> {
     let bytes = serde_json::to_vec(value).map_err(super::error::internal)?;
-    Ok(format!("{:x}", Sha256::digest(bytes)))
+    Ok(hex::encode(Sha256::digest(bytes)))
 }
 
 fn resource_event(
